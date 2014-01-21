@@ -21,8 +21,7 @@ public class RepresentationManager {
 
 	private final Array<ModelInstance> instances = new Array<ModelInstance>();
 	private final Array<Model> models = new Array<Model>();
-	private AssetManager assetManager;
-	
+	private AssetManager assetManager;	
 	
 	// Singleton instance
 	public static RepresentationManager getInstance() {
@@ -34,7 +33,7 @@ public class RepresentationManager {
 	// add an instance from a component
 	public void createInstanceFromComponent(RenderableSkinned component) {
 		if(this.assetManager == null) {
-			throw new Error("Asset manager not set.");
+			throw new Error("Asset manager needs to be set in the RepresentationManager before adding model instances from components.");
 		}
 		Model model = this.assetManager.get(component.modelName, Model.class);
 		ModelInstance instance = new ModelInstance(model);
@@ -44,7 +43,7 @@ public class RepresentationManager {
 	// add an instance from a component
 	public void createInstanceFromComponent(RenderableStatic component) {
 		if(this.assetManager == null) {
-			throw new Error("Asset manager not set.");
+			throw new Error("Asset manager needs to be set in the RepresentationManager before adding model instances from components.");
 		}
 		Model model = this.assetManager.get(component.modelName, Model.class);
 		ModelInstance instance = new ModelInstance(model);

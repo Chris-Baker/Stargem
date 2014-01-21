@@ -20,9 +20,6 @@ public class ProfileManager {
 	// true if a profile has been loaded, false otherwise
 	private boolean isLoaded = false;
 	
-	// keep a reference to the profile profilePersistence layer
-	private final ProfilePersistence profilePersistence = PersistenceManager.getInstance().getProfilePersistence();
-	
 	/**
 	 * Stores the actual profile information; name, database name, level, and campaign.
 	 */
@@ -43,6 +40,11 @@ public class ProfileManager {
 	 * @param databaseName
 	 */
 	public void newProfile(String name, String databaseName) {
+		
+		// we need to get this reference in method scope because if we try to get a reference
+		// when we instantiate the object, it will be a null.
+		ProfilePersistence profilePersistence = PersistenceManager.getInstance().getProfilePersistence();
+		
 		profile.name = name;
 		profile.databaseName = databaseName;
 		profile.campaignName = null;
@@ -60,6 +62,11 @@ public class ProfileManager {
 	 * @return
 	 */
 	public void loadProfile(String databaseName) {
+		
+		// we need to get this reference in method scope because if we try to get a reference
+		// when we instantiate the object, it will be a null.
+		ProfilePersistence profilePersistence = PersistenceManager.getInstance().getProfilePersistence();
+				
 		profile.name = profilePersistence.getProfileName(databaseName);		
 		profile.databaseName = databaseName;
 		profile.campaignName = profilePersistence.getCampaignName(databaseName);
@@ -72,6 +79,11 @@ public class ProfileManager {
 	 * @param campaignName the campaignName to set
 	 */
 	public void setCampaignName(String campaignName) {
+		
+		// we need to get this reference in method scope because if we try to get a reference
+		// when we instantiate the object, it will be a null.
+		ProfilePersistence profilePersistence = PersistenceManager.getInstance().getProfilePersistence();
+				
 		profile.campaignName = campaignName;
 		profilePersistence.updateCampaignName(profile);
 	}
@@ -80,8 +92,13 @@ public class ProfileManager {
 	 * @param levelName the levelName to set
 	 */
 	public void setLevelName(String levelName) {
+		
+		// we need to get this reference in method scope because if we try to get a reference
+		// when we instantiate the object, it will be a null.
+		ProfilePersistence profilePersistence = PersistenceManager.getInstance().getProfilePersistence();
+		
 		profile.levelName = levelName;
-		profilePersistence.updateLevelName(profile);
+		profilePersistence.updateWorldName(profile);
 	}
 		
 	/**

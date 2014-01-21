@@ -135,8 +135,6 @@ public class PersistenceManager {
 		this.unregisterConnectionListener(this.profilePersistence);
 		this.profilePersistence = profilePersistence;
 		this.registerConnectionListener(this.profilePersistence);
-		
-		System.out.println("setting profile persistence" + this.profilePersistence);
 	}
 
 	/**
@@ -144,7 +142,7 @@ public class PersistenceManager {
 	 * 
 	 * @return the simulationPersistence
 	 */
-	public SimulationPersistence getWorldPersistence() {
+	public SimulationPersistence getSimulationPersistence() {
 		return simulationPersistence;
 	}
 
@@ -153,9 +151,9 @@ public class PersistenceManager {
 	 * 
 	 * @param simulationPersistence the simulationPersistence to set
 	 */
-	public void setWorldPersistence(SimulationPersistence worldPersistence) {
+	public void setSimulationPersistence(SimulationPersistence simulationPersistence) {
 		this.unregisterConnectionListener(this.simulationPersistence);
-		this.simulationPersistence = worldPersistence;
+		this.simulationPersistence = simulationPersistence;
 		this.registerConnectionListener(this.simulationPersistence);
 	}
 

@@ -121,19 +121,19 @@ public class ProfilePersistence implements ConnectionListener {
 	}
 
 	/**
-	 * update the campaign
+	 * update the campaign name in the database with the name in the provided profile.
 	 * 
-	 * @param campaignName the name of the campaign
+	 * @param profile the currently active player profile
 	 */
 	public void updateCampaignName(PlayerProfile profile) {
 		
 		StringBuilder sql = StringHelper.getBuilder();
-		sql.append("UPDATE Profile SET campaignName=");
+		sql.append("UPDATE Profile SET campaign=");
 		sql.append("\"");
 		sql.append(profile.getCampaignName());
 		sql.append("\" WHERE databaseName=\"");
 		sql.append(profile.getDatabaseName());
-		sql.append("\");");
+		sql.append("\";");
 		
 		// run the query
 		try {
@@ -142,23 +142,23 @@ public class ProfilePersistence implements ConnectionListener {
 			this.statement.close();
 		}
 		catch (SQLException e) {
-			Log.error(Config.SQL_ERR, e.getMessage() + " while updating the Profile table: " + sql.toString());
+			Log.error(Config.SQL_ERR, e.getMessage() + " while updating the campaign name: " + sql.toString());
 		}
 	}
 
 	/**
-	 * update the level
+	 * update the world name in the database with the name in the provided profile.
 	 * 
-	 * @param levelName the name of the level
+	 * @param profile the currently active player profile
 	 */
-	public void updateLevelName(PlayerProfile profile) {
+	public void updateWorldName(PlayerProfile profile) {
 		StringBuilder sql = StringHelper.getBuilder();
-		sql.append("UPDATE Profile SET levelName=");
+		sql.append("UPDATE Profile SET level=");
 		sql.append("\"");
-		sql.append(profile.getLevelName());
+		sql.append(profile.getWorldName());
 		sql.append("\" WHERE databaseName=\"");
 		sql.append(profile.getDatabaseName());
-		sql.append("\");");
+		sql.append("\";");
 		
 		// run the query
 		try {
@@ -167,7 +167,7 @@ public class ProfilePersistence implements ConnectionListener {
 			this.statement.close();
 		}
 		catch (SQLException e) {
-			Log.error(Config.SQL_ERR, e.getMessage() + " while updating the Profile table: " + sql.toString());
+			Log.error(Config.SQL_ERR, e.getMessage() + " while updating the world name: " + sql.toString());
 		}
 	}
 

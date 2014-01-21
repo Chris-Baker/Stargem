@@ -29,7 +29,7 @@ public class PlayerProfile {
 	/**
 	 * @return the levelName
 	 */
-	public String getLevelName() {
+	public String getWorldName() {
 		return levelName;
 	}
 

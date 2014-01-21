@@ -30,7 +30,9 @@ public class AssetList {
 	/**
 	 * Add an asset to the list of assets tracked in this list.
 	 * Uses reflection to grab the class type from the name of the
-	 * class type given
+	 * class type given. Assets are not added to the asset manager right
+	 * away. This is done as a separate step, allowing assets to be added
+	 * and removed from the manager without destroying the asset list.
 	 * 
 	 * @param path the internal file path to the asset
 	 * @param typeName the fully qualified name of the class type of the asset
@@ -38,9 +40,7 @@ public class AssetList {
 	public void add(String path, String typeName) {		
 		try {
 			Class<?> type = Class.forName(typeName);
-			
-			paths.add(path);
-			types.add(type);
+			this.add(path, type);
 		}
 		catch (ClassNotFoundException e) {
 			Log.error(Config.REFLECTION_ERR, e.getMessage());
@@ -68,7 +68,7 @@ public class AssetList {
 		}		
 		for(int i = 0, n = paths.size; i < n; i += 1) {
 			this.assets.load(paths.get(i), types.get(i));
-		}		
+		}	
 		this.isLoaded = true;
 	}
 	
@@ -79,12 +79,24 @@ public class AssetList {
 		if(!this.isLoaded) {
 			throw new Error("Cannot unload asset list because it is not loaded");
 		}		
-		for(int i = 0, n = paths.size; i < n; i += 1) {
-			this.assets.unload(paths.get(i));
-		}		
+		for(String path : paths) {
+			this.assets.unload(path);
+		}	
 		this.isLoaded = false;
 	}
 	
-	
+	@Override
+	public String toString() {
+		
+		StringBuilder s = StringHelper.getBuilder();
+		s.append("Asset List:");
+		for(int i = 0, n = paths.size; i < n; i += 1) {
+			s.append("\n");
+			s.append(types.get(i).getSimpleName());
+			s.append("\t : ");
+			s.append(paths.get(i));			
+		}
+		return s.toString();		
+	}
 	
 }

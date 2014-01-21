@@ -53,8 +53,8 @@ public class SimulationPersistence implements ConnectionListener {
 			
 			// add each asset to the list
 			while(result.next()) {				
-				String path = result.getString(0);
-				Class<?> type = Class.forName(result.getString(1));				
+				String path = result.getString(1);
+				Class<?> type = Class.forName(result.getString(2));				
 				list.add(path, type);
 			}			
 			

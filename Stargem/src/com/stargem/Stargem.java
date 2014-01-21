@@ -75,7 +75,7 @@ public class Stargem implements ApplicationListener {
 	// options currentScreen
 
 	// loading currentScreen
-	private final Screen loadingScreen = new LoadingScreen(this);
+	private Screen loadingScreen;
 
 	// briefing currentScreen
 	// play currentScreen
@@ -111,7 +111,7 @@ public class Stargem implements ApplicationListener {
 		// register the persistence layers with the persistence manager
 		this.persistenceManager.setEntityPersistence(entityPersistence);
 		this.persistenceManager.setProfilePersistence(profilePersistence);
-		this.persistenceManager.setWorldPersistence(worldPersistence);
+		this.persistenceManager.setSimulationPersistence(worldPersistence);
 		
 		// This is to assign the asset manager to reload textures on resume
 		Texture.setAssetManager(assetManager);
@@ -119,6 +119,9 @@ public class Stargem implements ApplicationListener {
 		// this allows the representation manager to load assets from the asset manager
 		this.representationManager.setAssetManager(this.assetManager);
 
+		// Create the loading screen
+		this.loadingScreen = new LoadingScreen(this);
+		
 		// resume currentScreen
 		// splash currentScreen
 		// main menu currentScreen
@@ -139,11 +142,11 @@ public class Stargem implements ApplicationListener {
 			String profileName = "Chris Baker";
 			String databaseName = this.persistenceManager.getNewDatabaseName(profileName);
 			if (this.persistenceManager.exists(databaseName)) {
-				Log.info("profile", "loading old profile " + databaseName);				
+				Log.info("Profile", "Loading existing profile " + databaseName);				
 				this.loadProfile(databaseName);
 			}
 			else {
-				Log.info("profile", "loading new profile");
+				Log.info("Profile", "Creating new profile");
 				this.newProfile(profileName);
 			}						
 		}
@@ -207,7 +210,7 @@ public class Stargem implements ApplicationListener {
 		
 		// connect to the database
 		this.persistenceManager.connect(databasePath);
-		
+				
 		// load the profile data
 		this.profileManager.loadProfile(databaseName);
 		
@@ -253,7 +256,7 @@ public class Stargem implements ApplicationListener {
 	public void loadGame() {
 		
 		// if the profile has not been loaded then we should not be calling this function yet
-		if(this.profileManager.isLoaded()) {			
+		if(!this.profileManager.isLoaded()) {			
 			throw new Error("Method called out of order. A profile must be selected before the game can be loaded.");
 		}
 		

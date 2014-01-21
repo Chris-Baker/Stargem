@@ -18,6 +18,7 @@ import com.stargem.profile.ProfileManager;
 import com.stargem.scripting.LuaScript;
 import com.stargem.sql.EntityPersistence;
 import com.stargem.sql.PersistenceManager;
+import com.stargem.sql.SimulationPersistence;
 
 /**
  * LoadingScreen.java
@@ -30,8 +31,11 @@ public class LoadingScreen extends AbstractScreen {
 
 	private final LuaScript script = LuaScript.getInstance();
 	private final AssetList localAssets;
+	private AssetList currentWorldAssets;
+	private AssetList oldWorldAssets;
 	private final AssetManager assets;	
 	private boolean isLoadingLocalAssets = true;
+	private boolean isLoadingWorldAssets = true;
 	
 	// local asset paths
 	private final String backgroundPath 		= "data/screens/loading/background.jpg";
@@ -39,9 +43,7 @@ public class LoadingScreen extends AbstractScreen {
 	private final String loadingBarFullPath 	= "data/screens/loading/loading-bar-full.png";
 	private final String loadingTextPath		= "data/screens/loading/initialising-uplink.png";
 	private final String loadingMusicPath		= "data/screens/loading/FutureWorld_Loading_Loop.ogg";
-	
-	// 
-	
+		
 	/**
 	 * @param game
 	 */
@@ -54,12 +56,15 @@ public class LoadingScreen extends AbstractScreen {
 		// create an asset list for the loading screen
 		this.localAssets = new AssetList(this.assets);
 		
-		// add the local assets to the asset list
+		// add the local assets to the asset list this needs to be loaded when the screen is shown
 		this.localAssets.add(backgroundPath, Texture.class);
 		this.localAssets.add(loadingBarEmptyPath, Texture.class);
 		this.localAssets.add(loadingBarFullPath, Texture.class);
 		this.localAssets.add(loadingTextPath, Texture.class);
 		this.localAssets.add(loadingMusicPath, Music.class);
+		
+		Log.info(Config.IO_ERR, "Asset list created for the loading screen.");
+		Log.info(Config.IO_ERR, this.localAssets.toString());
 	}
 
 	/**
@@ -78,19 +83,60 @@ public class LoadingScreen extends AbstractScreen {
 		loadingMusic.setLooping(true);
 		loadingMusic.play();
 		
-		Log.info(Config.IO_ERR, "Assets loaded");
+		Log.info(Config.IO_ERR, "Finished loading asset list for the loading screen.");
 		
 		this.isLoadingLocalAssets = false;
+	}
+	
+	private void doneLoadingWorldAssets() {
+		
+		
+		Log.info(Config.IO_ERR, "Finished loading asset list for the loading screen.");
+		
+		this.isLoadingWorldAssets = false;
+	}
+	
+	/**
+	 * Add all the current game worlds assets into the asset manager
+	 */
+	private void addWorldAssets() {
+		
+		SimulationPersistence simulationPersistence = PersistenceManager.getInstance().getSimulationPersistence();
+		
+		// save the current assets as the old assets
+		this.oldWorldAssets = this.currentWorldAssets;
+		
+		// create a new empty asset list
+		this.currentWorldAssets = new AssetList(this.assets);
+		
+		// populate the new asset list
+		simulationPersistence.populateAssetList(this.currentWorldAssets);
+		
+		// load the new asset list into the asset manager
+		this.currentWorldAssets.load();
+		
+		// unload the old assets. we do this last because the asset manager counts references
+		// this saves us unloading anything we still need. Old world assets will always be a
+		// null reference when the first world is loaded.
+		if(this.oldWorldAssets != null) {
+			this.oldWorldAssets.unload();
+			this.oldWorldAssets = null;
+		}
+		
+		Log.info(Config.IO_ERR, "Asset list created for the world.");
+		Log.info(Config.IO_ERR, this.currentWorldAssets.toString());
 	}
 	
 	@Override
 	public void render(float delta) {
 		
+		
 		// finish loading local assets
 		if (isLoadingLocalAssets && assets.update()) {
 			this.doneLoadingLocalAssets();
+			this.addWorldAssets();
 		}
-		
+				
 		// update asset manager
 		
 		// display progress bar
@@ -106,29 +152,20 @@ public class LoadingScreen extends AbstractScreen {
 	public void show() {
 		
 		// load the assets for the loading screen back into the manager
-		
-		// add assets for the level to a new list
-		
-		// read the current level name
+		this.localAssets.load();
+				
+		// read the current world name
 		PlayerProfile profile = ProfileManager.getInstance().getActiveProfile();
 		
-		// TODO load this from the profile. this needs to be stored in the profile by the new profile screen
-		//String level = profile.getLevelName();
-		//String campaign = profile.getCampaignName();
-		
-		String level 	= Config.DEFAULT_WORLD;
-		String campaign = Config.DEFAULT_CAMPAIGN;
-		
-		// get the asset list from database
-		
-		// load in all assets to asset manager
-		
+		String world 	= profile.getWorldName();
+		String campaign = profile.getCampaignName();
+				
 		// load Lua name for the level
 		StringBuilder luaPath = StringHelper.getBuilder();
 		luaPath.append(Config.CAMPAIGN_PATH);
 		luaPath.append(campaign);
 		luaPath.append("/");
-		luaPath.append(level);
+		luaPath.append(world);
 		luaPath.append("/triggers.lua");
 		
 		script.close();
