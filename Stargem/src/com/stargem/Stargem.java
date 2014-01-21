@@ -83,11 +83,18 @@ public class Stargem implements ApplicationListener {
 
 	@Override
 	public void create() {
-
+		
 		// Set the logging level to everything
 		Gdx.app.setLogLevel(Application.LOG_INFO);
 		Log.setLogLevel(Log.INFO);
 		
+		// determine the bitness of the process so we can load the correct Lua DLL
+		// http://stackoverflow.com/questions/4748673/how-can-i-check-the-bitness-of-my-os-using-java-j2se-not-os-arch
+		String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+		String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+		String realArch = (arch.endsWith("64") || (wow64Arch != null && wow64Arch.endsWith("64"))) ? "64" : "32";
+		System.setProperty("java.library.path", System.getProperty("user.dir") + "/luajava/" + realArch +  "/luajava-1.1.dll");
+		Log.info(Config.SYSTEM_ERR, System.getProperty("user.dir") + "/luajava/" + realArch +  "/luajava-1.1.dll");
 		// create the entity persistence layer
 		// It needs to be registered with the entity manager
 		// so that it can observe and track entity recycle events.

@@ -29,6 +29,7 @@ public class Config {
 	public static final String IO_ERR 				= "IO";
 	public static final String PHYSICS_ERR 			= "PHYSICS";
 	public static final String REFLECTION_ERR 		= "REFLECTION";
+	public static final String SYSTEM_ERR 			= "SYSTEM";
 	
 	public static final int PIXELS_PER_METER 		= 32;
 	
