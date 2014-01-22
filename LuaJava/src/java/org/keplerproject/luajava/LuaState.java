@@ -24,6 +24,8 @@
 
 package org.keplerproject.luajava;
 
+import java.io.File;
+
 /**
  * LuaState if the main class of LuaJava for the Java developer.
  * LuaState is a mapping of most of Lua's C API functions.
@@ -85,11 +87,21 @@ public class LuaState
   final public static Integer LUA_ERRERR    = new Integer(5);
 
   /**
+   * return as a string the bitness of the JVM being run 32 or 64
+   * this is used to determine which version of the dll to load.
+   */
+  private static String bitness () {
+	String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+	String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+    return (arch.endsWith("64") || (wow64Arch != null && wow64Arch.endsWith("64"))) ? "64" : "32";
+  }
+  
+  /**
    * Opens the library containing the luajava API
    */
   static
   {
-    System.loadLibrary(LUAJAVA_LIB);
+    System.load(System.getProperty("user.dir") + File.separator + "libs" + File.separator + LUAJAVA_LIB + "-" + bitness() + ".dll");
   }
 
   private CPtr luaState;
