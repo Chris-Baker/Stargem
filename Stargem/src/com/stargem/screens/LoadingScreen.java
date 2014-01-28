@@ -29,13 +29,24 @@ import com.stargem.sql.SimulationPersistence;
  */
 public class LoadingScreen extends AbstractScreen {
 
+	
+	private enum LoadingScreenState {
+		LOADING_LOCAL_ASSETS, 
+		FADING_IN, 
+		LOADING_WORLD_ASSETS, 
+		LOADING_TERRAIN, 
+		LOADING_ENTITIES, 
+		FADING_OUT, 
+		UNLOADING_LOCAL_ASSETS
+	}
+	
+	LoadingScreenState currentState = LoadingScreenState.LOADING_LOCAL_ASSETS;
+	
 	private final LuaScript script = LuaScript.getInstance();
 	private final AssetList localAssets;
 	private AssetList currentWorldAssets;
 	private AssetList oldWorldAssets;
-	private final AssetManager assets;	
-	private boolean isLoadingLocalAssets = true;
-	private boolean isLoadingWorldAssets = true;
+	private final AssetManager assets;
 	
 	// local asset paths
 	private final String backgroundPath 		= "data/screens/loading/background.jpg";
@@ -84,16 +95,10 @@ public class LoadingScreen extends AbstractScreen {
 		loadingMusic.play();
 		
 		Log.info(Config.IO_ERR, "Finished loading asset list for the loading screen.");
-		
-		this.isLoadingLocalAssets = false;
 	}
 	
 	private void doneLoadingWorldAssets() {
-		
-		
 		Log.info(Config.IO_ERR, "Finished loading asset list for the loading screen.");
-		
-		this.isLoadingWorldAssets = false;
 	}
 	
 	/**
@@ -130,18 +135,90 @@ public class LoadingScreen extends AbstractScreen {
 	@Override
 	public void render(float delta) {
 		
-		
-		// finish loading local assets
-		if (isLoadingLocalAssets && assets.update()) {
-			this.doneLoadingLocalAssets();
-			this.addWorldAssets();
-		}
+		switch(this.currentState) {
+			
+			case LOADING_LOCAL_ASSETS:
 				
-		// update asset manager
+				// finish loading local assets then transition
+				if (assets.update()) {
+					
+					// once the assets have been loaded
+					this.doneLoadingLocalAssets();
+					
+					// add the world assets to the asset manager to be loaded next
+					this.addWorldAssets();
+					
+					// transition to show the screen and progress bar
+					this.currentState = LoadingScreenState.FADING_IN;
+				}
+				
+			break;
+			
+			case FADING_IN:
+				
+				// fade in the screen to show the loading progress bar
+				
+				// then transition
+				this.currentState = LoadingScreenState.LOADING_WORLD_ASSETS;
+				
+			break;
+			
+			case LOADING_WORLD_ASSETS:
+								
+				// update the asset manager
+				if (assets.update()) {
+					this.doneLoadingWorldAssets();
+					
+					this.currentState = LoadingScreenState.LOADING_TERRAIN;
+				}
+				
+			break;
+			
+			case LOADING_TERRAIN:
+			
+				// build a terrain object
+				
+				// can this happen on another thread for feedback purposes?
+				
+				// query the terrain object for updates so we can display
+				// progress to user and we know when it has finished
+				
+				// transition when finished
+				this.currentState = LoadingScreenState.LOADING_ENTITIES;
+				
+			break;
+				
+			case LOADING_ENTITIES:
+			
+				// load all entities using the loading script. we do this in script so that
+				// the scripting environment knows about entities and can access them in 
+				// triggers.
+				
+				// can this be threaded for feedback purposes?
+				
+			break;
+			
+			case FADING_OUT:
+				
+				// fade to black
+				
+			break;
+			
+			case UNLOADING_LOCAL_ASSETS:
+				
+				// unload local asset list
+				
+				// set current state back to load local assets
+				
+				// switch screen
+				
+			break;
+			
+			default:
+				this.currentState = LoadingScreenState.LOADING_LOCAL_ASSETS;
+			break;
 		
-		// display progress bar
-		
-		// once assets are loaded then run Lua name to initiate entity load
+		}
 	}
 
 	@Override
