@@ -3,7 +3,6 @@
  */
 package com.stargem.physics;
 
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
@@ -30,9 +29,8 @@ import com.stargem.Log;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
 import com.stargem.entity.components.Physics;
-import com.stargem.entity.components.RenderableSkinned;
-import com.stargem.entity.components.RenderableStatic;
 import com.stargem.graphics.RepresentationManager;
+import com.stargem.terrain.TerrainSphere;
 
 /**
  * PhysicsManager.java
@@ -59,7 +57,8 @@ public class PhysicsManager {
 	private final Array<MotionState> motionStates = new Array<MotionState>();
 	private final Array<btRigidBodyConstructionInfo> bodyInfos = new Array<btRigidBodyConstructionInfo>();
 	private final Array<btCollisionShape> shapes = new Array<btCollisionShape>();
-	private final Array<btRigidBody> bodies = new Array<btRigidBody>();
+	private final Array<btRigidBody> bodies = new Array<btRigidBody>();	
+	private TerrainPhysicsBody terrain;
 	
 	private final Vector3 tempVector = new Vector3(0, 0, 0);
 	
@@ -185,26 +184,10 @@ public class PhysicsManager {
 		
 		// See if there is a model attached to this entity. 
 		// If so then we grab the transform matrix from it for the motion state,
-		// otherwise we use a new matrix.
-		RenderableSkinned renderableSkinned = EntityManager.getInstance().getComponent(entity, RenderableSkinned.class);
-		if(renderableSkinned != null) {
-			ModelInstance model = RepresentationManager.getInstance().getModelInstance(renderableSkinned.modelIndex);
-			motionState = new MotionState(model.transform);
-		}
-		else {
-			
-			// look for a static model component
-			RenderableStatic renderableStatic = EntityManager.getInstance().getComponent(entity, RenderableStatic.class);
-			if(renderableStatic != null) {
-				ModelInstance model = RepresentationManager.getInstance().getModelInstance(renderableStatic.modelIndex);
-				motionState = new MotionState(model.transform);
-			}
-			else {
-				// there is neither a static nor a skinned model so we create a fresh matrix
-				motionState = new MotionState(new Matrix4());				
-			}			
-		}
-		
+		// otherwise we use a new matrix.		
+		Matrix4 transform = RepresentationManager.getInstance().getTransformMatrix(entity);		
+		motionState = (transform == null) ? new MotionState(new Matrix4()) : new MotionState(transform);
+					
 		// body
 		info.setMotionState(motionState);
 		btRigidBody body = new btRigidBody(info);
@@ -218,7 +201,7 @@ public class PhysicsManager {
 	/**
 	 * Remove the rigid body from the manager and simulation.
 	 * The rigid body at the end of the array is copied over the one to be removed.
-	 * The moved body has the associated physics component updated with its new modelIndex.  
+	 * The moved body has the associated physics component updated with its new modelIndex.
 	 * 
 	 * @param modelIndex the modelIndex of the physics body to remove
 	 */
@@ -246,6 +229,16 @@ public class PhysicsManager {
 	}
 	
 	/**
+	 * Create the rigid bodies to simulate the terrain of the world.
+	 * 
+	 * @param terrain
+	 */
+	public void createBodyFromTerrain(TerrainSphere terrain) {		
+		this.terrain = new TerrainPhysicsBody(terrain);
+		this.terrain.addToWorld(this.dynamicsWorld);				
+	}
+	
+	/**
 	 * Dispose of all physics objects
 	 */
 	public void dispose() {
@@ -262,8 +255,21 @@ public class PhysicsManager {
 			this.bodyInfos.get(i).dispose();
 			this.motionStates.get(i).dispose();
 		}
+		
+		this.terrain.dispose();
 				
 		instance = null;
 	}
+
+	/**
+	 * Step the physics simulation
+	 * 
+	 * @param delta
+	 */
+	public void stepSimulation(float delta) {
+		this.dynamicsWorld.stepSimulation(delta, Config.NUM_SUBSTEPS);
+	}
+
+	
 	
 }

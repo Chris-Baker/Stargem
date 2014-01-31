@@ -30,6 +30,7 @@ public class Config {
 	public static final String PHYSICS_ERR 			= "PHYSICS";
 	public static final String REFLECTION_ERR 		= "REFLECTION";
 	public static final String SYSTEM_ERR 			= "SYSTEM";
+	public static final String INFO 				= "Info";
 	
 	public static final int PIXELS_PER_METER 		= 32;
 	
@@ -50,4 +51,9 @@ public class Config {
 	public static final String TABLE_WORLD			= "World";
 	public static final String TABLE_PLAYERS		= "Players";
 	
+	// Physics time step
+	public static final int MAX_UPDATE_ITERATIONS = 5;
+	public static final float FIXED_TIME_STEP = 1 / 60f;
+	public static final int tweenTimeStep = (int) (FIXED_TIME_STEP * 1000);
+	public static final int NUM_SUBSTEPS = 3;
 }

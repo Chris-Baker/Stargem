@@ -3,8 +3,8 @@
  */
 package com.stargem.profile;
 
-import com.stargem.sql.PersistenceManager;
-import com.stargem.sql.ProfilePersistence;
+import com.stargem.persistence.PersistenceManager;
+import com.stargem.persistence.ProfilePersistence;
 
 
 

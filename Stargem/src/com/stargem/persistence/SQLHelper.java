@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.stargem.sql;
+package com.stargem.persistence;
 
 import java.sql.Connection;
 import java.sql.SQLException;

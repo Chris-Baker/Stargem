@@ -3,6 +3,10 @@
  */
 package com.stargem.models;
 
+import com.stargem.entity.EntityManager;
+import com.stargem.entity.systems.PhysicsSystem;
+import com.stargem.physics.PhysicsManager;
+
 /**
  * Simulation.java
  *
@@ -12,10 +16,19 @@ package com.stargem.models;
  */
 public class Simulation implements Model {
 
+	private final PhysicsManager physicsManager;
+	private final EntityManager entityManager;
+	
+	private final PhysicsSystem physicsSystem;
 	
 	public Simulation() {
 		
+		// get a copy of each manager
+		physicsManager 	= PhysicsManager.getInstance();
+		entityManager 	= EntityManager.getInstance();
+				
 		// create all systems
+		physicsSystem = new PhysicsSystem();
 		
 	}
 	
@@ -25,12 +38,13 @@ public class Simulation implements Model {
 	@Override
 	public void update(float delta) {
 		
-		// update physics
+		// update physics		
+		physicsManager.stepSimulation(delta);
 		
 		// get list of entities in the local player's zone of control
 		
 		// update all systems
-		
+		physicsSystem.process(delta);
 	}
 	
 }

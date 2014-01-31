@@ -16,14 +16,15 @@ import com.stargem.entity.components.RenderableStatic;
 import com.stargem.entity.components.Trigger;
 import com.stargem.graphics.RepresentationManager;
 import com.stargem.models.Simulation;
+import com.stargem.persistence.DatabaseFactory;
+import com.stargem.persistence.EntityPersistence;
+import com.stargem.persistence.PersistenceManager;
+import com.stargem.persistence.ProfilePersistence;
+import com.stargem.persistence.SimulationPersistence;
 import com.stargem.physics.PhysicsManager;
 import com.stargem.profile.ProfileManager;
 import com.stargem.screens.LoadingScreen;
-import com.stargem.sql.DatabaseFactory;
-import com.stargem.sql.EntityPersistence;
-import com.stargem.sql.PersistenceManager;
-import com.stargem.sql.ProfilePersistence;
-import com.stargem.sql.SimulationPersistence;
+import com.stargem.screens.PlayScreen;
 import com.stargem.views.SimulationView;
 
 /**
@@ -57,15 +58,18 @@ public class Stargem implements ApplicationListener {
 	private final RepresentationManager representationManager = RepresentationManager.getInstance();
 
 	// the main game simulation and its renderer
-	private final Simulation simulation = new Simulation();
-	private final SimulationView simulationView = new SimulationView();
+	private Simulation simulation;
+	private SimulationView simulationView;
 	
 	// array of all component types
 	private final Array<Class<? extends Component>> componentTypes = new Array<Class<? extends Component>>();
 	
 	// screens
 	private Screen currentScreen;
-
+	
+	private Screen loadingScreen;
+	private Screen playScreen;
+	
 	// resume currentScreen
 	// splash currentScreen
 	// main menu currentScreen
@@ -73,9 +77,6 @@ public class Stargem implements ApplicationListener {
 	// select profileManager currentScreen
 	// profileManager menu currentScreen
 	// options currentScreen
-
-	// loading currentScreen
-	private Screen loadingScreen;
 
 	// briefing currentScreen
 	// play currentScreen
@@ -119,8 +120,13 @@ public class Stargem implements ApplicationListener {
 		// this allows the representation manager to load assets from the asset manager
 		this.representationManager.setAssetManager(this.assetManager);
 
-		// Create the loading screen
+		// Create the main simulation and its view
+		this.simulation = new Simulation();
+		this.simulationView = new SimulationView();
+		
+		// Create the screens
 		this.loadingScreen = new LoadingScreen(this);
+		this.playScreen = new PlayScreen(this, this.simulation, this.simulationView);
 		
 		// resume currentScreen
 		// splash currentScreen
@@ -340,7 +346,9 @@ public class Stargem implements ApplicationListener {
 
 	@Override
 	public void resize(int width, int height) {
-		// TODO resize all screens
+		if (currentScreen != null) {
+			currentScreen.resize(width, height);
+		}
 	}
 
 	@Override
@@ -371,11 +379,21 @@ public class Stargem implements ApplicationListener {
 	@Override
 	public void dispose() {
 		
+		// dispose all screens
 		this.loadingScreen.dispose();
+		this.playScreen.dispose();
 		
+		// dispose all managers
 		this.physicsManager.dispose();
-		this.assetManager.dispose();
+		this.representationManager.dispose();
 		this.persistenceManager.dispose();
+		this.assetManager.dispose();
 	}
-	
+
+	/**
+	 * Sets the play screen as the current screen
+	 */
+	public void setPlayScreen() {
+		this.setScreen(this.playScreen);
+	}	
 }

@@ -13,11 +13,11 @@ public abstract class AbstractTimedSystem extends AbstractSystem {
 	}
 
 	@Override
-	public void process(float deltaTime) {
-		this.timer -= deltaTime;
+	public void process(float delta) {
+		this.timer -= delta;
 		if(timer <= 0) {
 			this.timer = frequency;
-			super.process(deltaTime);
+			super.process(delta);
 		}		
 	}
 	

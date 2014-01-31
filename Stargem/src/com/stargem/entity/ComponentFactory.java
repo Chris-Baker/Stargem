@@ -35,6 +35,46 @@ public class ComponentFactory {
 	}
 	
 	/* @formatter:off */
+	
+	/**
+	 * Takes a row from the database and converts it into a {} 
+	 * 
+	 * @param e the entity to attach the component to
+	 * @param index the index of the physics body created in the physics manager
+	 * @param m00 value in the 4x4 transformation matrix
+	 * @param m01 value in the 4x4 transformation matrix
+	 * @param m02 value in the 4x4 transformation matrix
+	 * @param m03 value in the 4x4 transformation matrix
+	 * @param m04 value in the 4x4 transformation matrix
+	 * @param m05 value in the 4x4 transformation matrix
+	 * @param m06 value in the 4x4 transformation matrix
+	 * @param m07 value in the 4x4 transformation matrix
+	 * @param m08 value in the 4x4 transformation matrix
+	 * @param m09 value in the 4x4 transformation matrix
+	 * @param m10 value in the 4x4 transformation matrix
+	 * @param m11 value in the 4x4 transformation matrix
+	 * @param m12 value in the 4x4 transformation matrix
+	 * @param m13 value in the 4x4 transformation matrix
+	 * @param m14 value in the 4x4 transformation matrix
+	 * @param m15 value in the 4x4 transformation matrix
+	 * @param type the shape type
+	 * @param width the width of the shape
+	 * @param height the height of the shape
+	 * @param depth the depth of the shape
+	 * @param angluarVelocityX
+	 * @param angluarVelocityY
+	 * @param angluarVelocityZ
+	 * @param linearVelocityX
+	 * @param linearVelocityY
+	 * @param linearVelocityZ
+	 * @param gravityX
+	 * @param gravityY
+	 * @param gravityZ
+	 * @param mass
+	 * @param restitution
+	 * @param activationState
+	 * @return
+	 */
 	public static Physics physics(Entity e, int index,
 			float m00, float m01, float m02, float m03,
 			float m04, float m05, float m06, float m07,
@@ -47,26 +87,11 @@ public class ComponentFactory {
 			float mass, float restitution, int activationState) {
 		
 		Physics c = ComponentManager.getInstance().newComponentOfType(Physics.class);
-		
-		// the modelIndex we get from the physics manager
-		//c.modelIndex = modelIndex;
-		
-		c.m00 = m00;
-		c.m01 = m01;
-		c.m02 = m02;
-		c.m03 = m03;
-		c.m04 = m04;
-		c.m05 = m05;
-		c.m06 = m06;
-		c.m07 = m07;
-		c.m08 = m08;
-		c.m09 = m09;
-		c.m10 = m10;
-		c.m11 = m11;
-		c.m12 = m12;
-		c.m13 = m13;
-		c.m14 = m14;
-		c.m15 = m15;
+				
+		c.m00 = m00; c.m01 = m01; c.m02 = m02; c.m03 = m03;
+		c.m04 = m04; c.m05 = m05; c.m06 = m06; c.m07 = m07;
+		c.m08 = m08; c.m09 = m09; c.m10 = m10; c.m11 = m11;
+		c.m12 = m12; c.m13 = m13; c.m14 = m14; c.m15 = m15;
 		
 		c.type = type;
 		c.width = width;

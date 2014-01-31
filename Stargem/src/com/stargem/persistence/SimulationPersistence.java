@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.stargem.sql;
+package com.stargem.persistence;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -27,7 +27,7 @@ public class SimulationPersistence implements ConnectionListener {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.stargem.sql.ConnectionListener#updateConnection(java.sql.Connection)
+	 * @see com.stargem.persistence.ConnectionListener#updateConnection(java.sql.Connection)
 	 */
 	@Override
 	public void setConnection(Connection c) {
@@ -65,7 +65,7 @@ public class SimulationPersistence implements ConnectionListener {
 			Log.error(Config.SQL_ERR, e.getMessage() + " while selecting assets " + sql.toString());
 		}
 		catch (ClassNotFoundException e) {
-			Log.error(Config.SQL_ERR, e.getMessage() + " Class not found whilst populating asset list.");
+			Log.error(Config.REFLECTION_ERR, e.getMessage() + " Class not found whilst populating asset list.");
 		}
 	}
 

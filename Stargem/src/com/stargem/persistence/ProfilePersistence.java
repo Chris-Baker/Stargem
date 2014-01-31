@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.stargem.sql;
+package com.stargem.persistence;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -172,7 +172,7 @@ public class ProfilePersistence implements ConnectionListener {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.stargem.sql.ConnectionListener#setConnection(java.sql.Connection)
+	 * @see com.stargem.persistence.ConnectionListener#setConnection(java.sql.Connection)
 	 */
 	@Override
 	public void setConnection(Connection c) {

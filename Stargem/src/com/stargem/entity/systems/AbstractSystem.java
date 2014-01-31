@@ -15,13 +15,13 @@ public abstract class AbstractSystem implements SubSystem {
 	}
 	
 	@Override
-	public void process(float deltaTime) {
+	public void process(float delta) {
 		while(entities.hasNext()) {
-			process(deltaTime, entities.next());
+			process(delta, entities.next());
 		}
 	}
 	
 	@Override
-	public abstract void process(float deltaTime, Entity entity);
+	public abstract void process(float delta, Entity entity);
 	
 }

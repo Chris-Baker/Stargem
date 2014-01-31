@@ -12,6 +12,9 @@ package com.stargem.views;
  */
 public interface View {
 
-	public void render();
+	public void render(float delta);
+	public void show();
+	public void resize(float width, float height);
+	public void dispose();
 	
 }

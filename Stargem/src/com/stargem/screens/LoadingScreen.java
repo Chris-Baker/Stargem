@@ -3,22 +3,31 @@
  */
 package com.stargem.screens;
 
+import java.io.File;
+import java.util.Observable;
+import java.util.Observer;
+
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.graphics.Texture;
 import com.stargem.AssetList;
 import com.stargem.Config;
 import com.stargem.Log;
 import com.stargem.Stargem;
 import com.stargem.StringHelper;
+import com.stargem.controllers.AnyKeyPressedProcessor;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
+import com.stargem.graphics.RepresentationManager;
+import com.stargem.persistence.EntityPersistence;
+import com.stargem.persistence.PersistenceManager;
+import com.stargem.persistence.SimulationPersistence;
+import com.stargem.physics.PhysicsManager;
 import com.stargem.profile.PlayerProfile;
 import com.stargem.profile.ProfileManager;
-import com.stargem.scripting.LuaScript;
-import com.stargem.sql.EntityPersistence;
-import com.stargem.sql.PersistenceManager;
-import com.stargem.sql.SimulationPersistence;
+import com.stargem.terrain.SkySphere;
+import com.stargem.terrain.TerrainSphere;
+import com.stargem.views.LoadingScreenView;
+import com.stargem.views.View;
 
 /**
  * LoadingScreen.java
@@ -27,80 +36,50 @@ import com.stargem.sql.SimulationPersistence;
  * @date	18 Nov 2013
  * @version	1.0
  */
-public class LoadingScreen extends AbstractScreen {
-
+public class LoadingScreen extends AbstractScreen implements Observer {
 	
 	private enum LoadingScreenState {
-		LOADING_LOCAL_ASSETS, 
+		LOADING_VIEW, 
 		FADING_IN, 
 		LOADING_WORLD_ASSETS, 
 		LOADING_TERRAIN, 
-		LOADING_ENTITIES, 
+		LOADING_ENTITIES,
+		READY,
 		FADING_OUT, 
-		UNLOADING_LOCAL_ASSETS
+		UNLOADING_VIEW
 	}
 	
-	LoadingScreenState currentState = LoadingScreenState.LOADING_LOCAL_ASSETS;
+	LoadingScreenState currentState = LoadingScreenState.LOADING_VIEW;
 	
-	private final LuaScript script = LuaScript.getInstance();
-	private final AssetList localAssets;
+	//private final LuaScript script = LuaScript.getInstance();
 	private AssetList currentWorldAssets;
 	private AssetList oldWorldAssets;
 	private final AssetManager assets;
-	
-	// local asset paths
-	private final String backgroundPath 		= "data/screens/loading/background.jpg";
-	private final String loadingBarEmptyPath 	= "data/screens/loading/loading-bar-empty.png";
-	private final String loadingBarFullPath 	= "data/screens/loading/loading-bar-full.png";
-	private final String loadingTextPath		= "data/screens/loading/initialising-uplink.png";
-	private final String loadingMusicPath		= "data/screens/loading/FutureWorld_Loading_Loop.ogg";
 		
+	// this is the folder which holds the current world's entities database, 
+	// triggers script, and terrain height data
+	private String currentWorldFilePath;
+
+	// location of the current script file
+	private String scriptPath;
+
+	// location of the current terrain file
+	private String terrainPath;
+	
+	// an input processor which listens for any key press or mouse click and updates observers
+	private final AnyKeyPressedProcessor anyKeyPressedProcessor;
+	
+	private View view;
+	
 	/**
 	 * @param game
 	 */
 	public LoadingScreen(Stargem game) {
 		super(game);
-		
-		// get the asset manager
 		this.assets = game.getAssetManager();
-		
-		// create an asset list for the loading screen
-		this.localAssets = new AssetList(this.assets);
-		
-		// add the local assets to the asset list this needs to be loaded when the screen is shown
-		this.localAssets.add(backgroundPath, Texture.class);
-		this.localAssets.add(loadingBarEmptyPath, Texture.class);
-		this.localAssets.add(loadingBarFullPath, Texture.class);
-		this.localAssets.add(loadingTextPath, Texture.class);
-		this.localAssets.add(loadingMusicPath, Music.class);
-		
-		Log.info(Config.IO_ERR, "Asset list created for the loading screen.");
-		Log.info(Config.IO_ERR, this.localAssets.toString());
+		this.anyKeyPressedProcessor = new AnyKeyPressedProcessor();
 	}
-
-	/**
-	 * Once the local assets have been loaded we can create the screen
-	 * and start to load the game assets
-	 */
-	private void doneLoadingLocalAssets() {
 		
-		// get the loaded assets from the asset manager
-		Texture backgroundTexture 		= this.assets.get(backgroundPath, Texture.class);
-		Texture loadingBarEmptyTexture 	= this.assets.get(loadingBarEmptyPath, Texture.class);
-		Texture loadingBarFullTexture 	= this.assets.get(loadingBarFullPath, Texture.class);
-		Texture loadingTextTexture 		= this.assets.get(loadingTextPath, Texture.class);
-		Music loadingMusic				= this.assets.get(loadingMusicPath, Music.class);	
-		
-		loadingMusic.setLooping(true);
-		loadingMusic.play();
-		
-		Log.info(Config.IO_ERR, "Finished loading asset list for the loading screen.");
-	}
-	
-	private void doneLoadingWorldAssets() {
-		Log.info(Config.IO_ERR, "Finished loading asset list for the loading screen.");
-	}
-	
 	/**
 	 * Add all the current game worlds assets into the asset manager
 	 */
@@ -137,17 +116,17 @@ public class LoadingScreen extends AbstractScreen {
 		
 		switch(this.currentState) {
 			
-			case LOADING_LOCAL_ASSETS:
+			case LOADING_VIEW:
 				
-				// finish loading local assets then transition
+				// finish loading the view
 				if (assets.update()) {
 					
-					// once the assets have been loaded
-					this.doneLoadingLocalAssets();
+					// show the view
+					this.view.show();
 					
 					// add the world assets to the asset manager to be loaded next
 					this.addWorldAssets();
-					
+										
 					// transition to show the screen and progress bar
 					this.currentState = LoadingScreenState.FADING_IN;
 				}
@@ -158,17 +137,21 @@ public class LoadingScreen extends AbstractScreen {
 				
 				// fade in the screen to show the loading progress bar
 				
+				// render the view
+				this.view.render(delta);
+				
 				// then transition
 				this.currentState = LoadingScreenState.LOADING_WORLD_ASSETS;
 				
 			break;
 			
 			case LOADING_WORLD_ASSETS:
-								
+				
+				// render the view
+				this.view.render(delta);
+				
 				// update the asset manager
-				if (assets.update()) {
-					this.doneLoadingWorldAssets();
-					
+				if (assets.update()) {					
 					this.currentState = LoadingScreenState.LOADING_TERRAIN;
 				}
 				
@@ -176,7 +159,32 @@ public class LoadingScreen extends AbstractScreen {
 			
 			case LOADING_TERRAIN:
 			
+				// render the view
+				this.view.render(delta);
+				
 				// build a terrain object
+				// the terrain
+				
+				// TODO get these from the terrain file
+				// TODO load the terrain file with the asset loader
+				// TODO pass terrain file directly to terrain constructor
+				int scale = 90;
+				int segmentWidth = 3;
+				int numSegments = 25;
+				TerrainSphere terrain = new TerrainSphere(scale, segmentWidth, numSegments);
+				
+				// pass the terrain to the physics manager
+				PhysicsManager.getInstance().createBodyFromTerrain(terrain);
+				
+				// pass the terrain to the representation manager
+				RepresentationManager.getInstance().createInstanceFromTerrain(terrain);
+				
+				// create the skybox
+				// the skybox textures will be loaded by the asset manager
+				SkySphere sky = new SkySphere("hires-green-");
+				
+				// pass the skybox to the representation  manager
+				RepresentationManager.getInstance().createInstanceFromSky(sky);
 				
 				// can this happen on another thread for feedback purposes?
 				
@@ -190,32 +198,74 @@ public class LoadingScreen extends AbstractScreen {
 				
 			case LOADING_ENTITIES:
 			
+				// render the view
+				this.view.render(delta);
+				
+				//Log.info(Config.INFO, "Loading Entities");
+				
 				// load all entities using the loading script. we do this in script so that
 				// the scripting environment knows about entities and can access them in 
 				// triggers.
 				
 				// can this be threaded for feedback purposes?
 				
+				EntityPersistence entityPersistence = PersistenceManager.getInstance().getEntityPersistence();
+				EntityManager entityManager = EntityManager.getInstance();
+				int numEntities = entityPersistence.beginLoading();
+				Entity[] entities = new Entity[numEntities];
+				for (int i = 0; i < numEntities; i += 1) {
+					Entity e = entityManager.createEntity();
+					entityPersistence.loadEntity(e);
+					entities[i] = e;
+				}
+				
+				// set an input processor to listen for any key presses
+				this.anyKeyPressedProcessor.addObserver(this);
+				Gdx.input.setInputProcessor(this.anyKeyPressedProcessor);
+				
+				Log.info(Config.INFO, "ready...");
+				
+				this.currentState = LoadingScreenState.READY;
+				
+			break;
+			
+			case READY:
+				
+				// render the view
+				this.view.render(delta);
+				
+				// wait for user to click or press the any key
+				//
+				
 			break;
 			
 			case FADING_OUT:
 				
+				// render the view
+				this.view.render(delta);
+				
 				// fade to black
+				
+				// transition
+				this.currentState = LoadingScreenState.UNLOADING_VIEW;
 				
 			break;
 			
-			case UNLOADING_LOCAL_ASSETS:
+			case UNLOADING_VIEW:
 				
-				// unload local asset list
+				// dispose the view
+				this.view.dispose();
 				
-				// set current state back to load local assets
+				// set current state back to loading view
+				this.currentState = LoadingScreenState.LOADING_VIEW;
 				
 				// switch screen
+				this.game.setPlayScreen();
 				
 			break;
 			
 			default:
-				this.currentState = LoadingScreenState.LOADING_LOCAL_ASSETS;
+				this.currentState = LoadingScreenState.LOADING_VIEW;
 			break;
 		
 		}
@@ -223,13 +273,14 @@ public class LoadingScreen extends AbstractScreen {
 
 	@Override
 	public void resize(int width, int height) {
+		this.view.resize(width, height);
 	}
 
 	@Override
 	public void show() {
 		
-		// load the assets for the loading screen back into the manager
-		this.localAssets.load();
+		// Create a new view view
+		this.view = new LoadingScreenView(assets);
 				
 		// read the current world name
 		PlayerProfile profile = ProfileManager.getInstance().getActiveProfile();
@@ -237,27 +288,30 @@ public class LoadingScreen extends AbstractScreen {
 		String world 	= profile.getWorldName();
 		String campaign = profile.getCampaignName();
 				
-		// load Lua name for the level
-		StringBuilder luaPath = StringHelper.getBuilder();
-		luaPath.append(Config.CAMPAIGN_PATH);
-		luaPath.append(campaign);
-		luaPath.append("/");
-		luaPath.append(world);
-		luaPath.append("/triggers.lua");
+		// get the filepath for the current world
+		StringBuilder sb = StringHelper.getBuilder();
+		sb.append(Config.CAMPAIGN_PATH);
+		sb.append(campaign);
+		sb.append(File.separator);
+		sb.append(world);
+		sb.append(File.separator);	
+		this.currentWorldFilePath = sb.toString();
 		
-		script.close();
-		script.initialise(luaPath.toString());
+		// get the script filepath
+		sb.setLength(0);
+		sb.append(this.currentWorldFilePath);
+		sb.append("triggers.lua");
+		this.scriptPath = sb.toString();
+		
+		// get the terrain filepath
+		sb.setLength(0);
+		sb.append(this.currentWorldFilePath);
+		sb.append("terrain.raw");
+		this.terrainPath = sb.toString();
+		
+		//script.close();
+		//script.initialise(scriptPath);
 		//name.execute("entities", "load");
-		
-		EntityPersistence entityPersistence = PersistenceManager.getInstance().getEntityPersistence();
-		EntityManager entityManager = EntityManager.getInstance();
-		int numEntities = entityPersistence.beginLoading();
-		Entity[] entities = new Entity[numEntities];
-		for (int i = 0; i < numEntities; i += 1) {
-			Entity e = entityManager.createEntity();
-			entityPersistence.loadEntity(e);
-			entities[i] = e;
-		}
 	}
 
 	@Override
@@ -274,6 +328,31 @@ public class LoadingScreen extends AbstractScreen {
 
 	@Override
 	public void dispose() {
+	}
+
+	/**
+	 * This screen is observing for any key presses or mouse clicks when all loading has finished.
+	 * The screen will then transition to the play screen.
+	 * 
+	 * This method is called whenever the observed object is changed. 
+	 * An application calls an Observable object's notifyObservers method 
+	 * to have all the object's observers notified of the change.
+	 * 
+	 * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
+	 */
+	@Override
+	public void update(Observable o, Object arg) {
+				
+		if(this.currentState == LoadingScreenState.READY) {
+			Log.info(Config.INFO, "Key pressed, transitioning next state");
+			this.anyKeyPressedProcessor.deleteObserver(this);			
+			this.currentState = LoadingScreenState.FADING_OUT;		
+		}
+		else {
+			throw new Error("Observer update called on Loading Screen when it shouldn't have been!" +
+					" The screen must be in its ready state before it can transition.");
+		}
+		
 	}
 	
 }

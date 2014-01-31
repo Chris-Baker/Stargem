@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.stargem.sql;
+package com.stargem.persistence;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -532,7 +532,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	}
 
 	/* (non-Javadoc)
-	 * @see com.stargem.sql.ConnectionListener#setConnection(java.sql.Connection)
+	 * @see com.stargem.persistence.ConnectionListener#setConnection(java.sql.Connection)
 	 */
 	@Override
 	public void setConnection(Connection c) {

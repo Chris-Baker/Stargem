@@ -7,11 +7,11 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.utils.Array;
 
 /**
- * A wrapper around the asset manager to allow bundles of assets to be loaded and unloaded.
- * This is useful for grouping all the assets for a certain screen or level together.
+ * An AssetList holds a list of asset file paths and Class types which are
+ * related to each other. The asset list batches loading and unloading of
+ * the related files to and from the asset manager. This allows all the
+ * assets for a World or Screen to be easily managed.
  * 
- * AssetList.java
- *
  * @author 	Chris B
  * @date	18 Nov 2013
  * @version	1.0
