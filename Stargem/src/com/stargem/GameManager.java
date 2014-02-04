@@ -10,6 +10,7 @@ import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
 import com.stargem.entity.components.Component;
 import com.stargem.entity.components.Expires;
+import com.stargem.entity.components.KeyboardMouseController;
 import com.stargem.entity.components.Physics;
 import com.stargem.entity.components.RenderableSkinned;
 import com.stargem.entity.components.RenderableStatic;
@@ -84,6 +85,7 @@ public class GameManager {
 		
 		// add all the component types which need to be tracked.		
 		this.componentTypes.add(Expires.class);
+		this.componentTypes.add(KeyboardMouseController.class);
 		this.componentTypes.add(Physics.class);
 		this.componentTypes.add(RenderableStatic.class);
 		this.componentTypes.add(RenderableSkinned.class);
@@ -99,7 +101,7 @@ public class GameManager {
 		
 		for(Class<? extends Component> type : this.componentTypes) {
 			entityPersistence.registerComponentType(type);
-		}	
+		}
 
 		ProfilePersistence profilePersistence = new ProfilePersistence();		
 		SimulationPersistence worldPersistence = new SimulationPersistence();		
@@ -121,7 +123,7 @@ public class GameManager {
 	 * this method simulates creating a new world from the
 	 * world editor.
 	 */
-	private void createWorld() {
+	public void createWorld() {
 		
 		String campaignName = Config.DEFAULT_CAMPAIGN;
 		String worldName = Config.DEFAULT_WORLD;
@@ -197,6 +199,9 @@ public class GameManager {
 		
 		// create and connect to the database
 		this.persistenceManager.connect(databasePath);
+		
+		// create the database tables for a profile
+		DatabaseFactory.createProfileDatabase(databasePath);
 		
 		// create a new profile with the name given
 		this.profileManager.newProfile(name, databaseName);

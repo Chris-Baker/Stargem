@@ -225,6 +225,9 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				
 				int numEntities = entityPersistence.beginLoading();
 				Entity[] entities = new Entity[numEntities];
+				
+				Log.info(Config.ENTITY_ERR, "Loading " + numEntities + " entities");
+				
 				for (int i = 0; i < numEntities; i += 1) {
 					Entity e = entityManager.createEntity();
 					

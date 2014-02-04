@@ -47,13 +47,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 
 	// the connection connection
 	private Connection connection;
-
-	// a statement for executing sql queries
-	private Statement statement;
-	
-	// a result set for holding results
-	private ResultSet result;
-		
+			
 	// for keeping track of entities while loading
 	private final IntArray entities = new IntArray();
 	private int entityPointer;
@@ -86,6 +80,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * @return the number of entities to be loaded
 	 */
 	public int beginLoading() {
+		this.entityPointer = 0;
 		return populateEntityList();
 	}
 
@@ -99,8 +94,8 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		sql.append("SELECT entityId, (SELECT COUNT(entityId) FROM Entity) as numRows FROM Entity;");
 
 		try {
-			this.statement = this.connection.createStatement();
-			this.result = this.statement.executeQuery(sql.toString());
+			Statement statement = this.connection.createStatement();
+			ResultSet result = statement.executeQuery(sql.toString());
 						
 			numEntities = result.getInt(2);
 			
@@ -108,8 +103,8 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 				entities.add(result.getInt(1));				
 			}
 			
-			this.result.close();
-			this.statement.close();
+			result.close();
+			statement.close();
 		}
 		catch (SQLException e) {
 			Log.error(Config.SQL_ERR, e.getMessage());
@@ -178,8 +173,6 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * @param shape the class shape of the component to load.
 	 */
 	private void loadComponent(Entity entity, Class<? extends Component> type) {
-
-		Log.info(Config.SQL_ERR, "Loading component " + type.getSimpleName() + " for entity " + entity.getId());
 		
 		// leave early if there is no component of shape for this entity
 		StringBuilder sql = StringHelper.getBuilder();
@@ -192,20 +185,23 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		int numRows = 0;
 
 		try {
-			this.statement = this.connection.createStatement();
-			this.result = this.statement.executeQuery(sql.toString());
+			Statement statement = this.connection.createStatement();
+			ResultSet result = statement.executeQuery(sql.toString());
 			numRows = result.getInt(1);
 			
-			this.result.close();
-			this.statement.close();
+			result.close();
+			statement.close();
 		}
 		catch (SQLException e) {
 			Log.error(Config.SQL_ERR, e.getMessage() + " while creating the " + type.getSimpleName() + " table: " + sql.toString());
 		}
 
 		if (numRows == 0) {
-			Log.info(Config.SQL_ERR, "No component of shape: " + type.getSimpleName());
+			Log.info(Config.SQL_ERR, "No component of type: " + type.getSimpleName());
 			return;
+		}
+		else {
+			Log.info(Config.SQL_ERR, "Loading component " + type.getSimpleName() + " for entity " + entity.getId());
 		}
 
 		// select the data from the correct table
@@ -219,8 +215,8 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		try {
 
 			// select the component data
-			this.statement = this.connection.createStatement();
-			ResultSet result = this.statement.executeQuery(sql.toString());
+			Statement statement = this.connection.createStatement();
+			ResultSet result = statement.executeQuery(sql.toString());
 
 			// use reflection to create a new component
 
@@ -244,11 +240,22 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 				// TODO see if this works with all data types
 				// if not then maybe have to some conditionals
 				// maybe boolean won't work?
-				arguments[i] = result.getObject(i + 2);
+				arguments[i] = result.getObject(i + 1);
+				
+				// if the field type is boolean then we want to convert from an integer value 1/0 to boolean true/false
+				if(fieldTypes[i].equals(boolean.class)) {					
+					if((Integer)arguments[i] == 1) {
+						arguments[i] = true;
+					}
+					else {
+						arguments[i] = false;
+					}					
+				}
+				
 			}
 
-			this.result.close();
-			this.statement.close();
+			result.close();
+			statement.close();
 			
 			// get the factory method which instantiates the component and call it, 
 			// then add the component to the entity 
@@ -258,19 +265,19 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 				em.addComponent(entity, component);
 			}
 			catch (NoSuchMethodException e) {
-				Log.error(Config.SQL_ERR, e.getMessage() + ": No method found in component factory, unable to create new component.");
+				Log.error(Config.REFLECTION_ERR, e.getMessage() + ": No method found in component factory, unable to create new component.");
 			}
 			catch (SecurityException e) {
-				Log.error(Config.SQL_ERR, e.getMessage() + ": Unable to create new component.");
+				Log.error(Config.REFLECTION_ERR, e.getMessage() + ": Unable to create new component.");
 			}
 			catch (IllegalAccessException e) {
-				Log.error(Config.SQL_ERR, e.getMessage());
+				Log.error(Config.REFLECTION_ERR, e.getMessage());
 			}
 			catch (IllegalArgumentException e) {
-				Log.error(Config.SQL_ERR, e.getMessage());
+				Log.error(Config.REFLECTION_ERR, e.getMessage());
 			}
 			catch (InvocationTargetException e) {
-				Log.error(Config.SQL_ERR, e.getMessage());
+				Log.error(Config.REFLECTION_ERR, e.getMessage());
 			}
 
 		}
@@ -313,9 +320,9 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		sql.append(";");
 
 		try {
-			this.statement = this.connection.createStatement();
-			this.statement.executeUpdate(sql.toString());
-			this.statement.close();
+			Statement statement = this.connection.createStatement();
+			statement.executeUpdate(sql.toString());
+			statement.close();
 		}
 		catch (SQLException e) {
 			Log.error(Config.SQL_ERR, e.getMessage() + " while deleting entity: " + sql.toString());
@@ -346,9 +353,9 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		sql.append(";");
 		
 		try {
-			this.statement = this.connection.createStatement();
-			this.statement.executeUpdate(sql.toString());
-			this.statement.close();
+			Statement statement = this.connection.createStatement();
+			statement.executeUpdate(sql.toString());
+			statement.close();
 		}
 		catch (SQLException e) {
 			Log.error(Config.SQL_ERR, e.getMessage() + " while deleting " + type.getSimpleName() + " component: " + sql.toString());
@@ -375,14 +382,14 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 			sql.append("INSERT INTO Entity DEFAULT VALUES;");
 
 			try {
-				this.statement = this.connection.createStatement();
-				this.statement.executeUpdate(sql.toString());
+				Statement statement = this.connection.createStatement();
+				statement.executeUpdate(sql.toString());
 
 				// get the id of the entity
-				int id = this.statement.getGeneratedKeys().getInt(1);
+				int id = statement.getGeneratedKeys().getInt(1);
 				entity.setId(id);
 				
-				this.statement.close();
+				statement.close();
 				
 				Log.info(Config.SQL_ERR, "Assigning a new id: " + id);		
 			}
@@ -459,9 +466,9 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 
 		// run the query
 		try {
-			this.statement = this.connection.createStatement();
-			this.statement.executeUpdate(sql.toString());
-			this.statement.close();
+			Statement statement = this.connection.createStatement();
+			statement.executeUpdate(sql.toString());
+			statement.close();
 		}
 		catch (SQLException e) {
 			Log.error(Config.SQL_ERR, e.getMessage() + " while inserting into the " + type.getSimpleName() + " table: " + sql.toString());
@@ -523,9 +530,9 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 
 		// run the query
 		try {
-			this.statement = this.connection.createStatement();
-			this.statement.executeUpdate(sql.toString());
-			this.statement.close();
+			Statement statement = this.connection.createStatement();
+			statement.executeUpdate(sql.toString());
+			statement.close();
 		}
 		catch (SQLException e) {
 			Log.error(Config.SQL_ERR, e.getMessage() + " while updating the " + type.getSimpleName() + " table: " + sql.toString());

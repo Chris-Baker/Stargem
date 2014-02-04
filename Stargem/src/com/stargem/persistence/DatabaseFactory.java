@@ -68,7 +68,7 @@ public class DatabaseFactory {
 		StringBuilder sql = StringHelper.getBuilder();
 		sql.append("CREATE TABLE IF NOT EXISTS ");
 		sql.append(Config.TABLE_ASSETS);
-		sql.append(" (path TEXT PRIMARY KEY, shape TEXT);");
+		sql.append(" (path TEXT PRIMARY KEY, type TEXT);");
 
 		// run the query
 		try {

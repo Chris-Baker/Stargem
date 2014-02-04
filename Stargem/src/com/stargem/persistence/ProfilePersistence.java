@@ -100,7 +100,7 @@ public class ProfilePersistence implements ConnectionListener {
 	 * @param profile the profile to store
 	 */
 	public void insertProfile(PlayerProfile profile) {
-		
+				
 		StringBuilder sql = StringHelper.getBuilder();
 		sql.append("INSERT INTO Profile (databaseName, name) VALUES(");
 		sql.append("\"");

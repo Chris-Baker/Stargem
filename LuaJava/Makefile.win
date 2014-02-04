@@ -67,8 +67,8 @@ apidoc:
 # Build .c files.
 #
 $(SO_FILE): $(OBJS)
-#	link  /dll /nodefaultlib:"msvcrt.lib" -out:$@ $? $(LUA_LIBDIR)\$(LIB_LUA)
-	link  /dll -out:$@ $? $(LUA_LIBDIR)\$(LIB_LUA)
+	link  /dll /nodefaultlib:"msvcrt.lib" -out:$@ $? $(LUA_LIBDIR)\$(LIB_LUA)
+#	link  /dll -out:$@ $? $(LUA_LIBDIR)\$(LIB_LUA)
 
 src/c/luajava.c: src/c/luajava.h
 

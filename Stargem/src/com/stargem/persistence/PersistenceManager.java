@@ -219,7 +219,7 @@ public class PersistenceManager {
 	 * @return the player entity IDs for the currently loaded world.
 	 */
 	public IntMap<Integer> getPlayerIDs() {
-		return null;
+		return this.simulationPersistence.getPlayerIDs();
 	}
 	
 }

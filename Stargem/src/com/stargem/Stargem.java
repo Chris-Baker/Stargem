@@ -88,7 +88,7 @@ public class Stargem implements ApplicationListener {
 		
 		// start the game
 		this.gameManager.loadGame();
-		//this.createWorld();
+		//this.gameManager.createWorld();
 		
 	}
 	
@@ -168,6 +168,6 @@ public class Stargem implements ApplicationListener {
 		this.playScreen.dispose();
 		
 		// dispose all managers
-		GameManager.getInstance().dispose();
+		//GameManager.getInstance().dispose();
 	}
 }

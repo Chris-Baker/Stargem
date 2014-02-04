@@ -201,7 +201,7 @@ public class PhysicsManager {
 			body = new btRigidBody(info);
 		}
 		else if (component.type == CHARACTER) {
-			body = new KinematicCharacter(this.dynamicsWorld, info, (short) component.group, (short) component.collidesWith, motionState, WORLD_ORIGIN);
+			body = new KinematicCharacter(this.dynamicsWorld, info, (short) component.collisionGroup, (short) component.collidesWith, motionState, WORLD_ORIGIN);
 		}
 		else {
 			String message = "Cannot create unknown physics body type for entity ID: " + entity.getId();
@@ -220,7 +220,7 @@ public class PhysicsManager {
 		body.setActivationState(component.activationState);
 		
 		// add the body to the simulation
-		return this.addRigidBody(info, shape, body, motionState, (short) component.group, (short) component.collidesWith);
+		return this.addRigidBody(info, shape, body, motionState, (short) component.collisionGroup, (short) component.collidesWith);
 		
 	}
 		
@@ -316,7 +316,9 @@ public class PhysicsManager {
 			this.motionStates.get(i).dispose();
 		}
 		
-		this.terrain.dispose();
+		if(this.terrain != null) {
+			this.terrain.dispose();
+		}
 				
 		instance = null;
 	}

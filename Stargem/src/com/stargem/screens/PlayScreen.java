@@ -3,6 +3,7 @@
  */
 package com.stargem.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.stargem.Config;
 import com.stargem.Stargem;
 import com.stargem.models.Simulation;
@@ -55,6 +56,16 @@ public class PlayScreen extends AbstractScreen {
 		// Render
 		simulationView.render(delta);
 		
+	}
+	
+	@Override
+	public void show() {
+		Gdx.input.setCursorCatched(true);
+	}
+	
+	@Override
+	public void hide() {
+		Gdx.input.setCursorCatched(false);
 	}
 	
 }

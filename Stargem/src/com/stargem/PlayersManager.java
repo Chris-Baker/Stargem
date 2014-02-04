@@ -30,7 +30,7 @@ public class PlayersManager {
 
 	// a counter which tracks the next localPlayer number to be assigned
 	// localPlayer numbers are used as keys in the Map which stores localPlayer entities
-	private int nextPlayerNum;
+	private int nextPlayerNum = 1;
 	
 	// the local localPlayer number (localPlayer 0, localPlayer 1, localPlayer 2, etc...)
 	// this is actually the index into the players array.
@@ -87,7 +87,9 @@ public class PlayersManager {
 	 */
 	public void resetPlayerIds() {		
 		for(Entity entity : this.players.values()) {
-			entity.setId(0);
+			if(entity != null) {
+				entity.setId(0);
+			}
 		}
 	}
 

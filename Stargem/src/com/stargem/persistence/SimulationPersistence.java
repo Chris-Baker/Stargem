@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.badlogic.gdx.utils.IntMap;
 import com.stargem.Config;
 import com.stargem.utils.AssetList;
 import com.stargem.utils.Log;
@@ -101,6 +102,38 @@ public class SimulationPersistence implements ConnectionListener {
 		
 	}
 	
-	
+	/**
+	 * Selects the players table and creates a map of player numbers to entity IDs.
+	 * Returns the player entity IDs for the currently loaded world.
+	 * 
+	 * @return the player entity IDs for the currently loaded world.
+	 */
+	public IntMap<Integer> getPlayerIDs() {		
+		IntMap<Integer> playerEntityIDs = new IntMap<Integer>();
+		
+		StringBuilder sql = StringHelper.getBuilder();
+		sql.append("SELECT playerId, entityId FROM ");
+		sql.append(Config.TABLE_PLAYERS);
+		sql.append(";");
+
+		try {
+			Statement statement = this.connection.createStatement();
+			ResultSet result = statement.executeQuery(sql.toString());
+						
+			while(result.next()) {
+				int playerId = result.getInt(1);
+				int entityId = result.getInt(2);
+				playerEntityIDs.put(playerId, entityId);
+			}
+			
+			result.close();
+			statement.close();
+		}
+		catch (SQLException e) {
+			Log.error(Config.SQL_ERR, e.getMessage());
+		}
+		
+		return playerEntityIDs;
+	}
 
 }

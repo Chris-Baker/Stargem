@@ -1,11 +1,11 @@
 #############################################################
 #Windows
 #LUA_DIR= c:\lua51
-LUA_DIR= C:\Users\cdb28\git\Stargem\LuaJava\lua51
+#LUA_DIR= C:\Users\cdb28\git\Stargem\LuaJava\lua51
+LUA_DIR= "C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\LuaJava\lua51"
 LUA_LIBDIR= $(LUA_DIR)
 LUA_INCLUDES= $(LUA_DIR)\include
-JDK= C:\Program Files\Java\jdk1.7.0_21
-#JDK= C:\j2sdk1.4.2_06
+JDK= "C:\Program Files\Java\jdk1.7.0"
 
 LIB_LUA= lua51.lib
 

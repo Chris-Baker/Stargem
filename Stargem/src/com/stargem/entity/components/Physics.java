@@ -22,7 +22,7 @@ public class Physics extends AbstractComponent {
 	
 	// the collision group of this body and the groups it can collide with.
 	// this uses bitwise operations, the groups are found in CollisionFilterGroups
-	public int group;
+	public int collisionGroup;
 	public int collidesWith;
 	
 	// transform matrix

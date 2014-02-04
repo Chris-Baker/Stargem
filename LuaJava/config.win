@@ -1,16 +1,16 @@
 #############################################################
 #Windows
 #LUA_DIR= c:\lua51
-#LUA_DIR= C:\Users\cdb28\git\Stargem\LuaJava\lua51
-LUA_DIR= "C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\LuaJava\lua51"
+LUA_DIR= C:\Users\cdb28\git\Stargem\LuaJava\lua51
 LUA_LIBDIR= $(LUA_DIR)
 LUA_INCLUDES= $(LUA_DIR)\include
-JDK= "C:\Program Files\Java\jdk1.7.0"
+JDK= C:\Program Files\Java\jdk1.7.0_21
+#JDK= C:\j2sdk1.4.2_06
 
-LIB_LUA= lua51.lib
+LIB_LUA= lua5.1.lib
 
 INCS= -I"$(JDK)/include" -I"$(JDK)/include/win32" -I"$(LUA_INCLUDES)"
-CFLAGS= -nologo -DWIN32 $(INCS) -Fosrc\C\\ -MD
+CFLAGS= -nologo -DWIN32 $(INCS) -Fosrc\C\\ -MT
 
 CC= cl
 
@@ -20,7 +20,7 @@ VERSION= 1.1
 
 PKG= luajava-$(VERSION)
 JAR_FILE= $(PKG).jar
-SO_FILE= $(PKG).dll
+SO_FILE= $(PKG)-64.dll
 DIST_DIR= $(PKG)
 
 # $Id: config.win,v 1.1 2006/12/22 14:06:40 thiago Exp $

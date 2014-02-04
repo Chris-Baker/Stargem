@@ -4,8 +4,11 @@
 package com.stargem.entity;
 
 import com.stargem.entity.components.Expires;
+import com.stargem.entity.components.KeyboardMouseController;
 import com.stargem.entity.components.Physics;
 import com.stargem.entity.components.RenderableStatic;
+import com.stargem.entity.components.RunSpeed;
+import com.stargem.entity.components.ThirdPersonCamera;
 import com.stargem.entity.components.Trigger;
 import com.stargem.physics.PhysicsManager;
 
@@ -121,9 +124,33 @@ public class ComponentFactory {
 	}
 	/* @formatter:on */
 	
-	public static RenderableStatic renderableStatic(Entity entity, int index, String modelName) {
+	public static RenderableStatic renderablestatic(Entity entity, int index, String modelName) {
 		RenderableStatic c = ComponentManager.getInstance().newComponentOfType(RenderableStatic.class);
 		c.modelName = modelName;
 		return c;
+	}
+	
+	public static KeyboardMouseController keyboardmousecontroller(Entity entity, boolean hasFocus) {
+		KeyboardMouseController c = ComponentManager.getInstance().newComponentOfType(KeyboardMouseController.class);
+		c.hasFocus = hasFocus;
+		return c;		
+	}
+	
+	public static RunSpeed runspeed(Entity entity, int speed) {
+		RunSpeed c = ComponentManager.getInstance().newComponentOfType(RunSpeed.class);
+		c.speed = speed;
+		return c;		
+	}
+	
+	public static ThirdPersonCamera thirdpersoncamera(Entity entity, boolean hasFocus, float minDistance, float maxDistance, float currentDistance, float heightOffset, float pitch, float deltaPitch) {
+		ThirdPersonCamera c = ComponentManager.getInstance().newComponentOfType(ThirdPersonCamera.class);
+		c.hasFocus = hasFocus;
+		c.minDistance = maxDistance;
+		c.maxDistance = minDistance;
+		c.currentDistance = currentDistance;
+		c.heightOffset = heightOffset;
+		c.pitch = pitch;
+		c.deltaPitch = deltaPitch;
+		return c;		
 	}
 }

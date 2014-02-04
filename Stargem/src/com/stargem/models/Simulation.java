@@ -5,8 +5,8 @@ package com.stargem.models;
 
 import com.stargem.GameManager;
 import com.stargem.PlayersManager;
-import com.stargem.controllers.KeyboardMouseController;
 import com.stargem.entity.EntityManager;
+import com.stargem.entity.systems.KeyboardMouseSystem;
 import com.stargem.entity.systems.PhysicsSystem;
 import com.stargem.physics.PhysicsManager;
 
@@ -25,9 +25,7 @@ public class Simulation implements Model {
 	private final PlayersManager playersManager;
 	
 	private final PhysicsSystem physicsSystem;
-	
-	// the player controller
-	private final KeyboardMouseController playerController;
+	private final KeyboardMouseSystem keyboardMouseSystem;
 		
 	public Simulation() {
 		
@@ -39,9 +37,7 @@ public class Simulation implements Model {
 		
 		// create all systems
 		physicsSystem = new PhysicsSystem();
-		
-		// attach the controller to the local player
-		playerController = new KeyboardMouseController(playersManager.getLocalPlayer());
+		keyboardMouseSystem = new KeyboardMouseSystem();
 	}
 	
 	/* (non-Javadoc)
@@ -57,6 +53,7 @@ public class Simulation implements Model {
 		
 		// update all systems
 		physicsSystem.process(delta);
+		keyboardMouseSystem.process(delta);
 	}
 	
 }
