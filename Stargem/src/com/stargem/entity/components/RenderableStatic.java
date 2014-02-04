@@ -3,6 +3,8 @@
  */
 package com.stargem.entity.components;
 
+import com.stargem.graphics.RepresentationManager;
+
 /**
  * 
  * Trigger.java
@@ -15,5 +17,11 @@ public class RenderableStatic extends AbstractComponent {
 
 	public int modelIndex;
 	public String modelName;
-		
+	
+	@Override
+	public void free() {
+		// remove the associated physics object from the simulation
+		RepresentationManager.getInstance().removeModelInstance(modelIndex);
+	}
+	
 }

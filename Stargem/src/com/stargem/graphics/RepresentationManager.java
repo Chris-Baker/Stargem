@@ -148,5 +148,14 @@ public class RepresentationManager {
 			model.dispose();
 		}
 	}
+
+	/**
+	 * Remove the model instance from the list of model instances
+	 * 
+	 * @param modelIndex the index of the model to remove from the list of model instances
+	 */
+	public void removeModelInstance(int modelIndex) {
+		this.modelInstances.removeIndex(modelIndex);
+	}
 	
 }

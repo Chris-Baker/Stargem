@@ -8,10 +8,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.stargem.AssetList;
 import com.stargem.Config;
-import com.stargem.Log;
-import com.stargem.StringHelper;
+import com.stargem.utils.AssetList;
+import com.stargem.utils.Log;
+import com.stargem.utils.StringHelper;
 
 /**
  * SimulationPersistence.java
@@ -37,7 +37,7 @@ public class SimulationPersistence implements ConnectionListener {
 	/**
 	 * Populate the given asset list from the currently active profile
 	 * 
-	 * @param list
+	 * @param list the asset list to be populated
 	 */
 	public void populateAssetList(AssetList list) {
 		
@@ -70,12 +70,11 @@ public class SimulationPersistence implements ConnectionListener {
 	}
 
 	/**
-	 * Copy the world and Asset tables from the database at the path given into 
-	 * the currently active profile. This is done as part of the level
-	 * changing process.
+	 * Copy the world, Asset, and Players tables from the world database at the 
+	 * path given into the currently active profile. This is done as part of the 
+	 * level changing process.
 	 * 
-	 * @param campaignName
-	 * @param levelName
+	 * @param databasePath path to the world database to attach to the current profile connection
 	 */
 	protected void importWorld(String databasePath) {
 		
@@ -84,9 +83,10 @@ public class SimulationPersistence implements ConnectionListener {
 		SQLHelper.attach(connection, databasePath, attachName);		
 		
 		// copy the World and Asset tables
-		String[] tables = new String[2];
+		String[] tables = new String[3];
 		tables[0] = Config.TABLE_WORLD;
 		tables[1] = Config.TABLE_ASSETS;
+		tables[2] = Config.TABLE_PLAYERS;
 		
 		for(int i = 0, n = tables.length; i < n; i += 1) {		
 			String toTableName = "main." + tables[i];
@@ -100,5 +100,7 @@ public class SimulationPersistence implements ConnectionListener {
 		SQLHelper.detach(connection, attachName);
 		
 	}
+	
+	
 
 }

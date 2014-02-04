@@ -15,7 +15,7 @@ import com.badlogic.gdx.physics.bullet.btMotionState;
  */
 public class MotionState extends btMotionState {
 	
-	private final Matrix4 transform;
+	protected final Matrix4 transform;
 	private boolean updated;
 	
 	public MotionState(final Matrix4 transform) {

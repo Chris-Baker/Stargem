@@ -9,11 +9,11 @@ import java.util.Observer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.stargem.AssetList;
+import com.badlogic.gdx.utils.IntMap;
 import com.stargem.Config;
-import com.stargem.Log;
+import com.stargem.GameManager;
+import com.stargem.PlayersManager;
 import com.stargem.Stargem;
-import com.stargem.StringHelper;
 import com.stargem.controllers.AnyKeyPressedProcessor;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
@@ -26,6 +26,9 @@ import com.stargem.profile.PlayerProfile;
 import com.stargem.profile.ProfileManager;
 import com.stargem.terrain.SkySphere;
 import com.stargem.terrain.TerrainSphere;
+import com.stargem.utils.AssetList;
+import com.stargem.utils.Log;
+import com.stargem.utils.StringHelper;
 import com.stargem.views.LoadingScreenView;
 import com.stargem.views.View;
 
@@ -76,7 +79,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 	 */
 	public LoadingScreen(Stargem game) {
 		super(game);
-		this.assets = game.getAssetManager();
+		this.assets = GameManager.getInstance().getAssetManager();
 		this.anyKeyPressedProcessor = new AnyKeyPressedProcessor();
 	}
 		
@@ -151,7 +154,12 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				this.view.render(delta);
 				
 				// update the asset manager
-				if (assets.update()) {					
+				if (assets.update()) {
+					
+					// TODO set music track specified in the database in the sound manager
+					
+					// TODO set ambiance track in the sound manager
+					
 					this.currentState = LoadingScreenState.LOADING_TERRAIN;
 				}
 				
@@ -211,11 +219,45 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				
 				EntityPersistence entityPersistence = PersistenceManager.getInstance().getEntityPersistence();
 				EntityManager entityManager = EntityManager.getInstance();
+				
+				// map of player entity IDs and the corresponding player number
+				IntMap<Integer> playerIDs = PersistenceManager.getInstance().getPlayerIDs();
+				
 				int numEntities = entityPersistence.beginLoading();
 				Entity[] entities = new Entity[numEntities];
 				for (int i = 0; i < numEntities; i += 1) {
 					Entity e = entityManager.createEntity();
-					entityPersistence.loadEntity(e);
+					
+					// if this is a player then we want to keep it persistent across worlds
+					if(playerIDs.containsValue(e.getId(), false)) {
+												
+						// get the key associated with the entity id, this is the player number
+						int playerNum = playerIDs.findKey(e.getId(), false, -1);
+						
+						// we only load the player if it has joined the game
+						if(PlayersManager.getInstance().hasJoined(playerNum)) {
+						
+							// this is a player entity so check if there is already an entity object
+							// stored in the players manager.
+							if(PlayersManager.getInstance().playerEntityExists(playerNum)) {
+								
+								// if there is then only copy the transform info to the physics component
+								entityPersistence.loadPlayerEntity(e);
+								
+							}
+							else {							
+								// otherwise, load the entity as normal and add it to the player manager
+								entityPersistence.loadEntity(e);
+								PlayersManager.getInstance().addPlayerEntity(playerNum, e);
+							}
+						}
+					}
+					else {
+						// this is not a player entity so load it as normal
+						entityPersistence.loadEntity(e);
+					}
+					
+					
 					entities[i] = e;
 				}
 				
@@ -279,7 +321,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 	@Override
 	public void show() {
 		
-		// Create a new view view
+		// Create a new loading screen view. which is destroyed 
 		this.view = new LoadingScreenView(assets);
 				
 		// read the current world name

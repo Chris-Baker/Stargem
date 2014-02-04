@@ -28,10 +28,12 @@ public class PlayScreen extends AbstractScreen {
 	/**
 	 * @param game
 	 */
-	public PlayScreen(Stargem game, Simulation simulation, SimulationView simulationView) {
+	public PlayScreen(Stargem game) {
 		super(game);
-		this.simulation = simulation;
-		this.simulationView = simulationView;
+		
+		// Create the main simulation and its view
+		this.simulation = new Simulation();
+		this.simulationView = new SimulationView();
 	}
 	
 	/* (non-Javadoc)

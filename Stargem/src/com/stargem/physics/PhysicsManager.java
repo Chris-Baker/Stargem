@@ -25,12 +25,12 @@ import com.badlogic.gdx.physics.bullet.btSequentialImpulseConstraintSolver;
 import com.badlogic.gdx.physics.bullet.btSphereShape;
 import com.badlogic.gdx.utils.Array;
 import com.stargem.Config;
-import com.stargem.Log;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
 import com.stargem.entity.components.Physics;
 import com.stargem.graphics.RepresentationManager;
 import com.stargem.terrain.TerrainSphere;
+import com.stargem.utils.Log;
 
 /**
  * PhysicsManager.java
@@ -44,7 +44,12 @@ public class PhysicsManager {
 	public static final int SHAPE_SPHERE	= 0;
 	public static final int SHAPE_BOX 		= 1;
 	public static final int SHAPE_CYLINDER 	= 2;
-	public static final int SHAPE_CAPSULE 	= 3;	
+	public static final int SHAPE_CAPSULE 	= 4;	
+	
+	public static final int RIGID_BODY		= 0;
+	public static final int CHARACTER		= 1;
+	
+	public static final Vector3 WORLD_ORIGIN = new Vector3(0, 0, 0);
 	
 	private final btCollisionConfiguration collisionConfiguration;
 	private final btCollisionDispatcher dispatcher;
@@ -117,62 +122,40 @@ public class PhysicsManager {
 	}
 	
 	/**
-	 * Add a body to the physics simulation. Each argument is stored in an ordered array.
-	 * They are all be added at the same modelIndex to allow easy removal of items. 
+	 * Add a body to the physics simulation.
 	 * 
 	 * @param info
 	 * @param shape
 	 * @param body
-	 * @param mostionState
-	 * @return the modelIndex at which each 
+	 * @param motionState
+	 * @param group
+	 * @param collidesWith
+	 * @return the index at which the body is stored
 	 */
-	private int addRigidBody(btRigidBodyConstructionInfo info, btCollisionShape shape, btRigidBody body, MotionState motionState) {
+	private int addRigidBody(btRigidBodyConstructionInfo info, btCollisionShape shape, btRigidBody body, MotionState motionState, short group, short collidesWith) {
 				
 		this.bodyInfos.add(info);
 		this.shapes.add(shape);
 		this.bodies.add(body);
 		this.motionStates.add(motionState);
 		
-		this.dynamicsWorld.addRigidBody(body);
+		this.dynamicsWorld.addRigidBody(body, group, collidesWith);
 		
 		return this.bodies.size - 1;
 	}
 	
 	/**
-	 * 
+	 * Create a physics body from a physics component. The body is then added to the simulation.
+	 * The supplied entity is added to the body as userdata.
 	 * 
 	 * @param entity
 	 * @param component
-	 * @return
+	 * @return the index at which the body is stored
 	 */
 	public int createBodyFromComponent(Entity entity, Physics component) {
 				
 		// shape
-		btCollisionShape shape;
-		
-		switch(component.type) {
-			
-		case SHAPE_SPHERE:
-			shape = new btSphereShape(component.width);
-			break;
-			
-		case SHAPE_BOX:
-			shape = new btBoxShape(tempVector.set(component.width, component.height, component.depth));
-			break;
-			
-		case SHAPE_CYLINDER:
-			shape = new btCylinderShape(tempVector.set(component.width, component.height, component.depth));
-			break;
-			
-		case SHAPE_CAPSULE:
-			shape  = new btCapsuleShape(component.width, component.height);
-			break;
-		
-		default:
-			String message = "Cannot create unknown physics shape for entity ID: " + entity.getId();
-			Log.error(Config.PHYSICS_ERR, message);
-			throw new Error(message);
-		}
+		btCollisionShape shape = this.getShape(entity.getId(), component.shape, component.width, component.height, component.depth);
 		shapes.add(shape);
 		shape.calculateLocalInertia(component.mass, tempVector.set(Vector3.Zero));
 		
@@ -187,17 +170,94 @@ public class PhysicsManager {
 		// otherwise we use a new matrix.		
 		Matrix4 transform = RepresentationManager.getInstance().getTransformMatrix(entity);		
 		motionState = (transform == null) ? new MotionState(new Matrix4()) : new MotionState(transform);
-					
-		// body
+		
+		motionState.transform.val[0]  = component.m00;
+		motionState.transform.val[1]  = component.m01;
+		motionState.transform.val[2]  = component.m02;
+		motionState.transform.val[3]  = component.m03;
+		
+		motionState.transform.val[4]  = component.m04;
+		motionState.transform.val[5]  = component.m05;
+		motionState.transform.val[6]  = component.m06;
+		motionState.transform.val[7]  = component.m07;
+		
+		motionState.transform.val[8]  = component.m08;
+		motionState.transform.val[9]  = component.m09;
+		motionState.transform.val[10] = component.m10;
+		motionState.transform.val[11] = component.m11;
+		
+		motionState.transform.val[12] = component.m12;
+		motionState.transform.val[13] = component.m13;
+		motionState.transform.val[14] = component.m14;
+		motionState.transform.val[15] = component.m15;
+		
+		
 		info.setMotionState(motionState);
-		btRigidBody body = new btRigidBody(info);
+		
+		// create either a character or a rigid body
+		btRigidBody body;
+		
+		if(component.type == RIGID_BODY) {
+			body = new btRigidBody(info);
+		}
+		else if (component.type == CHARACTER) {
+			body = new KinematicCharacter(this.dynamicsWorld, info, (short) component.group, (short) component.collidesWith, motionState, WORLD_ORIGIN);
+		}
+		else {
+			String message = "Cannot create unknown physics body type for entity ID: " + entity.getId();
+			Log.error(Config.PHYSICS_ERR, message);
+			throw new Error(message);
+		}		
+		
+		// store the entity in the body
 		body.userData = entity;
 		
+		// set the properties of the body stored in the component
+		body.setAngularVelocity(new Vector3(component.angluarVelocityX, component.angluarVelocityY, component.angluarVelocityZ));
+		body.setLinearVelocity(new Vector3(component.linearVelocityX, component.linearVelocityY, component.linearVelocityZ));
+		body.setGravity(new Vector3(component.gravityX, component.gravityY, component.gravityZ));
+		body.setRestitution(component.restitution);
+		body.setActivationState(component.activationState);
+		
 		// add the body to the simulation
-		return this.addRigidBody(info, shape, body, motionState);
+		return this.addRigidBody(info, shape, body, motionState, (short) component.group, (short) component.collidesWith);
 		
 	}
-	
+		
+	/**
+	 * @param shape
+	 * @return
+	 */
+	private btCollisionShape getShape(int entityId, int shapeType, float width, float height, float depth) {
+		
+		btCollisionShape shape;
+		
+		switch(shapeType) {
+		
+		case SHAPE_SPHERE:
+			shape = new btSphereShape(width);
+			break;
+			
+		case SHAPE_BOX:
+			shape = new btBoxShape(tempVector.set(width, height, depth));
+			break;
+			
+		case SHAPE_CYLINDER:
+			shape = new btCylinderShape(tempVector.set(width, height, depth));
+			break;
+			
+		case SHAPE_CAPSULE:
+			shape  = new btCapsuleShape(width, height);
+			break;
+		
+		default:
+			String message = "Cannot create unknown physics shape for entity ID: " + entityId;
+			Log.error(Config.PHYSICS_ERR, message);
+			throw new Error(message);
+		}
+		return shape;
+	}
+
 	/**
 	 * Remove the rigid body from the manager and simulation.
 	 * The rigid body at the end of the array is copied over the one to be removed.

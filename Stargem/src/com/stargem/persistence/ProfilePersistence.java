@@ -9,9 +9,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.stargem.Config;
-import com.stargem.Log;
-import com.stargem.StringHelper;
 import com.stargem.profile.PlayerProfile;
+import com.stargem.utils.Log;
+import com.stargem.utils.StringHelper;
 
 /**
  * ProfilePersistence.java

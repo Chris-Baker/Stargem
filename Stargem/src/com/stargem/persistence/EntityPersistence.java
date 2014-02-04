@@ -10,20 +10,22 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
+
+import javax.naming.OperationNotSupportedException;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.PooledLinkedList;
 import com.stargem.Config;
-import com.stargem.Log;
-import com.stargem.StringHelper;
 import com.stargem.entity.ComponentFactory;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
 import com.stargem.entity.EntityRecycleObserver;
 import com.stargem.entity.components.Component;
+import com.stargem.entity.components.Physics;
+import com.stargem.utils.Log;
+import com.stargem.utils.StringHelper;
 
 /**
  * EntityPersistence.java
@@ -68,9 +70,9 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * Add a component type for the entity persistence layer to manage.
 	 * Types added will have a table created in the connection when the
 	 * setup method is called. Load and Save calls will also use the
-	 * component type.
+	 * component shape.
 	 * 
-	 * @param type the component type to manage.
+	 * @param shape the component shape to manage.
 	 */
 	public void registerComponentType(Class<? extends Component> type) {
 		componentTypes.add(type);
@@ -78,15 +80,17 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		
 	/**
 	 * This method must be called before any entity loading can begin
+	 * Populate entity list and reset the loading pointer. 
+	 * Return the number of entities in the database
 	 * 
-	 * @return
+	 * @return the number of entities to be loaded
 	 */
 	public int beginLoading() {
 		return populateEntityList();
 	}
 
 	/**
-	 * Populate entity list and reset the pointer. Return the number of entities in the connection
+	 * Populate entity list and reset the pointer. Return the number of entities in the database
 	 * @return the number of entities to be loaded
 	 */
 	private int populateEntityList() {
@@ -125,7 +129,22 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	}
 
 	/**
-	 * Populate the given entity with an ID and components from the connection.
+	 * @param e
+	 * @throws OperationNotSupportedException 
+	 */
+	public void loadPlayerEntity(Entity e) {
+		
+		// copy only the physics component from the database
+		
+		// first remove the physics component
+		this.em.removeComponent(e, Physics.class);
+		
+		// then add the new component
+		this.loadComponent(e, Physics.class);
+	}
+	
+	/**
+	 * Populate the given entity with an ID and components from the database.
 	 * The given entity should be a blank instance with no attached components or ID.
 	 * 
 	 * @param entity a blank entity with no components or ID
@@ -152,17 +171,17 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	}
 
 	/**
-	 * Load a component of the given type and attach it to the entity given.
-	 * If no component is found for this entity in the connection none it attached.
+	 * Load a component of the given shape and attach it to the entity given.
+	 * If no component is found for this entity in the database none it attached.
 	 * 
 	 * @param entity the entity to attach the loaded component to.
-	 * @param type the class type of the component to load.
+	 * @param shape the class shape of the component to load.
 	 */
 	private void loadComponent(Entity entity, Class<? extends Component> type) {
 
 		Log.info(Config.SQL_ERR, "Loading component " + type.getSimpleName() + " for entity " + entity.getId());
 		
-		// leave early if there is no component of type for this entity
+		// leave early if there is no component of shape for this entity
 		StringBuilder sql = StringHelper.getBuilder();
 		sql.append("SELECT COUNT(entityId) FROM ");
 		sql.append(type.getSimpleName());
@@ -185,7 +204,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		}
 
 		if (numRows == 0) {
-			Log.info(Config.SQL_ERR, "No component of type: " + type.getSimpleName());
+			Log.info(Config.SQL_ERR, "No component of shape: " + type.getSimpleName());
 			return;
 		}
 
@@ -205,7 +224,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 
 			// use reflection to create a new component
 
-			// get fields of the component class type and create an array of types
+			// get fields of the component class shape and create an array of types
 			// for grabbing the correct method from the component factory
 			// add an extra field which is the entity send to the factory
 			Field[] fields = type.getFields();
@@ -262,27 +281,24 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 
 	/**
 	 * Iterate over all entities in the entity manager storing
-	 * them and their components in the connection.
+	 * them and their components in the database.
 	 */
 	public void save() {
 		
-		// delete all recycled entities from the connection
+		// delete all recycled entities from the database
 		for(int i = 0, n = this.deathrow.size; i < n; i += 1) {
 			this.deleteEntity(this.deathrow.get(i));
 		}
 		this.deathrow.clear();
 		
-		// save all entities in the manager
-		Iterator<Entity> entities = em.getAllEntities();
-		Entity entity;
-		while (entities.hasNext()) {
-			entity = entities.next();
+		// save all entities in the manager to the database
+		for(Entity entity : em.getAllEntities()) {
 			this.storeEntity(entity);
 		}
 	}
 
 	/**
-	 * Remove the entity and all its components from the connection
+	 * Remove the entity and all its components from the database
 	 * 
 	 * @param entityId
 	 */
@@ -313,10 +329,10 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	}
 
 	/**
-	 * Remove the component of the given type from the given entity.
+	 * Remove the component of the given shape from the given entity.
 	 * 
 	 * @param entityId the entity
-	 * @param type the type of the component
+	 * @param shape the shape of the component
 	 */
 	private void deleteComponent(int entityId, Class<? extends Component> type) {
 		
@@ -392,7 +408,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	}
 
 	/**
-	 * Insert a component into the connection
+	 * Insert a component into the database
 	 * 
 	 * @param entity
 	 * @param component
@@ -436,7 +452,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 			}
 			else {
 				//Log.echo("Some kind of recursive call to store the complex field?");
-				throw new Error("Unknown type: " + datatype + " can only store primitives and Strings.");
+				throw new Error("Unknown shape: " + datatype + " can only store primitives and Strings.");
 			}
 		}
 		sql.append(");");
@@ -453,7 +469,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	}
 
 	/**
-	 * Update a component in the connection
+	 * Update a component in the database
 	 * 
 	 * @param entity
 	 * @param component
@@ -498,7 +514,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 			}
 			else {
 				//Log.echo("Some kind of recursive call to store the complex field?");
-				throw new Error("Unknown type: " + datatype + " can only store primitives and Strings.");
+				throw new Error("Unknown shape: " + datatype + " can only store primitives and Strings.");
 			}
 		}
 		sql.append(") WHERE entityId=");
@@ -519,7 +535,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	/**
 	 * Called by the entity manager when an entity is recycled. This method
 	 * queues up an entity to be deleted from the connection before the next save.
-	 * It is important to do all connection updates in a block so that in the event
+	 * It is important to do all database updates in a block so that in the event
 	 * of a crash entities are not missing from the previous save. 
 	 * We use the id instead of the entity because the entity instance has been 
 	 * stripped of its ID. 
@@ -560,7 +576,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		SQLHelper.dropTable(connection, toTableName);
 		SQLHelper.createAs(connection, fromTableName, toTableName);	
 		
-		// for each component type copy the table entries		
+		// for each component shape copy the table entries		
 		for (Class<? extends Component> type : componentTypes) {			
 			toTableName = "main." + type.getSimpleName();
 			fromTableName = "\"" + attachName + "\"" + "." + type.getSimpleName();

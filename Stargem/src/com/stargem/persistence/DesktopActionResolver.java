@@ -8,7 +8,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import com.stargem.Config;
-import com.stargem.Log;
+import com.stargem.utils.Log;
 
 /**
  * DesktopActionResolver.java

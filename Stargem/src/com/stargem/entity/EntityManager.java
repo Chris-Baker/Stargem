@@ -13,7 +13,7 @@ import com.stargem.entity.components.Component;
 /**
  * Standard design: c.f. http://entity-systems.wikidot.com/rdbms-with-code-in-systems
  * 
- * Modified in java to use Generics: instead of having a "ComponentType" enum, we use the class type
+ * Modified in java to use Generics: instead of having a "ComponentType" enum, we use the class shape
  * of each subclass instead. This is safer.
  */
 
@@ -86,7 +86,7 @@ public class EntityManager {
 	}
 
 	/**
-	 * return a list of all components of the given type
+	 * return a list of all components of the given shape
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Component> Iterator<T> getAllComponentsOfType(Class<T> componentType) {
@@ -120,6 +120,7 @@ public class EntityManager {
 	 * return a set of all entities which are mapped to a component
 	 */
 	public <T extends Component> Iterator<Entity> getAllEntitiesPossessingComponent(Class<T> componentType) {
+		
 		ObjectMap<Entity, ? extends Component> store = componentStores.get(componentType);
 
 		if (store == null) {
@@ -171,6 +172,39 @@ public class EntityManager {
 		((PooledLinkedList<T>) components).add(component);
 	}
 
+	/**
+	 * Un-map a component from an entity. this is a slow process because the list of
+	 * components is walked to find an instance of the component type.
+	 * 
+	 * @param e
+	 * @param type
+	 */
+	public void removeComponent(Entity e, Class<? extends Component> type) {
+		
+		// get the component so we can recycle it in a moment if it is null we are done
+		Component c = this.getComponent(e, type);
+		if(c == null)
+		{
+			return;
+		}
+		
+		// get the component store so we can unmap the component
+		ObjectMap<Entity, ? extends Component> store = componentStores.get(type);		
+		store.remove(e);
+		
+		// iterate over the list of component for this entity and remove any with the given class type
+		PooledLinkedList<? extends Component> components = this.entityComponents.get(e);
+		Component component = null;
+		for(components.iter(); (component = components.next()) != null;) {
+			if(component.getClass().equals(type)) {
+				components.remove();
+			}
+		}		
+			
+		// recycle the component
+		ComponentManager.getInstance().free(c);
+	}
+	
 	/**
 	 * create a new entity adding it to the list
 	 * 
@@ -249,8 +283,8 @@ public class EntityManager {
 		entityId.put(id, e);
 	}
 	
-	public Iterator<Entity> getAllEntities() {
-		return this.allEntities.iterator();
+	public Iterable<Entity> getAllEntities() {
+		return this.allEntities;
 	}
 	
 	/**

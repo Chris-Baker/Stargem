@@ -6,18 +6,28 @@ package com.stargem.controllers;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.stargem.Preferences;
+import com.stargem.entity.Entity;
+import com.stargem.entity.components.Physics;
+import com.stargem.entity.components.RunSpeed;
+import com.stargem.entity.components.ThirdPersonCamera;
+import com.stargem.physics.KinematicCharacter;
+import com.stargem.physics.PhysicsManager;
 
 /**
- * PlayerInputProcessor.java
+ * The keyboard and mouse controller acts on a single entity passing player input
+ * the the physics and camera components of the player.
+ * 
+ * KeyboardMouseController.java
  *
  * @author 	24233
  * @date	12 Oct 2013
  * @version	1.0
  */
-public class PlayerInputProcessor {
+public class KeyboardMouseController {
 
 	private final KinematicCharacter player;
 	private final ThirdPersonCamera camera;
+	private final RunSpeed runSpeed;
 	
 	private final Input input = Gdx.input;
 	
@@ -26,19 +36,27 @@ public class PlayerInputProcessor {
 	private boolean moveBackward;
 	private boolean moveLeft;
 	private boolean moveRight;
-	private boolean rotateClockwise;
-	private boolean rotateCounterClockwise;
 	private boolean isJumping;
 	
-	/**
-	 * @param player
-	 * @param camera
-	 */
-	public PlayerInputProcessor(KinematicCharacter player, ThirdPersonCamera camera) {
+	public KeyboardMouseController(Entity entity) {
 		super();
-		this.player = player;
-		this.camera = camera;
 		this.input.setCursorCatched(true);
+		
+		Physics p = entity.getComponent(Physics.class);
+		this.camera = entity.getComponent(ThirdPersonCamera.class);
+		this.runSpeed = entity.getComponent(RunSpeed.class);
+		
+		if(p == null || camera == null || runSpeed == null) {
+			throw new Error("The entity supplied to KeyboardMouseController must have Physics, RunSpeed and ThirdPersonCamera components");
+		}
+		
+		if(p.type == PhysicsManager.CHARACTER) {
+			this.player = (KinematicCharacter) PhysicsManager.getInstance().getRigidBody(p.bodyIndex);
+		}
+		else {
+			throw new Error("The entity supplied to KeyboardMouseController must have a Physics component with type Character");
+		}
+		
 	}
 
 	/**
@@ -48,7 +66,7 @@ public class PlayerInputProcessor {
 	public void update() {
 		
 		// pitch the camera up or down
-		this.camera.pitch(input.getDeltaY() * Preferences.MOUSE_SENSITIVITY);
+		this.camera.deltaPitch = input.getDeltaY() * Preferences.MOUSE_SENSITIVITY;
 		
 		// make the player jump
 		if(this.isJumping) {
@@ -67,7 +85,7 @@ public class PlayerInputProcessor {
 		this.player.rotate(input.getDeltaX() * Preferences.MOUSE_SENSITIVITY);
 		
 		// move the player
-		this.player.move(this.moveForward, this.moveBackward, this.moveLeft, this.moveRight);
+		this.player.move(this.runSpeed.speed, this.moveForward, this.moveBackward, this.moveLeft, this.moveRight);
 		
 		// reset the cursor location to the middle of the screen
 		input.setCursorPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);

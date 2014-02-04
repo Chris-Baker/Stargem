@@ -8,9 +8,10 @@ import java.sql.SQLException;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.stargem.Config;
-import com.stargem.Log;
+import com.stargem.utils.Log;
 
 /**
  * PersistenceManager.java
@@ -40,9 +41,12 @@ public class PersistenceManager {
 	 * @return
 	 */
 	public static PersistenceManager getInstance() {
+		if(instance == null) {
+			instance = new PersistenceManager();
+		}
 		return instance;
 	}
-	private static PersistenceManager instance = new PersistenceManager();
+	private static PersistenceManager instance;
 	private PersistenceManager(){
 		
 		// map Java datatypes to SQLite datatypes
@@ -207,6 +211,15 @@ public class PersistenceManager {
 	 */
 	public ObjectMap<String, String> getDatatypes() {
 		return this.datatypes;
+	}
+
+	/**
+	 * Returns the player entity IDs for the currently loaded world.
+	 * 
+	 * @return the player entity IDs for the currently loaded world.
+	 */
+	public IntMap<Integer> getPlayerIDs() {
+		return null;
 	}
 	
 }

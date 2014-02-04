@@ -30,7 +30,8 @@ public class Config {
 	public static final String PHYSICS_ERR 			= "PHYSICS";
 	public static final String REFLECTION_ERR 		= "REFLECTION";
 	public static final String SYSTEM_ERR 			= "SYSTEM";
-	public static final String INFO 				= "Info";
+	public static final String ENTITY_ERR 			= "ENTITY";
+	public static final String INFO 				= "INFO";
 	
 	public static final int PIXELS_PER_METER 		= 32;
 	

@@ -30,7 +30,7 @@ public class ComponentManager {
 	
 	/**
 	 * 
-	 * @param componentType the type of component to register
+	 * @param componentType the shape of component to register
 	 */
 	private <T extends Component> void registerComponentType(final Class<T> componentType) {
 		if(!componentPools.containsKey(componentType)) {

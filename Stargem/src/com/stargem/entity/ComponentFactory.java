@@ -57,7 +57,7 @@ public class ComponentFactory {
 	 * @param m13 value in the 4x4 transformation matrix
 	 * @param m14 value in the 4x4 transformation matrix
 	 * @param m15 value in the 4x4 transformation matrix
-	 * @param type the shape type
+	 * @param shape the shape shape
 	 * @param width the width of the shape
 	 * @param height the height of the shape
 	 * @param depth the depth of the shape
@@ -93,7 +93,7 @@ public class ComponentFactory {
 		c.m08 = m08; c.m09 = m09; c.m10 = m10; c.m11 = m11;
 		c.m12 = m12; c.m13 = m13; c.m14 = m14; c.m15 = m15;
 		
-		c.type = type;
+		c.shape = type;
 		c.width = width;
 		c.height = height;
 		c.depth = depth;

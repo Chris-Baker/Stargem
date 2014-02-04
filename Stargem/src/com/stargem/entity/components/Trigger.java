@@ -13,6 +13,7 @@ package com.stargem.entity.components;
  */
 public class Trigger extends AbstractComponent {
 
+	// the name of a script function to call
 	public String name;
 		
 }

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.stargem.entity.systems.ThirdPersonCameraSystem;
 import com.stargem.graphics.RepresentationManager;
 
 /**
@@ -20,6 +21,8 @@ import com.stargem.graphics.RepresentationManager;
  */
 public class SimulationView implements View {
 
+	private final ThirdPersonCameraSystem cameraSystem;
+	
 	private final ModelBatch modelBatch;
 	private final Stage stage;
 	private PerspectiveCamera camera;
@@ -36,6 +39,8 @@ public class SimulationView implements View {
 		this.camPosition = new Vector3();
 		this.representationManager = RepresentationManager.getInstance();
 		this.initCamera();
+		
+		this.cameraSystem = new ThirdPersonCameraSystem(this.camera);
 	}
 
 	/**
@@ -63,9 +68,10 @@ public class SimulationView implements View {
 	 * @see com.stargem.views.View#render()
 	 */
 	@Override
-	public void render(float deltaTime) {
+	public void render(float delta) {
 		
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+		// update the camera
+		cameraSystem.process(delta);
 		
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 		Gdx.gl.glEnable(GL20.GL_TEXTURE_2D);
@@ -85,7 +91,6 @@ public class SimulationView implements View {
 		modelBatch.end();
 		camera.position.set(camPosition);
 		camera.update();
-		;
 		Gdx.gl.glDepthMask(true);
 		
 		// render terrain and entity instances

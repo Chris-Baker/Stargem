@@ -11,9 +11,9 @@ import java.sql.Statement;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.stargem.Config;
-import com.stargem.Log;
-import com.stargem.StringHelper;
 import com.stargem.entity.components.Component;
+import com.stargem.utils.Log;
+import com.stargem.utils.StringHelper;
 
 /**
  * DatabaseFactory.java
@@ -32,8 +32,6 @@ public class DatabaseFactory {
 		// profile table
 		createProfileTable(connection);
 		
-		// players table
-		createPlayerTable(connection);
 	}
 	
 	public static void createWorldDatabase(String databasePath, Array<Class<? extends Component>> componentTypes) {
@@ -47,9 +45,12 @@ public class DatabaseFactory {
 		// world table
 		createWorldTable(connection);
 		
+		// players table
+		createPlayerTable(connection);
+		
 		// entity table
 		createEntityTable(connection);
-						
+				
 		// try to create a table for each of the component types
 		for (Class<? extends Component> type : componentTypes) {
 			createTableFromComponentType(connection, type);
@@ -62,12 +63,12 @@ public class DatabaseFactory {
 	 */
 	private static void createAssetsTable(Connection connection) {
 
-		// CREATE TABLE IF NOT EXISTS Assets (path TEXT PRIMARY KEY, type TEXT);
+		// CREATE TABLE IF NOT EXISTS Assets (path TEXT PRIMARY KEY, shape TEXT);
 		
 		StringBuilder sql = StringHelper.getBuilder();
 		sql.append("CREATE TABLE IF NOT EXISTS ");
 		sql.append(Config.TABLE_ASSETS);
-		sql.append(" (path TEXT PRIMARY KEY, type TEXT);");
+		sql.append(" (path TEXT PRIMARY KEY, shape TEXT);");
 
 		// run the query
 		try {
@@ -105,6 +106,28 @@ public class DatabaseFactory {
 	}
 	
 	/**
+	 * create a table to match entity id's with player id's
+	 * player id's are indices in the player list stored by the simulation
+	 */
+	private static void createPlayerTable(Connection connection) {
+
+		StringBuilder sql = StringHelper.getBuilder();
+		sql.append("CREATE TABLE IF NOT EXISTS ");
+		sql.append(Config.TABLE_PLAYERS);
+		sql.append(" (playerId INTEGER PRIMARY KEY, entityId INTEGER);");
+
+		// run the query
+		try {
+			Statement statement = connection.createStatement();
+			statement.executeUpdate(sql.toString());
+			statement.close();
+		}
+		catch (SQLException e) {
+			Log.error(Config.SQL_ERR, e.getMessage() + " while creating the players table: " + sql.toString());
+		}
+	}
+	
+	/**
 	 * Create a table to store entity id's. The id's are generated automatically.
 	 */
 	private static void createEntityTable(Connection connection) {
@@ -124,9 +147,9 @@ public class DatabaseFactory {
 	}
 
 	/**
-	 * create a table which serialises the given component type
+	 * create a table which serialises the given component shape
 	 * 
-	 * @param type the component type to create a table for
+	 * @param shape the component shape to create a table for
 	 */
 	private static void createTableFromComponentType(Connection connection, Class<? extends Component> type) {
 
@@ -162,7 +185,7 @@ public class DatabaseFactory {
 			// object and its fields. This is done with a recursive call.
 			else {
 				//Log.echo("Some kind of recursive call?");
-				throw new Error("Unknown type: " + datatype + " can only store primitives and Strings.");
+				throw new Error("Unknown shape: " + datatype + " can only store primitives and Strings.");
 			}
 		}
 
@@ -194,28 +217,6 @@ public class DatabaseFactory {
 		}
 		catch (SQLException e) {
 			Log.error(Config.SQL_ERR, e.getMessage() + " while creating the Profile table: " + sql.toString());
-		}
-	}
-	
-	/**
-	 * create a table to match entity id's with player id's
-	 * player id's are indices in the player list stored by the simulation
-	 */
-	private static void createPlayerTable(Connection connection) {
-
-		StringBuilder sql = StringHelper.getBuilder();
-		sql.append("CREATE TABLE IF NOT EXISTS ");
-		sql.append(Config.TABLE_PLAYERS);
-		sql.append(" (playerId INTEGER PRIMARY KEY, entityId INTEGER);");
-
-		// run the query
-		try {
-			Statement statement = connection.createStatement();
-			statement.executeUpdate(sql.toString());
-			statement.close();
-		}
-		catch (SQLException e) {
-			Log.error(Config.SQL_ERR, e.getMessage() + " while creating the players table: " + sql.toString());
 		}
 	}
 }

@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.stargem.AssetList;
+import com.stargem.utils.AssetList;
 import com.stargem.views.widgets.LoadingBar;
 
 /**
