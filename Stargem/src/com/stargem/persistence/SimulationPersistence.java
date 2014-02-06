@@ -94,12 +94,11 @@ public class SimulationPersistence implements ConnectionListener {
 			String fromTableName = "\"" + attachName + "\"" + "." + tables[i];
 			
 			SQLHelper.dropTable(connection, toTableName);
-			SQLHelper.createAs(connection, fromTableName, toTableName);	
+			SQLHelper.createAs(connection, fromTableName, toTableName);
 		}
-						
-		// detach the database
-		SQLHelper.detach(connection, attachName);
 		
+		// detach the database
+		SQLHelper.detach(connection, attachName);		
 	}
 	
 	/**

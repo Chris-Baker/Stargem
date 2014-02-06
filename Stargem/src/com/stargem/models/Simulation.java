@@ -26,7 +26,7 @@ public class Simulation implements Model {
 	
 	private final PhysicsSystem physicsSystem;
 	private final KeyboardMouseSystem keyboardMouseSystem;
-		
+	
 	public Simulation() {
 		
 		// get a copy of each manager

@@ -78,25 +78,30 @@ public class ComponentFactory {
 	 * @param activationState
 	 * @return
 	 */
-	public static Physics physics(Entity e, int index,
+	public static Physics physics(Entity e, int index, int type, int collisionGroup, int collidesWith,
 			float m00, float m01, float m02, float m03,
 			float m04, float m05, float m06, float m07,
 			float m08, float m09, float m10, float m11,
 			float m12, float m13, float m14, float m15,
-			int type, float width, float height, float depth,
+			int shape, float width, float height, float depth,
 			float angluarVelocityX, float angluarVelocityY, float angluarVelocityZ,
 			float linearVelocityX, float linearVelocityY, float linearVelocityZ,
 			float gravityX, float gravityY, float gravityZ,
 			float mass, float restitution, int activationState) {
 		
 		Physics c = ComponentManager.getInstance().newComponentOfType(Physics.class);
-				
+		
+		c.type = type;
+		
+		c.collisionGroup = collisionGroup;
+		c.collidesWith = collidesWith;
+		
 		c.m00 = m00; c.m01 = m01; c.m02 = m02; c.m03 = m03;
 		c.m04 = m04; c.m05 = m05; c.m06 = m06; c.m07 = m07;
 		c.m08 = m08; c.m09 = m09; c.m10 = m10; c.m11 = m11;
 		c.m12 = m12; c.m13 = m13; c.m14 = m14; c.m15 = m15;
 		
-		c.shape = type;
+		c.shape = shape;
 		c.width = width;
 		c.height = height;
 		c.depth = depth;

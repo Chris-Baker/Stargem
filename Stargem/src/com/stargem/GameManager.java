@@ -267,7 +267,7 @@ public class GameManager {
 		// we want to keep any entities that are players because they are persistent
 		// form world to world.
 		this.unloadNonPlayerEntities();
-		
+				
 		// clear player entity IDs so they can be set by the new world import
 		this.playersManager.resetPlayerIds();
 		
@@ -292,7 +292,10 @@ public class GameManager {
 			if(!this.playersManager.playerExists(e)) {
 				this.entityManager.recycle(e);
 			}		
-		}		
+		}
+		
+		// we have to save entities here so that the deleted entity list is cleared
+		this.persistenceManager.save();
 	}
 	
 	/**

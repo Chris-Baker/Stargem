@@ -145,7 +145,7 @@ public class KinematicCharacter extends btRigidBody {
 
 		// create a motion state to link to the renderer
 		this.motionState = motionState;
-		//super.setMotionState(this.motionState);
+		super.setMotionState(this.motionState);
 
 		// set the current transform to match that of the transform passed in
 		super.setWorldTransform(motionState.transform);
@@ -161,7 +161,6 @@ public class KinematicCharacter extends btRigidBody {
 		this.ghost = new btPairCachingGhostObject();
 		this.ghost.setCollisionShape(constructionInfo.getCollisionShape());
 		this.ghost.setWorldTransform(motionState.transform);
-		//this.ghost.setCollisionFlags(btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
 		this.ghost.setBroadphaseHandle(broadphaseProxy);
 
 		this.ghostOverlappingPairCache = this.ghost.getOverlappingPairCache();
@@ -171,7 +170,7 @@ public class KinematicCharacter extends btRigidBody {
 		// add the ghost object and the kinematic object to the world
 		dynamicsWorld.addCollisionObject(this.ghost, group, CollisionFilterGroups.STATIC_GROUP);
 		//dynamicsWorld.addRigidBody(this, (short) (group | CollisionFilterGroups.KINEMATIC_GROUP), collidesWith);
-				
+		
 		// default settings for the player
 		this.setMaxSlope(70);
 		this.jumpSpeed = 8;
@@ -250,7 +249,7 @@ public class KinematicCharacter extends btRigidBody {
 	 * @param direction the direction to move the player
 	 */
 	public void move(int runSpeed, boolean moveForward, boolean moveBackward, boolean moveLeft, boolean moveRight) {
-
+		
 		// if we are on the ground then we can move along and change direction
 		// when we aren;t on the ground we can't change direction but will continue to move
 		// in the direction we were going for a time

@@ -197,7 +197,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		}
 
 		if (numRows == 0) {
-			Log.info(Config.SQL_ERR, "No component of type: " + type.getSimpleName());
+			//Log.info(Config.SQL_ERR, "No component of type: " + type.getSimpleName());
 			return;
 		}
 		else {
@@ -236,22 +236,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 			Object[] arguments = new Object[fields.length + 1];
 			arguments[0] = entity;
 			for (int i = 1, n = arguments.length; i < n; i += 1) {
-
-				// TODO see if this works with all data types
-				// if not then maybe have to some conditionals
-				// maybe boolean won't work?
-				arguments[i] = result.getObject(i + 1);
-				
-				// if the field type is boolean then we want to convert from an integer value 1/0 to boolean true/false
-				if(fieldTypes[i].equals(boolean.class)) {					
-					if((Integer)arguments[i] == 1) {
-						arguments[i] = true;
-					}
-					else {
-						arguments[i] = false;
-					}					
-				}
-				
+				arguments[i] = this.getArgument(fieldTypes[i], result.getObject(i + 1));				
 			}
 
 			result.close();
@@ -260,6 +245,14 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 			// get the factory method which instantiates the component and call it, 
 			// then add the component to the entity 
 			try {
+				
+//				Log.info(Config.REFLECTION_ERR, type.getSimpleName().toLowerCase());
+//				Log.info(Config.REFLECTION_ERR, "Args num: " + arguments.length);
+//				Log.info(Config.REFLECTION_ERR, "Fields num: " + fieldTypes.length);
+//				for(int i = 0, n = fieldTypes.length; i < n; i += 1) {
+//					Log.info(Config.REFLECTION_ERR, "Argument: " + fieldTypes[i].getSimpleName() + " " + arguments[i].getClass().getSimpleName());
+//				}
+				
 				Method method = ComponentFactory.class.getMethod(type.getSimpleName().toLowerCase(), fieldTypes);
 				Component component = (Component) method.invoke(null, arguments);
 				em.addComponent(entity, component);
@@ -284,6 +277,35 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		catch (SQLException e) {
 			Log.error(Config.SQL_ERR, e.getMessage() + " while accessing the " + type.getSimpleName() + " table: " + sql.toString());
 		}
+	}
+
+	/**
+	 * @param type
+	 * @param object
+	 * @return
+	 */
+	private Object getArgument(Class<?> type, Object argument) {
+		
+		// if the field type is boolean then we want to convert from
+		// the integer value 1/0 stored in the database to boolean true/false
+		if(type.equals(boolean.class)) {					
+			if((Integer)argument == 1) {
+				argument = true;
+			}
+			else {
+				argument = false;
+			}
+		}
+		
+		// the database gives us a double when we need a float
+		// we need to convert from a double to a float
+		else if(type.equals(float.class)) {
+			Double d = (Double)argument;
+			Float f = new Float(d.floatValue());
+			argument = f;
+		}
+		
+		return argument;
 	}
 
 	/**

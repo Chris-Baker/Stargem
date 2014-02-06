@@ -67,6 +67,10 @@ public class PhysicsManager {
 	
 	private final Vector3 tempVector = new Vector3(0, 0, 0);
 	
+	// Used to calculate the gravity direction of each body
+	private final Vector3 acceleration = new Vector3();
+	private final Vector3 position = new Vector3(0, 0, 0);
+	
 	// Singleton instance
 	private static PhysicsManager instance;
 	public static PhysicsManager getInstance() {
@@ -198,9 +202,11 @@ public class PhysicsManager {
 		btRigidBody body;
 		
 		if(component.type == RIGID_BODY) {
+			Log.info(Config.PHYSICS_ERR, "Creating rigid body for entity " + entity.getId());
 			body = new btRigidBody(info);
 		}
 		else if (component.type == CHARACTER) {
+			Log.info(Config.PHYSICS_ERR, "Creating character for entity " + entity.getId());
 			body = new KinematicCharacter(this.dynamicsWorld, info, (short) component.collisionGroup, (short) component.collidesWith, motionState, WORLD_ORIGIN);
 		}
 		else {
@@ -255,6 +261,8 @@ public class PhysicsManager {
 			Log.error(Config.PHYSICS_ERR, message);
 			throw new Error(message);
 		}
+		
+		
 		return shape;
 	}
 
@@ -329,6 +337,33 @@ public class PhysicsManager {
 	 * @param delta
 	 */
 	public void stepSimulation(float delta) {
+		
+		// set the gravity for each body based on its position relative to the center of the world
+		for(btRigidBody body : bodies) {
+						
+			if(body.isActive() && !body.isStaticOrKinematicObject()) {
+			
+				// get the position of the body as a vector
+				body.getWorldTransform().getTranslation(position);
+				
+				// get the vector direction from the body to the origin and normalise
+				acceleration.set(position).sub(WORLD_ORIGIN).nor();
+				
+				// scale by the gravity force
+				acceleration.scl(Config.GRAVITY);
+				
+				// set the gravity on the body
+				body.setGravity(acceleration);
+			}
+			
+			// if the body is a character we need to update it manually
+			if(body.getClass().equals(KinematicCharacter.class)) {
+				KinematicCharacter character = (KinematicCharacter) body;
+				character.updateAction(this.dynamicsWorld, delta);
+			}
+			
+		}
+		
 		this.dynamicsWorld.stepSimulation(delta, Config.NUM_SUBSTEPS);
 	}
 

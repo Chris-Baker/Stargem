@@ -31,6 +31,12 @@ public class ThirdPersonCameraSystem extends AbstractSystem {
 	}
 
 	@Override
+	public void process(float deltaTime) {
+		super.entities = em.getAllEntitiesPossessingComponent(ThirdPersonCamera.class);
+		super.process(deltaTime);
+	}
+	
+	@Override
 	public void process(float delta, Entity entity) {
 		
 		// get the third person camera component for this entity
@@ -41,7 +47,7 @@ public class ThirdPersonCameraSystem extends AbstractSystem {
 		
 		// check this entity has camera focus
 		if(c.hasFocus) {
-		
+			
 			// update the camera
 			this.right.set(	p.m00, p.m01, p.m02);
 			this.up.set(	p.m04, p.m05, p.m06);
