@@ -24,6 +24,7 @@ public class Config {
 	public static final String SCRIPT_EXTENSION 	= ".lua";
 	
 	// Error tags for logging
+	public static final String EDITOR_ERR 			= "EDITOR";
 	public static final String SCRIPT_ERR 			= "SCRIPT";
 	public static final String SQL_ERR 				= "SQL";
 	public static final String IO_ERR 				= "IO";

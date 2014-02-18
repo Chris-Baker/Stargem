@@ -5,10 +5,11 @@ package com.stargem.editor.models;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.stargem.editor.CommandManager;
+import com.stargem.Config;
 import com.stargem.editor.WorldEditorListener;
 import com.stargem.editor.commands.EditorCommand;
 import com.stargem.editor.tools.Tool;
+import com.stargem.utils.Log;
 
 /**
  * WorldEditor.java
@@ -80,8 +81,11 @@ public class WorldEditor {
 	 */
 	public void setTool(String toolName) {
 		
-		if(!this.tools.containsKey(toolName)) 
-			throw new RuntimeException("The tool " + toolName + " does not exist and cannot be selected.");
+		if(!this.tools.containsKey(toolName)) {
+			String message = "The tool " + toolName + " does not exist and cannot be selected.";
+			Log.error(Config.EDITOR_ERR, message);
+			throw new RuntimeException(message);
+		}
 		
 		this.currentTool = this.tools.get(toolName);
 		

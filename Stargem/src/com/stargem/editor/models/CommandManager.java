@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.stargem.editor;
+package com.stargem.editor.models;
 
 import com.badlogic.gdx.utils.Array;
 import com.stargem.editor.commands.EditorCommand;
