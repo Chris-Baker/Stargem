@@ -43,8 +43,7 @@ public class PhysicsSystem extends AbstractSystem {
 		physicsComponent.activationState = body.getActivationState();
 		
 		// update the component's fields if the physics body has been updated.
-		if(motionState.isUpdated()) {
-			
+		if(motionState.isUpdated() || physicsComponent.type == PhysicsManager.CHARACTER) {	
 			// get the world transform of the body
 			motionState.getWorldTransform(transform);
 			

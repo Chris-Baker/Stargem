@@ -12,6 +12,7 @@ import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
 import com.stargem.entity.components.RenderableSkinned;
 import com.stargem.entity.components.RenderableStatic;
+import com.stargem.physics.PhysicsManager;
 import com.stargem.terrain.SkySphere;
 import com.stargem.terrain.TerrainSphere;
 
@@ -38,23 +39,38 @@ public class RepresentationManager {
 	private RepresentationManager(){}
 	
 	// add an instance from a component
-	public void createInstanceFromComponent(RenderableSkinned component) {
+	public void createInstanceFromComponent(Entity entity, RenderableSkinned component) {
 		if(this.assetManager == null) {
 			throw new Error("Asset manager needs to be set in the RepresentationManager before adding model modelInstances from components.");
 		}
 		Model model = this.assetManager.get(component.modelName, Model.class);
 		ModelInstance instance = new ModelInstance(model);
 		this.modelInstances.add(instance);
+		component.modelIndex = this.modelInstances.size - 1;
+		
+		// set the transform to that of the physics component if there is one
+		Matrix4 transform = PhysicsManager.getInstance().getTransformMatrix(entity);
+		if(transform != null) {
+			instance.transform = transform;
+		}
+		
 	}
 	
 	// add an instance from a component
-	public void createInstanceFromComponent(RenderableStatic component) {
+	public void createInstanceFromComponent(Entity entity, RenderableStatic component) {
 		if(this.assetManager == null) {
 			throw new Error("Asset manager needs to be set in the RepresentationManager before adding model modelInstances from components.");
 		}
 		Model model = this.assetManager.get(component.modelName, Model.class);
 		ModelInstance instance = new ModelInstance(model);
 		this.modelInstances.add(instance);
+		component.modelIndex = this.modelInstances.size - 1;
+		
+		// set the transform to that of the physics component if there is one
+		Matrix4 transform = PhysicsManager.getInstance().getTransformMatrix(entity);
+		if(transform != null) {
+			instance.transform = transform;
+		}
 	}
 	
 	// add models from asset manager using asset list
@@ -63,6 +79,7 @@ public class RepresentationManager {
 	public ModelInstance getModelInstance(int index) {
 		return this.modelInstances.get(index);
 	}
+	
 	/**
 	 * @param assetManager
 	 */
@@ -77,14 +94,14 @@ public class RepresentationManager {
 	 * @return
 	 */
 	public Matrix4 getTransformMatrix(Entity entity) {
-		
+				
 		Matrix4 transform = null;
 		
 		// look for an animated model component
 		RenderableSkinned renderableSkinned = EntityManager.getInstance().getComponent(entity, RenderableSkinned.class);
 		if(renderableSkinned != null) {
 			ModelInstance model = this.getModelInstance(renderableSkinned.modelIndex);
-			transform = model.transform;
+			transform = model.transform;			
 		}
 		else {
 			

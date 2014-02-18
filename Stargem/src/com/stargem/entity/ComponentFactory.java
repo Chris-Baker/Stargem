@@ -10,6 +10,7 @@ import com.stargem.entity.components.RenderableStatic;
 import com.stargem.entity.components.RunSpeed;
 import com.stargem.entity.components.ThirdPersonCamera;
 import com.stargem.entity.components.Trigger;
+import com.stargem.graphics.RepresentationManager;
 import com.stargem.physics.PhysicsManager;
 
 
@@ -78,7 +79,7 @@ public class ComponentFactory {
 	 * @param activationState
 	 * @return
 	 */
-	public static Physics physics(Entity e, int index, int type, int collisionGroup, int collidesWith,
+	public static Physics physics(Entity entity, int index, int type, int collisionGroup, int collidesWith,
 			float m00, float m01, float m02, float m03,
 			float m04, float m05, float m06, float m07,
 			float m08, float m09, float m10, float m11,
@@ -123,7 +124,7 @@ public class ComponentFactory {
 		c.activationState = activationState;
 		
 		// create the actual physics body from the newly constructed component
-		c.bodyIndex = PhysicsManager.getInstance().createBodyFromComponent(e, c);
+		c.bodyIndex = PhysicsManager.getInstance().createBodyFromComponent(entity, c);
 		
 		return c;
 	}
@@ -132,6 +133,9 @@ public class ComponentFactory {
 	public static RenderableStatic renderablestatic(Entity entity, int index, String modelName) {
 		RenderableStatic c = ComponentManager.getInstance().newComponentOfType(RenderableStatic.class);
 		c.modelName = modelName;
+		
+		RepresentationManager.getInstance().createInstanceFromComponent(entity, c);
+		
 		return c;
 	}
 	

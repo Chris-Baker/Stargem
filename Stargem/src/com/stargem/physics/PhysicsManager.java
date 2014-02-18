@@ -57,7 +57,7 @@ public class PhysicsManager {
 	private final btConstraintSolver solver;
 	private final btDynamicsWorld dynamicsWorld;
 	private final btGhostPairCallback ghostPairCallback;
-	private final Vector3 gravity = new Vector3(0, 0, 0);
+	private final Vector3 gravity = new Vector3(0, Config.GRAVITY, 0);
 
 	private final Array<MotionState> motionStates = new Array<MotionState>();
 	private final Array<btRigidBodyConstructionInfo> bodyInfos = new Array<btRigidBodyConstructionInfo>();
@@ -163,9 +163,6 @@ public class PhysicsManager {
 		shapes.add(shape);
 		shape.calculateLocalInertia(component.mass, tempVector.set(Vector3.Zero));
 		
-		// info
-		btRigidBodyConstructionInfo info = new btRigidBodyConstructionInfo(component.mass, null, shape, tempVector);
-		
 		// motion state
 		MotionState motionState;
 		
@@ -195,9 +192,11 @@ public class PhysicsManager {
 		motionState.transform.val[14] = component.m14;
 		motionState.transform.val[15] = component.m15;
 		
-		
+		// info
+		btRigidBodyConstructionInfo info = new btRigidBodyConstructionInfo(component.mass, null, shape, tempVector.set(1, 1, 1));
+				
 		info.setMotionState(motionState);
-		
+				
 		// create either a character or a rigid body
 		btRigidBody body;
 		
@@ -214,6 +213,9 @@ public class PhysicsManager {
 			Log.error(Config.PHYSICS_ERR, message);
 			throw new Error(message);
 		}		
+		
+		// set the motionstate
+		//body.setMotionState(motionState);
 		
 		// store the entity in the body
 		body.userData = entity;
@@ -331,6 +333,41 @@ public class PhysicsManager {
 		instance = null;
 	}
 
+	public void setGravity() {
+		
+		for(btRigidBody body : bodies) {
+			
+			if(body.isActive() && !body.isStaticOrKinematicObject() && !body.getClass().equals(KinematicCharacter.class)) {
+				
+				// get the position of the body as a vector
+				body.getWorldTransform().getTranslation(position);
+				
+				// get the vector direction from the body to the origin and normalise
+				acceleration.set(position).sub(WORLD_ORIGIN).nor();
+				
+				// scale by the gravity force
+				acceleration.scl(Config.GRAVITY);
+				
+				// set the gravity on the body
+				body.setGravity(acceleration);
+			}
+			
+		}
+		
+	}
+	
+	public void updateCharacters(float delta) {
+		
+		for(btRigidBody body : bodies) {
+		
+			if(body.getClass().equals(KinematicCharacter.class)) {
+				KinematicCharacter character = (KinematicCharacter) body;
+				character.updateAction(this.dynamicsWorld, delta);
+			}
+			
+		}		
+	}
+	
 	/**
 	 * Step the physics simulation
 	 * 
@@ -341,7 +378,7 @@ public class PhysicsManager {
 		// set the gravity for each body based on its position relative to the center of the world
 		for(btRigidBody body : bodies) {
 						
-			if(body.isActive() && !body.isStaticOrKinematicObject()) {
+			if(body.isActive() && !body.isStaticOrKinematicObject() && !body.getClass().equals(KinematicCharacter.class)) {
 			
 				// get the position of the body as a vector
 				body.getWorldTransform().getTranslation(position);
@@ -367,6 +404,22 @@ public class PhysicsManager {
 		this.dynamicsWorld.stepSimulation(delta, Config.NUM_SUBSTEPS);
 	}
 
-	
+	/**
+	 * Given an entity returns the related transform matrix or null if no physics component is attached.
+	 * 
+	 * @param entity
+	 * @return
+	 */
+	public Matrix4 getTransformMatrix(Entity entity) {
+		
+		Matrix4 transform = null;
+		
+		Physics p = EntityManager.getInstance().getComponent(entity, Physics.class);
+		if(p != null) {
+			MotionState s = this.motionStates.get(p.bodyIndex);
+			transform = s.transform;
+		}
+		return transform;		
+	}
 	
 }

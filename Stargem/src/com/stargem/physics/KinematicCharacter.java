@@ -145,7 +145,6 @@ public class KinematicCharacter extends btRigidBody {
 
 		// create a motion state to link to the renderer
 		this.motionState = motionState;
-		super.setMotionState(this.motionState);
 
 		// set the current transform to match that of the transform passed in
 		super.setWorldTransform(motionState.transform);
@@ -451,6 +450,8 @@ public class KinematicCharacter extends btRigidBody {
 				// if the fraction is zero then the controller is penetrating a wall after 
 				// the step up so we don't want to perform the step up.
 				// TODO Also check here for slopes which are too steep.
+				// this could be done by checking distance to the slope and comparing to how far that
+				// would be for a certain angle. we can do this because we know how high up the step is.
 				if(verticalCB.getClosestHitFraction() == 0.0f) {
 					// step is too high so just walk into it and stop
 					motionState.transform.trn(horizontalOffset.scl(horizontalCB.getClosestHitFraction()));

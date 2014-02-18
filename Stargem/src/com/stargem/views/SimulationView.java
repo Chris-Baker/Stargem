@@ -99,7 +99,7 @@ public class SimulationView implements View {
 		modelBatch.render(representationManager.getTerrainInstances());
 		modelBatch.render(representationManager.getEntityInstances());	
 		modelBatch.end();
-		
+				
 		// render the hud
 		stage.draw();
 	}
@@ -116,6 +116,8 @@ public class SimulationView implements View {
 	 */
 	@Override
 	public void dispose() {
+		this.stage.dispose();
+		this.modelBatch.dispose();
 	}
 
 	/* (non-Javadoc)

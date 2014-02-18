@@ -45,15 +45,23 @@ public class Simulation implements Model {
 	 */
 	@Override
 	public void update(float delta) {
+				
+		// get list of entities in the local player's zone of control
+				
+		// get player input
+		keyboardMouseSystem.process(delta);
 		
+		// update ai
+		
+		// get network updates
+				
 		// update physics simulation	
 		physicsManager.stepSimulation(delta);
 		
-		// get list of entities in the local player's zone of control
-		
-		// update all systems
+		// save the physics tick to the physics components
 		physicsSystem.process(delta);
-		keyboardMouseSystem.process(delta);
+		
+		// store the state of the world
 	}
 	
 }

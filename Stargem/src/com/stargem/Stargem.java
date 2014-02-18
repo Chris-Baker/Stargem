@@ -4,7 +4,7 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.stargem.persistence.PersistenceManager;
+import com.stargem.editor.screens.EditorScreen;
 import com.stargem.screens.LoadingScreen;
 import com.stargem.screens.PlayScreen;
 import com.stargem.utils.Log;
@@ -21,11 +21,15 @@ public class Stargem implements ApplicationListener {
 	// The Game Manager class is in charge of the overall game state.
 	private final GameManager gameManager = GameManager.getInstance();
 	
-	// screens
+	// current screen
 	private Screen currentScreen;
 	
+	// game screens
 	private Screen loadingScreen;
 	private Screen playScreen;
+	
+	// editor screen
+	private Screen editorScreen;
 	
 	// resume currentScreen
 	// splash currentScreen
@@ -50,6 +54,7 @@ public class Stargem implements ApplicationListener {
 		this.gameManager.setGame(this);
 		
 		// Create the screens
+		this.editorScreen = new EditorScreen(this);
 		this.loadingScreen = new LoadingScreen(this);
 		this.playScreen = new PlayScreen(this);
 		
@@ -68,26 +73,29 @@ public class Stargem implements ApplicationListener {
 
 		// sound manager
 
+		// start the editor
+		this.setScreen(this.editorScreen);
+		
 		// create profile or load it
-		try {
-			PersistenceManager persistenceManager = PersistenceManager.getInstance();
-			String profileName = "Chris Baker";
-			String databaseName = persistenceManager.getNewDatabaseName(profileName);
-			if (persistenceManager.exists(databaseName)) {
-				Log.info("Profile", "Loading existing profile " + databaseName);				
-				this.gameManager.loadProfile(databaseName);
-			}
-			else {
-				Log.info("Profile", "Creating new profile");
-				this.gameManager.newProfile(profileName);
-			}						
-		}
-		catch (Exception e) {
-			Log.error(Config.IO_ERR, e.getMessage() + " whilst trying to load profile");
-		}
+//		try {
+//			PersistenceManager persistenceManager = PersistenceManager.getInstance();
+//			String profileName = "Chris Baker";
+//			String databaseName = persistenceManager.getNewDatabaseName(profileName);
+//			if (persistenceManager.exists(databaseName)) {
+//				Log.info("Profile", "Loading existing profile " + databaseName);				
+//				this.gameManager.loadProfile(databaseName);
+//			}
+//			else {
+//				Log.info("Profile", "Creating new profile");
+//				this.gameManager.newProfile(profileName);
+//			}						
+//		}
+//		catch (Exception e) {
+//			Log.error(Config.IO_ERR, e.getMessage() + " whilst trying to load profile");
+//		}
 		
 		// start the game
-		this.gameManager.loadGame();
+		//this.gameManager.loadGame();
 		//this.gameManager.createWorld();
 		
 	}
