@@ -5,7 +5,7 @@ package com.stargem.editor.screens;
 
 import com.stargem.Config;
 import com.stargem.Stargem;
-import com.stargem.editor.controllers.WorldEditorController;
+import com.stargem.editor.controllers.ToolBarController;
 import com.stargem.editor.models.WorldEditor;
 import com.stargem.editor.views.WorldEditorView;
 import com.stargem.screens.AbstractScreen;
@@ -27,7 +27,7 @@ public class EditorScreen extends AbstractScreen {
 	//private final Simulation simulation;
 	
 	private final WorldEditor editor;
-	private final WorldEditorController controller;
+	private final ToolBarController controller;
 	private final WorldEditorView view;
 	
 	/**
@@ -40,7 +40,7 @@ public class EditorScreen extends AbstractScreen {
 		//this.simulation = new Simulation();
 		
 		this.editor = new WorldEditor();
-		this.controller = new WorldEditorController(editor);
+		this.controller = new ToolBarController(editor);
 		this.view = new WorldEditorView(controller);
 		
 		this.editor.addListener(view);

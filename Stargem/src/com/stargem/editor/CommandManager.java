@@ -15,7 +15,6 @@ import com.stargem.editor.commands.EditorCommand;
  */
 public class CommandManager {
 
-	private final Array<CommandStackSizeListener> listeners;
 	private final Array<EditorCommand> undoStack;
 	private final Array<EditorCommand> redoStack;
 	
@@ -30,7 +29,6 @@ public class CommandManager {
 	 * 
 	 */
 	public CommandManager() {
-		this.listeners = new Array<CommandStackSizeListener>();
 		this.undoStack = new Array<EditorCommand>();
 		this.redoStack = new Array<EditorCommand>();
 	}
@@ -42,10 +40,6 @@ public class CommandManager {
 		EditorCommand command = undoStack.pop();
 		command.undo();
 		redoStack.add(command);
-		
-		for(CommandStackSizeListener l : this.listeners) {
-			l.stackSizeChanged(undoStack.size, redoStack.size);
-		}
 	}
 	
 	/**
@@ -55,10 +49,6 @@ public class CommandManager {
 		EditorCommand command = redoStack.pop();
 		command.execute();
 		undoStack.add(command);
-		
-		for(CommandStackSizeListener l : this.listeners) {
-			l.stackSizeChanged(undoStack.size, redoStack.size);
-		}
 	}
 	
 	/**
@@ -70,37 +60,13 @@ public class CommandManager {
 		command.execute();
 		undoStack.add(command);
 		redoStack.clear();
-		
-		for(CommandStackSizeListener l : this.listeners) {
-			l.stackSizeChanged(undoStack.size, redoStack.size);
-		}
-	}
-	
-	/**
-	 * Add a stack size listener
-	 * 
-	 * @param listener
-	 */
-	public void addListener(CommandStackSizeListener listener) {
-		if(!this.listeners.contains(listener, false)) {
-			this.listeners.add(listener);
-		}
-	}
-	
-	/**
-	 * Remove a stack size listener
-	 * 
-	 * @param listener
-	 */
-	public void removeListener(CommandStackSizeListener listener) {
-		this.listeners.removeValue(listener, false);
 	}
 
-	/**
-	 * Clear all the world event listeners
-	 */
-	public void clearListeners() {
-		this.listeners.clear();
+	public int getUndoStackSize() {
+		return this.undoStack.size;
 	}
 	
+	public int getRedoStackSize() {
+		return this.redoStack.size;
+	}
 }

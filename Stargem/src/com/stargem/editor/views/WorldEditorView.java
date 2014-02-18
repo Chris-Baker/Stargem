@@ -11,7 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.stargem.editor.WorldEditorListener;
-import com.stargem.editor.controllers.WorldEditorController;
+import com.stargem.editor.controllers.ToolBarController;
+import com.stargem.editor.models.WorldEditor;
 import com.stargem.views.View;
 
 /**
@@ -23,7 +24,7 @@ import com.stargem.views.View;
  */
 public class WorldEditorView implements View, WorldEditorListener {
 
-	private final WorldEditorController controller;
+	private final ToolBarController toolbarController;
 	private final Skin skin;
 	private final Stage stage;
 	private final Table root;
@@ -45,23 +46,11 @@ public class WorldEditorView implements View, WorldEditorListener {
 	private final TextButton placeEntityBtn;
 	private final TextButton newEntityTemplateBtn;
 	
-	// button names
-	public static final String SELECT_BTN 				= "Select";
-	public static final String MOVE_BTN 				= "Move";
-	public static final String RAISE_TERRAIN_BTN 		= "Raise";
-	public static final String LOWER_TERRAIN_BTN 		= "Lower";
-	public static final String SMOOTH_TERRAIN_BTN 		= "Smooth";
-	public static final String FLATTEN_TERRAIN_BTN 		= "Flatten";
-	public static final String NOISE_TERRAIN_BTN 		= "Noise";
-	public static final String PAINT_TEXTURE_BTN 		= "Paint";
-	public static final String PLACE_ENTITY_BTN 		= "Place";
-	public static final String NEW_ENTITY_TEMPLATE_BTN 	= "New";
-	
 	/**
 	 * 
 	 */
-	public WorldEditorView(WorldEditorController controller) {
-		this.controller = controller;
+	public WorldEditorView(ToolBarController toolbarController) {
+		this.toolbarController = toolbarController;
 		this.skin = new Skin(Gdx.files.internal("holo/Holo-light-ldpi.json"));
 		this.stage = new Stage();
 		this.root = new Table(skin);
@@ -98,55 +87,55 @@ public class WorldEditorView implements View, WorldEditorListener {
 		Window toolbar = new Window("", skin);		
 		west.add(toolbar);
 		
-		selectBtn = new TextButton(SELECT_BTN, skin);
-		selectBtn.setName(SELECT_BTN);
-		selectBtn.getLabel().setName(SELECT_BTN);
-		selectBtn.addListener(controller);
+		selectBtn = new TextButton(WorldEditor.SELECT_TOOL, skin);
+		selectBtn.setName(WorldEditor.SELECT_TOOL);
+		selectBtn.getLabel().setName(WorldEditor.SELECT_TOOL);
+		selectBtn.addListener(toolbarController);
 		
-		moveBtn = new TextButton(MOVE_BTN, skin);
-		moveBtn.setName(MOVE_BTN);
-		moveBtn.getLabel().setName(MOVE_BTN);
-		moveBtn.addListener(controller);
+		moveBtn = new TextButton(WorldEditor.MOVE_TOOL, skin);
+		moveBtn.setName(WorldEditor.MOVE_TOOL);
+		moveBtn.getLabel().setName(WorldEditor.MOVE_TOOL);
+		moveBtn.addListener(toolbarController);
 		
-		raiseTerrainBtn = new TextButton(RAISE_TERRAIN_BTN, skin);
-		raiseTerrainBtn.setName(RAISE_TERRAIN_BTN);
-		raiseTerrainBtn.getLabel().setName(RAISE_TERRAIN_BTN);
-		raiseTerrainBtn.addListener(controller);
+		raiseTerrainBtn = new TextButton(WorldEditor.RAISE_TERRAIN_TOOL, skin);
+		raiseTerrainBtn.setName(WorldEditor.RAISE_TERRAIN_TOOL);
+		raiseTerrainBtn.getLabel().setName(WorldEditor.RAISE_TERRAIN_TOOL);
+		raiseTerrainBtn.addListener(toolbarController);
 		
-		lowerTerrainBtn = new TextButton(LOWER_TERRAIN_BTN, skin);
-		lowerTerrainBtn.setName(LOWER_TERRAIN_BTN);
-		lowerTerrainBtn.getLabel().setName(LOWER_TERRAIN_BTN);
-		lowerTerrainBtn.addListener(controller);
+		lowerTerrainBtn = new TextButton(WorldEditor.LOWER_TERRAIN_TOOL, skin);
+		lowerTerrainBtn.setName(WorldEditor.LOWER_TERRAIN_TOOL);
+		lowerTerrainBtn.getLabel().setName(WorldEditor.LOWER_TERRAIN_TOOL);
+		lowerTerrainBtn.addListener(toolbarController);
 		
-		smoothTerrainBtn = new TextButton(SMOOTH_TERRAIN_BTN, skin);
-		smoothTerrainBtn.setName(SMOOTH_TERRAIN_BTN);
-		smoothTerrainBtn.getLabel().setName(SMOOTH_TERRAIN_BTN);
-		smoothTerrainBtn.addListener(controller);
+		smoothTerrainBtn = new TextButton(WorldEditor.SMOOTH_TERRAIN_TOOL, skin);
+		smoothTerrainBtn.setName(WorldEditor.SMOOTH_TERRAIN_TOOL);
+		smoothTerrainBtn.getLabel().setName(WorldEditor.SMOOTH_TERRAIN_TOOL);
+		smoothTerrainBtn.addListener(toolbarController);
 		
-		flattenTerrainBtn = new TextButton(FLATTEN_TERRAIN_BTN, skin);
-		flattenTerrainBtn.setName(FLATTEN_TERRAIN_BTN);
-		flattenTerrainBtn.getLabel().setName(FLATTEN_TERRAIN_BTN);
-		flattenTerrainBtn.addListener(controller);
+		flattenTerrainBtn = new TextButton(WorldEditor.FLATTEN_TERRAIN_TOOL, skin);
+		flattenTerrainBtn.setName(WorldEditor.FLATTEN_TERRAIN_TOOL);
+		flattenTerrainBtn.getLabel().setName(WorldEditor.FLATTEN_TERRAIN_TOOL);
+		flattenTerrainBtn.addListener(toolbarController);
 		
-		noiseTerrainBtn = new TextButton(NOISE_TERRAIN_BTN, skin);
-		noiseTerrainBtn.setName(NOISE_TERRAIN_BTN);
-		noiseTerrainBtn.getLabel().setName(NOISE_TERRAIN_BTN);
-		noiseTerrainBtn.addListener(controller);
+		noiseTerrainBtn = new TextButton(WorldEditor.NOISE_TERRAIN_TOOL, skin);
+		noiseTerrainBtn.setName(WorldEditor.NOISE_TERRAIN_TOOL);
+		noiseTerrainBtn.getLabel().setName(WorldEditor.NOISE_TERRAIN_TOOL);
+		noiseTerrainBtn.addListener(toolbarController);
 		
-		paintTextureBtn = new TextButton(PAINT_TEXTURE_BTN, skin);
-		paintTextureBtn.setName(PAINT_TEXTURE_BTN);
-		paintTextureBtn.getLabel().setName(PAINT_TEXTURE_BTN);
-		paintTextureBtn.addListener(controller);
+		paintTextureBtn = new TextButton(WorldEditor.PAINT_TEXTURE_TOOL, skin);
+		paintTextureBtn.setName(WorldEditor.PAINT_TEXTURE_TOOL);
+		paintTextureBtn.getLabel().setName(WorldEditor.PAINT_TEXTURE_TOOL);
+		paintTextureBtn.addListener(toolbarController);
 		
-		placeEntityBtn = new TextButton(PLACE_ENTITY_BTN, skin);
-		placeEntityBtn.setName(PLACE_ENTITY_BTN);
-		placeEntityBtn.getLabel().setName(PLACE_ENTITY_BTN);
-		placeEntityBtn.addListener(controller);
+		placeEntityBtn = new TextButton(WorldEditor.PLACE_ENTITY_TOOL, skin);
+		placeEntityBtn.setName(WorldEditor.PLACE_ENTITY_TOOL);
+		placeEntityBtn.getLabel().setName(WorldEditor.PLACE_ENTITY_TOOL);
+		placeEntityBtn.addListener(toolbarController);
 		
-		newEntityTemplateBtn = new TextButton(NEW_ENTITY_TEMPLATE_BTN, skin);
-		newEntityTemplateBtn.setName(NEW_ENTITY_TEMPLATE_BTN);
-		newEntityTemplateBtn.getLabel().setName(NEW_ENTITY_TEMPLATE_BTN);
-		newEntityTemplateBtn.addListener(controller);
+		newEntityTemplateBtn = new TextButton(WorldEditor.NEW_ENTITY_TEMPLATE_TOOL, skin);
+		newEntityTemplateBtn.setName(WorldEditor.NEW_ENTITY_TEMPLATE_TOOL);
+		newEntityTemplateBtn.getLabel().setName(WorldEditor.NEW_ENTITY_TEMPLATE_TOOL);
+		newEntityTemplateBtn.addListener(toolbarController);
 		
 		toolbar.add(selectBtn);
 		toolbar.add(moveBtn);
@@ -203,67 +192,18 @@ public class WorldEditorView implements View, WorldEditorListener {
 	public void dispose() {
 	}
 
-	/* (non-Javadoc)
-	 * @see com.stargem.editor.WorldEditorListener#setToolSelect()
-	 */
 	@Override
-	public void setToolSelect() {
+	public void onSetTool(String toolName) {
+		// TODO show the context options for the selected tool
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see com.stargem.editor.WorldEditorListener#setToolMove()
-	 */
 	@Override
-	public void setToolMove() {
+	public void onCommandStackSizeChanged(int undoSize, int redoSize) {
+		// TODO enable / disable undo redo options if needed. Maybe show a number of commands undoable or redoable
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see com.stargem.editor.WorldEditorListener#setToolRaiseTerrain()
-	 */
-	@Override
-	public void setToolRaiseTerrain() {
-	}
-
-	/* (non-Javadoc)
-	 * @see com.stargem.editor.WorldEditorListener#setToolLowerTerrain()
-	 */
-	@Override
-	public void setToolLowerTerrain() {
-	}
-
-	/* (non-Javadoc)
-	 * @see com.stargem.editor.WorldEditorListener#setToolSmoothTerrain()
-	 */
-	@Override
-	public void setToolSmoothTerrain() {
-	}
-
-	/* (non-Javadoc)
-	 * @see com.stargem.editor.WorldEditorListener#setToolFlattenTerrain()
-	 */
-	@Override
-	public void setToolFlattenTerrain() {
-	}
-
-	/* (non-Javadoc)
-	 * @see com.stargem.editor.WorldEditorListener#setToolNoiseTerrain()
-	 */
-	@Override
-	public void setToolNoiseTerrain() {
-	}
-
-	/* (non-Javadoc)
-	 * @see com.stargem.editor.WorldEditorListener#setToolPaintTexture()
-	 */
-	@Override
-	public void setToolPaintTexture() {
-	}
-
-	/* (non-Javadoc)
-	 * @see com.stargem.editor.WorldEditorListener#setToolPlaceEntity()
-	 */
-	@Override
-	public void setToolPlaceEntity() {
-	}
+	
 
 }

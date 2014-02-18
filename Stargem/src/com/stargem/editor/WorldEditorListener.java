@@ -12,58 +12,7 @@ package com.stargem.editor;
  */
 public interface WorldEditorListener {
 
-	/**
-	 * 
-	 */
-	public void setToolSelect();
-	
-
-	/**
-	 * 
-	 */
-	public void setToolMove();
-	
-
-	/**
-	 * 
-	 */
-	public void setToolRaiseTerrain();
-	
-
-	/**
-	 * 
-	 */
-	public void setToolLowerTerrain();
-	
-
-	/**
-	 * 
-	 */
-	public void setToolSmoothTerrain();
-	
-
-	/**
-	 * 
-	 */
-	public void setToolFlattenTerrain();
-	
-
-	/**
-	 * 
-	 */
-	public void setToolNoiseTerrain();
-	
-
-	/**
-	 * 
-	 */
-	public void setToolPaintTexture();
-	
-
-	/**
-	 * 
-	 */
-	public void setToolPlaceEntity();
-	
+	public void onSetTool(String toolName);
+	public void onCommandStackSizeChanged(int undoSize, int redoSize);
 	
 }

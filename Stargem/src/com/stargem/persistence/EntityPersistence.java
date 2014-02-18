@@ -166,7 +166,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	}
 
 	/**
-	 * Load a component of the given shape and attach it to the entity given.
+	 * Load a component of the given type and attach it to the entity given.
 	 * If no component is found for this entity in the database none it attached.
 	 * 
 	 * @param entity the entity to attach the loaded component to.
