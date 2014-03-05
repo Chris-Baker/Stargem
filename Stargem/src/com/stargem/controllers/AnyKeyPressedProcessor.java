@@ -9,6 +9,9 @@ import com.badlogic.gdx.InputProcessor;
 
 /**
  * AnyKeyPressedProcessor.java
+ * 
+ * This input processor simply updates its observers whenever any key press happens
+ * or a touch event occurs.
  *
  * @author 	Chris B
  * @date	30 Jan 2014

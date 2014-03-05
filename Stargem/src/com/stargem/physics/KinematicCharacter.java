@@ -170,6 +170,10 @@ public class KinematicCharacter extends btRigidBody {
 		dynamicsWorld.addCollisionObject(this.ghost, group, CollisionFilterGroups.STATIC_GROUP);
 		//dynamicsWorld.addRigidBody(this, (short) (group | CollisionFilterGroups.KINEMATIC_GROUP), collidesWith);
 		
+		//ghost.setContactCallbackFilter(CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+		//ghost.setContactCallbackFlag(ghost.getContactCallbackFlag() | CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+		
+		
 		// default settings for the player
 		this.setMaxSlope(70);
 		this.jumpSpeed = 8;
@@ -184,12 +188,12 @@ public class KinematicCharacter extends btRigidBody {
 		//this.raycastCB = new KinematicClosestNotMeRayResultCallback(ghost);
 		
 		// apply rotation to the character so that it sits on the surface of the planet
-		this.motionState.transform.getTranslation(up);
-		up.sub(this.origin).nor();
-		motionState.transform.getTranslation(position);
-		motionState.transform.setToRotation(defaultUp, up);
-		motionState.transform.trn(position);
-		
+		// we don't do this because it is set by the editor
+//		this.motionState.transform.getTranslation(up);
+//		up.sub(this.origin).nor();
+//		motionState.transform.getTranslation(position);
+//		motionState.transform.setToRotation(defaultUp, up);
+//		motionState.transform.trn(position);
 	}
 		
 	/**

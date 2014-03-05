@@ -85,6 +85,12 @@ public class KeyboardMouseSystem extends AbstractSystem {
 			moveRight		= input.isKeyPressed(Preferences.KEY_RIGHT);
 			isJumping		= input.isKeyPressed(Preferences.KEY_JUMP);
 			
+//			if(moveForward) {Log.info(Config.INFO, "forward ");}
+//			if(moveBackward) {Log.info(Config.INFO, "back ");}
+//			if(moveLeft) {Log.info(Config.INFO, "left ");}
+//			if(moveRight) {Log.info(Config.INFO, "right ");}
+//			if(isJumping) {Log.info(Config.INFO, "jump ");}
+			
 			// rotate the player
 			player.rotate(input.getDeltaX() * Preferences.MOUSE_SENSITIVITY);
 			

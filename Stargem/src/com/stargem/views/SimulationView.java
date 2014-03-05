@@ -51,10 +51,10 @@ public class SimulationView implements View {
 		final float width = Gdx.graphics.getWidth();
 		final float height = Gdx.graphics.getHeight();
 		if (width > height) {
-			this.camera = new PerspectiveCamera(45f, 3f * width / height, 3f);
+			this.camera = new PerspectiveCamera(67f, 3f * width / height, 3f);
 		}
 		else {
-			this.camera = new PerspectiveCamera(45f, 3f, 3f * height / width);
+			this.camera = new PerspectiveCamera(67f, 3f, 3f * height / width);
 		}
 		this.camera.position.set(0, 92, 0);
 		this.camera.lookAt(0, 92, 90);
@@ -97,7 +97,7 @@ public class SimulationView implements View {
 		// TODO add environment lights, fog etc.
 		modelBatch.begin(camera);
 		modelBatch.render(representationManager.getTerrainInstances());
-		modelBatch.render(representationManager.getEntityInstances());	
+		modelBatch.render(representationManager.getEntityInstances());
 		modelBatch.end();
 				
 		// render the hud

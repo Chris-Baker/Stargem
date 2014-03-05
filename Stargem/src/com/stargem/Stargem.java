@@ -5,6 +5,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.stargem.editor.screens.EditorScreen;
+import com.stargem.persistence.PersistenceManager;
 import com.stargem.screens.LoadingScreen;
 import com.stargem.screens.PlayScreen;
 import com.stargem.utils.Log;
@@ -74,28 +75,28 @@ public class Stargem implements ApplicationListener {
 		// sound manager
 
 		// start the editor
-		this.setScreen(this.editorScreen);
+		//this.setScreen(this.editorScreen);
 		
 		// create profile or load it
-//		try {
-//			PersistenceManager persistenceManager = PersistenceManager.getInstance();
-//			String profileName = "Chris Baker";
-//			String databaseName = persistenceManager.getNewDatabaseName(profileName);
-//			if (persistenceManager.exists(databaseName)) {
-//				Log.info("Profile", "Loading existing profile " + databaseName);				
-//				this.gameManager.loadProfile(databaseName);
-//			}
-//			else {
-//				Log.info("Profile", "Creating new profile");
-//				this.gameManager.newProfile(profileName);
-//			}						
-//		}
-//		catch (Exception e) {
-//			Log.error(Config.IO_ERR, e.getMessage() + " whilst trying to load profile");
-//		}
+		try {
+			PersistenceManager persistenceManager = PersistenceManager.getInstance();
+			String profileName = "Chris Baker";
+			String databaseName = persistenceManager.getNewDatabaseName(profileName);
+			if (persistenceManager.exists(databaseName)) {
+				Log.info("Profile", "Loading existing profile " + databaseName);				
+				this.gameManager.loadProfile(databaseName);
+			}
+			else {
+				Log.info("Profile", "Creating new profile");
+				this.gameManager.newProfile(profileName);
+			}						
+		}
+		catch (Exception e) {
+			Log.error(Config.IO_ERR, e.getMessage() + " whilst trying to load profile");
+		}
 		
 		// start the game
-		//this.gameManager.loadGame();
+		this.gameManager.loadGame();
 		//this.gameManager.createWorld();
 		
 	}
@@ -139,6 +140,8 @@ public class Stargem implements ApplicationListener {
 	@Override
 	public void pause() {
 		// TODO throw a pause event to the current currentScreen
+		this.currentScreen.pause();
+		
 		// this could pause gameplay in the one player mode
 		// or simply display the in game menu in coop.
 		// it is the same event as pressing escape or alt-tab in game
@@ -150,8 +153,9 @@ public class Stargem implements ApplicationListener {
 		// TODO reload OpenGL context sensitive assetManager such as textures
 		// set the current currentScreen to the previous currentScreen
 		// display the resume currentScreen which reloads assetManager with lost contexts
-
+		
 		// TODO throw a resume event to the current currentScreen
+		this.currentScreen.resume();
 	}
 
 	/**
@@ -176,6 +180,6 @@ public class Stargem implements ApplicationListener {
 		this.playScreen.dispose();
 		
 		// dispose all managers
-		//GameManager.getInstance().dispose();
+		this.gameManager.dispose();
 	}
 }

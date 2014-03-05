@@ -34,6 +34,9 @@ public class WorldEditorView implements View, WorldEditorListener {
 	private final Table west;
 	private final Table center;
 	
+	// action bar
+	private final TextButton newBtn;
+	
 	// toolbar buttons
 	private final TextButton selectBtn;
 	private final TextButton moveBtn;
@@ -82,6 +85,14 @@ public class WorldEditorView implements View, WorldEditorListener {
 		
 		//TextButton b = new TextButton("Button", skin);
 		//this.north.add(b);
+		
+		// action bar
+		newBtn = new TextButton(WorldEditor.NEW, skin);
+		newBtn.setName(WorldEditor.NEW);
+		newBtn.getLabel().setName(WorldEditor.NEW);
+		//newBtn.addListener(actionbarController);
+		
+		north.add(newBtn).left().expandX();
 		
 		// toolbar
 		Window toolbar = new Window("", skin);		

@@ -166,6 +166,21 @@ public class PlayersManager {
 	}
 
 	/**
+	 * Returns the player entity associated with the player number given.
+	 * 
+	 * @param playerNum
+	 * @return
+	 */
+	public Entity getPlayerEntity(int playerNum) {		
+		if(playerEntityExists(playerNum)) {
+			return this.players.get(playerNum);
+		}
+		else {
+			throw new RuntimeException("Player entity doesn't exist or is null for the given player number " + playerNum);
+		}
+	}
+	
+	/**
 	 * Add an entity object to an already joined player.
 	 * 
 	 * @param playerNum
@@ -174,6 +189,9 @@ public class PlayersManager {
 	public void addPlayerEntity(int playerNum, Entity e) {
 		if(this.players.containsKey(playerNum))	{
 			this.players.put(playerNum, e);
+		}
+		else {
+			throw new RuntimeException("Cannot add an entity to a player who hasn't joined the game.");
 		}
 	}
 

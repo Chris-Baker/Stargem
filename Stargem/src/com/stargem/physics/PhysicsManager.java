@@ -71,6 +71,9 @@ public class PhysicsManager {
 	private final Vector3 acceleration = new Vector3();
 	private final Vector3 position = new Vector3(0, 0, 0);
 	
+	// the collision callback listener
+	ContactProcessedListener listener;
+	
 	// Singleton instance
 	private static PhysicsManager instance;
 	public static PhysicsManager getInstance() {
@@ -98,6 +101,11 @@ public class PhysicsManager {
 		// This makes ghost objects work
 		ghostPairCallback = new btGhostPairCallback();
 		dynamicsWorld.getPairCache().setInternalGhostPairCallback(ghostPairCallback);
+		
+		// Collision callback, this is set active upon instantiation
+		//listener = new ContactProcessedListener();
+		//listener.enableOnAdded
+		
 	}
 	
 	/**
@@ -215,7 +223,7 @@ public class PhysicsManager {
 		}		
 		
 		// set the motionstate
-		//body.setMotionState(motionState);
+		body.setMotionState(motionState);
 		
 		// store the entity in the body
 		body.userData = entity;
@@ -226,6 +234,9 @@ public class PhysicsManager {
 		body.setGravity(new Vector3(component.gravityX, component.gravityY, component.gravityZ));
 		body.setRestitution(component.restitution);
 		body.setActivationState(component.activationState);
+		
+		//body.setContactCallbackFilter(CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+		//body.setContactCallbackFlag(body.getContactCallbackFlag() | CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
 		
 		// add the body to the simulation
 		return this.addRigidBody(info, shape, body, motionState, (short) component.collisionGroup, (short) component.collidesWith);
@@ -312,6 +323,7 @@ public class PhysicsManager {
 	 * Dispose of all physics objects
 	 */
 	public void dispose() {
+		this.listener.dispose();
 		this.collisionConfiguration.dispose();
 		this.dispatcher.dispose();
 		this.broadphase.dispose();

@@ -8,7 +8,8 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.stargem.Config;
 import com.stargem.editor.WorldEditorListener;
 import com.stargem.editor.commands.EditorCommand;
-import com.stargem.editor.tools.Tool;
+import com.stargem.editor.tools.Action;
+import com.stargem.editor.tools.NullAction;
 import com.stargem.utils.Log;
 
 /**
@@ -20,6 +21,25 @@ import com.stargem.utils.Log;
  */
 public class WorldEditor {
 
+	// File menu
+	public static final String NEW 						= "New";
+	public static final String CLOSE 					= "Close";
+	public static final String LOAD 					= "Load";
+	public static final String SAVE 					= "Save";
+	public static final String SAVE_AS 					= "Save As";
+	public static final String EXIT 					= "Exit";
+	
+	// Edit menu
+	public static final String UNDO 					= "Undo";
+	public static final String REDO 					= "Redo";
+	
+	// Import menu
+	public static final String TEXTURE_ATLAS_IMPORT		= "Atlas";
+	public static final String TEXTURE_IMPORT 			= "Texture";
+	public static final String SOUND_IMPORT 			= "Sound";
+	public static final String MUSIC_IMPORT 			= "Music";
+	public static final String MODEL_IMPORT 			= "Model";
+	
 	// Tool names
 	public static final String SELECT_TOOL 				= "Select";
 	public static final String MOVE_TOOL 				= "Move";
@@ -35,18 +55,53 @@ public class WorldEditor {
 	// an array of world event listeners
 	private final Array<WorldEditorListener> listeners;
 	
-	private final ObjectMap<String, Tool> tools;
-	private Tool currentTool;
+	private final ObjectMap<String, Action> actions;
+	private Action currentAction;
 	
-	private CommandManager commandManager;
+	private final CommandManager commandManager;
 	
 	/**
 	 * The world editor facilitates the editing of a game world.
 	 */
 	public WorldEditor() {
 		this.listeners = new Array<WorldEditorListener>();
-		this.tools = new ObjectMap<String, Tool>();
+		this.actions = new ObjectMap<String, Action>();
 		this.commandManager = new CommandManager();
+		
+		// add the actions to the map so they can be used
+		
+		// file menu
+		this.actions.put(NEW, NullAction.getInstance());
+		this.actions.put(CLOSE, NullAction.getInstance());
+		this.actions.put(LOAD, NullAction.getInstance());
+		this.actions.put(SAVE, NullAction.getInstance());
+		this.actions.put(SAVE_AS, NullAction.getInstance());
+		this.actions.put(EXIT, NullAction.getInstance());
+		
+		// edit menu
+		this.actions.put(UNDO, NullAction.getInstance());
+		this.actions.put(REDO, NullAction.getInstance());
+		
+		// import menu
+		this.actions.put(TEXTURE_ATLAS_IMPORT, NullAction.getInstance());
+		this.actions.put(TEXTURE_IMPORT, NullAction.getInstance());
+		this.actions.put(SOUND_IMPORT, NullAction.getInstance());
+		this.actions.put(MUSIC_IMPORT, NullAction.getInstance());
+		this.actions.put(MODEL_IMPORT, NullAction.getInstance());
+		
+		// tool bar
+		this.actions.put(SELECT_TOOL, NullAction.getInstance());
+		this.actions.put(MOVE_TOOL, NullAction.getInstance());
+		this.actions.put(RAISE_TERRAIN_TOOL, NullAction.getInstance());
+		this.actions.put(LOWER_TERRAIN_TOOL, NullAction.getInstance());
+		this.actions.put(SMOOTH_TERRAIN_TOOL, NullAction.getInstance());
+		this.actions.put(FLATTEN_TERRAIN_TOOL, NullAction.getInstance());
+		this.actions.put(NOISE_TERRAIN_TOOL, NullAction.getInstance());
+		this.actions.put(PAINT_TEXTURE_TOOL, NullAction.getInstance());
+		this.actions.put(PLACE_ENTITY_TOOL, NullAction.getInstance());
+		this.actions.put(NEW_ENTITY_TEMPLATE_TOOL, NullAction.getInstance());
+		
+		
 	}
 
 	/**
@@ -81,13 +136,13 @@ public class WorldEditor {
 	 */
 	public void setTool(String toolName) {
 		
-		if(!this.tools.containsKey(toolName)) {
-			String message = "The tool " + toolName + " does not exist and cannot be selected.";
+		if(!this.actions.containsKey(toolName)) {
+			String message = "The tool \"" + toolName + "\" does not exist and cannot be selected.";
 			Log.error(Config.EDITOR_ERR, message);
 			throw new RuntimeException(message);
 		}
 		
-		this.currentTool = this.tools.get(toolName);
+		this.currentAction = this.actions.get(toolName);
 		
 		// update listeners
 		for(WorldEditorListener l : this.listeners) {

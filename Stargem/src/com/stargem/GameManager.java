@@ -20,6 +20,7 @@ import com.stargem.entity.components.Trigger;
 import com.stargem.graphics.RepresentationManager;
 import com.stargem.persistence.DatabaseFactory;
 import com.stargem.persistence.EntityPersistence;
+import com.stargem.persistence.GameSaver;
 import com.stargem.persistence.PersistenceManager;
 import com.stargem.persistence.ProfilePersistence;
 import com.stargem.persistence.SimulationPersistence;
@@ -61,6 +62,8 @@ public class GameManager {
 
 	// players manager keeps track of the active players in a game.
 	private final PlayersManager playersManager = PlayersManager.getInstance();
+	
+	private final GameSaver gamesaver = new GameSaver();
 	
 	// array of all component types
 	private final Array<Class<? extends Component>> componentTypes = new Array<Class<? extends Component>>();
@@ -118,7 +121,7 @@ public class GameManager {
 		this.representationManager.setAssetManager(this.assetManager);
 		
 	}
-	
+		
 	/**
 	 * this method simulates creating a new world from the
 	 * world editor.
@@ -227,12 +230,12 @@ public class GameManager {
 		// levels associated with a campaign could be stored in a jSON or XML file
 		// for now we will just hard code the campaign and first level.
 		
+		// register a new player and set it as the local player
+		this.playersManager.setLocalPlayer(this.playersManager.join());
+		
 		// is this a new game?
 		if(!this.profileManager.isLevelSet()) {
-			
-			// register a new player and set it as the local player
-			this.playersManager.join();
-			
+						
 			// set the starting campaign and world
 			this.changeWorld(Config.DEFAULT_CAMPAIGN, Config.DEFAULT_WORLD);
 						
@@ -284,7 +287,7 @@ public class GameManager {
 	}
 	
 	/**
-	 * Remove all non player entities from the world.
+	 * Remove all non player entities from the world. This is a part of the process of switching worlds
 	 */
 	private void unloadNonPlayerEntities() {		
 		for(Entity e : this.entityManager.getAllEntities()) {			
@@ -294,8 +297,8 @@ public class GameManager {
 			}		
 		}
 		
-		// we have to save entities here so that the deleted entity list is cleared
-		this.persistenceManager.save();
+		// we have to save entities here so that the deleted entity list is cleared from the db
+		this.saveGame();
 	}
 	
 	/**
@@ -313,14 +316,26 @@ public class GameManager {
 	}
 	
 	/**
+	 * Save the current game to disk
+	 */
+	public void saveGame() {
+		
+		// TODO maybe this should be pooled? so as to reduce garbage.
+		// TODO maybe this request should be queued in case the saving isn't done when it is called again.
+		Thread t = new Thread(this.gamesaver);
+		t.start();
+		
+	}
+	
+	/**
 	 * dispose of all resources created by the game manager
 	 */
 	public void dispose() {
 		
-		// dispose of all managers
-		this.persistenceManager.dispose();
-		this.physicsManager.dispose();
-		this.representationManager.dispose();
-		this.assetManager.dispose();	
+		// TODO  dispose of all managers
+		//this.persistenceManager.dispose();
+		//this.physicsManager.dispose();
+		//this.representationManager.dispose();
+		//this.assetManager.dispose();	
 	}
 }

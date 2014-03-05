@@ -24,6 +24,8 @@ public class CollisionFilterGroups {
 	// These are the extended filter bits for Stargem
 	public final static short PLAYER_GROUP 		= 64;	
 	
+	// Contact callback flags
+	
 //	DefaultFilter = 1,
 //	StaticFilter = 2,
 //	KinematicFilter = 4,

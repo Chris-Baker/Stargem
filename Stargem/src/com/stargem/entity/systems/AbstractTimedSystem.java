@@ -3,9 +3,14 @@ package com.stargem.entity.systems;
 
 public abstract class AbstractTimedSystem extends AbstractSystem {
 
-	private final float frequency;
-	private float timer;
+	protected final float frequency;
+	protected float timer;
 	
+	/**
+	 * A system which is processed on a timer.
+	 * 
+	 * @param frequency in nanoseconds
+	 */
 	public AbstractTimedSystem(float frequency) {
 		super();
 		this.frequency = frequency;

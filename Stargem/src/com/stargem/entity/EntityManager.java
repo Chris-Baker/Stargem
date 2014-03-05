@@ -66,7 +66,7 @@ public class EntityManager {
 	 * get the component of the given entity
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Component> T getComponent(Entity entity, Class<T> componentType) {
+	synchronized public <T extends Component> T getComponent(Entity entity, Class<T> componentType) {
 		ObjectMap<Entity, ? extends Component> store = componentStores.get( componentType );
 
 		if (store == null)
@@ -89,7 +89,7 @@ public class EntityManager {
 	 * return a list of all components of the given shape
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Component> Iterator<T> getAllComponentsOfType(Class<T> componentType) {
+	synchronized public <T extends Component> Iterator<T> getAllComponentsOfType(Class<T> componentType) {
 		ObjectMap<Entity, ? extends Component> store = componentStores.get(componentType);
 
 		// TODO this allocates memory how can this be fixed?
@@ -119,7 +119,7 @@ public class EntityManager {
 	/**
 	 * return a set of all entities which are mapped to a component
 	 */
-	public <T extends Component> Iterator<Entity> getAllEntitiesPossessingComponent(Class<T> componentType) {
+	synchronized public <T extends Component> Iterator<Entity> getAllEntitiesPossessingComponent(Class<T> componentType) {
 		
 		ObjectMap<Entity, ? extends Component> store = componentStores.get(componentType);
 
@@ -136,7 +136,7 @@ public class EntityManager {
 	 * @param entity
 	 * @return
 	 */
-	public PooledLinkedList<? extends Component> getComponents(Entity entity) {
+	synchronized public PooledLinkedList<? extends Component> getComponents(Entity entity) {
 		PooledLinkedList<? extends Component> components = this.entityComponents.get(entity);
 		
 		if (components == null) {
@@ -151,7 +151,7 @@ public class EntityManager {
 	 * map a component to an entity
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Component> void addComponent(Entity entity, T component) {
+	synchronized public <T extends Component> void addComponent(Entity entity, T component) {
 		ObjectMap<Entity, ? extends Component> store = componentStores.get(component.getClass());
 
 		if (store == null) {
@@ -179,7 +179,7 @@ public class EntityManager {
 	 * @param e
 	 * @param type
 	 */
-	public void removeComponent(Entity e, Class<? extends Component> type) {
+	synchronized public void removeComponent(Entity e, Class<? extends Component> type) {
 		
 		// get the component so we can recycle it in a moment if it is null we are done
 		Component c = this.getComponent(e, type);
@@ -210,13 +210,14 @@ public class EntityManager {
 	 * 
 	 * @throws Exception
 	 */
-	public Entity createEntity() {
+	synchronized public Entity createEntity() {
 		Entity entity;
 		if(entityPool.size == 0) {
 			entity = new Entity();
 		}
 		else {
 			entity = entityPool.pop();
+			entity.setId(0);
 		}
 		
 		allEntities.add(entity);
@@ -283,7 +284,7 @@ public class EntityManager {
 		entityId.put(id, e);
 	}
 	
-	public Iterable<Entity> getAllEntities() {
+	synchronized public Iterable<Entity> getAllEntities() {
 		return this.allEntities;
 	}
 	
