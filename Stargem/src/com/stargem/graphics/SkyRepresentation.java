@@ -3,7 +3,6 @@
  */
 package com.stargem.graphics;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -32,31 +31,27 @@ public class SkyRepresentation extends AbstractIterableRepresentation {
 	/**
 	 * @param sky
 	 */
-	public SkyRepresentation(SkySphere sky) {
+	public SkyRepresentation(SkySphere sky, Texture texture_1, Texture texture_2, Texture texture_3, Texture texture_4, Texture texture_5, Texture texture_6) {
 		super(SkySphere.NUM_FACES, SkySphere.NUM_FACES);
 		this.segmentWidth = 2;		
-		this.build(sky);
+		this.build(sky, texture_1, texture_2, texture_3, texture_4, texture_5, texture_6);
 	}
 
 	/**
 	 * @param sky
 	 */
-	private void build(SkySphere sky) {
+	private void build(SkySphere sky, Texture texture_1, Texture texture_2, Texture texture_3, Texture texture_4, Texture texture_5, Texture texture_6) {
 		
 		ModelBuilder modelBuilder = new ModelBuilder();
-		
-		//TextureAttribute diff = new TextureAttribute(TextureAttribute.Diffuse, new Texture(Gdx.files.internal("Seamless_Grass.jpg"), true));
-		//Material material = new Material(diff);
-		
-		TextureAttribute[] diffs = new TextureAttribute[6];
-		Material[] materials = new Material[6];		
-		//TextureAtlas textures = new TextureAtlas(Gdx.files.internal("green-space-skybox.pack"));
-		
-		for(int i = 0; i < 6; i += 1) {
-			//AtlasRegion region = textures.findRegion("green-space-" + i);
-			diffs[i] = new TextureAttribute(TextureAttribute.Diffuse, new Texture(Gdx.files.internal("data/textures/sky/" + sky.getSkyName() + i + ".png"), true));
-			materials[i] = new Material(diffs[i]);
-		}
+			
+		// Texture materials for each face
+		Material[] materials = new Material[6];	
+		materials[0] = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture_1));
+		materials[1] = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture_2));
+		materials[2] = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture_3));
+		materials[3] = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture_4));
+		materials[4] = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture_5));
+		materials[5] = new Material(new TextureAttribute(TextureAttribute.Diffuse, texture_6));
 		
 		for (int orientation = 0; orientation < SkySphere.NUM_FACES; orientation += 1) {
 

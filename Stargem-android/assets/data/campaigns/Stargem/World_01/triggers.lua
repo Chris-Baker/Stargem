@@ -1,6 +1,6 @@
 -- these two lines enable importing other Lua files
-LuaScript = luajava.bindClass("com.stargem.scripting.LuaScript")
-script = LuaScript:getInstance()
+ScriptManager = luajava.bindClass("com.stargem.scripting.ScriptManager")
+script = ScriptManager:getInstance()
 
 -- imports
 script:require("Log")

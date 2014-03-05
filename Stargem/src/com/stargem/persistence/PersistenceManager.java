@@ -221,12 +221,5 @@ public class PersistenceManager {
 	public IntMap<Integer> getPlayerIDs() {
 		return this.simulationPersistence.getPlayerIDs();
 	}
-
-	/**
-	 * Save the current game state to the currently loaded profile database
-	 */
-	public void save() {
-		this.entityPersistence.save();
-	}
 	
 }

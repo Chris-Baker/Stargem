@@ -11,13 +11,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import javax.naming.OperationNotSupportedException;
-
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.PooledLinkedList;
 import com.stargem.Config;
+import com.stargem.PlayersManager;
 import com.stargem.entity.ComponentFactory;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
@@ -49,6 +49,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	private Connection connection;
 			
 	// for keeping track of entities while loading
+	private IntMap<Integer> playerIDs;
 	private final IntArray entities = new IntArray();
 	private int entityPointer;
 	private int numEntities;
@@ -79,8 +80,9 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * 
 	 * @return the number of entities to be loaded
 	 */
-	public int beginLoading() {
+	synchronized public int beginLoading() {
 		this.entityPointer = 0;
+		this.playerIDs = PersistenceManager.getInstance().getPlayerIDs();
 		return populateEntityList();
 	}
 
@@ -88,7 +90,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * Populate entity list and reset the pointer. Return the number of entities in the database
 	 * @return the number of entities to be loaded
 	 */
-	private int populateEntityList() {
+	synchronized private int populateEntityList() {
 		numEntities = 0;
 		StringBuilder sql = StringHelper.getBuilder();
 		sql.append("SELECT entityId, (SELECT COUNT(entityId) FROM Entity) as numRows FROM Entity;");
@@ -122,47 +124,80 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		entityPointer += 1;
 		return entityId;
 	}
-
-	/**
-	 * @param e
-	 * @throws OperationNotSupportedException 
-	 */
-	public void loadPlayerEntity(Entity e) {
-		
-		// copy only the physics component from the database
-		
-		// first remove the physics component
-		this.em.removeComponent(e, Physics.class);
-		
-		// then add the new component
-		this.loadComponent(e, Physics.class);
-	}
 	
 	/**
-	 * Populate the given entity with an ID and components from the database.
+	 * Check to see if the entity is a player. If so then the physics component is copied into
+	 * the entity reference, otherwise, the entity is populated with an ID and components from the database.
 	 * The given entity should be a blank instance with no attached components or ID.
 	 * 
 	 * @param entity a blank entity with no components or ID
+	 * @return a populated entity object or null if the entity was a player placeholder and the player hasn't joined the game
 	 */
-	public void loadEntity(Entity entity) {
+	synchronized public Entity loadEntity() {
 
 		if (numEntities == 0) {
 			throw new Error("Cannot load entity before populateEntityList has been called.");
 		}
 
-		if (entity.getId() != 0) {
-			throw new Error("The entity cannot be loaded because it already has an ID.");
-		}
-
-		entity.setId(nextId());
+		Entity entity = null;
+		int entityID = nextId();
 		
-		Log.info(Config.SQL_ERR, "Loading entity: " + entity.getId());
+		Log.info(Config.SQL_ERR, "Loading entity: " + entityID);
 
-		// iterate over component types and load them
-		for (Class<? extends Component> type : componentTypes) {
-			loadComponent(entity, type);
+		// check to see if this entity id is a player id		
+		// if this is a player then we want to keep it persistent across worlds
+		if(playerIDs.containsValue(entityID, false)) {
+									
+			// get the key associated with the entity id, this is the player number
+			int playerNum = playerIDs.findKey(entityID, false, -1);
+			
+			// we only load the player if it has joined the game
+			if(PlayersManager.getInstance().hasJoined(playerNum)) {
+			
+				// this is a player entity so check if there is already an entity object
+				// stored in the players manager.
+				if(PlayersManager.getInstance().playerEntityExists(playerNum)) {
+										
+					// we need to get the entity which is already stored as the player
+					entity = PlayersManager.getInstance().getPlayerEntity(playerNum);
+					
+					// set its new id to the player entity id
+					entity.setId(entityID);
+					
+					// replace its physics component
+					this.em.removeComponent(entity, Physics.class);
+					this.loadComponent(entity, Physics.class);
+				}
+				else {							
+					// otherwise, load the entity as normal and add it to the player manager
+					
+					entity = this.em.createEntity();
+					entity.setId(entityID);
+					
+					// iterate over component types and load them
+					for (Class<? extends Component> type : componentTypes) {
+						loadComponent(entity, type);
+					}
+					
+					PlayersManager.getInstance().addPlayerEntity(playerNum, entity);
+				}
+			}
+			
+			// at this point it is possible that the entity is not needed and will be returned null
+			
 		}
-
+		else {
+			// this is not a player entity so load it as normal
+			entity = this.em.createEntity();
+			entity.setId(entityID);
+			
+			// iterate over component types and load them
+			for (Class<? extends Component> type : componentTypes) {
+				loadComponent(entity, type);
+			}
+		}		
+		
+		return entity;
 	}
 
 	/**
@@ -172,7 +207,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * @param entity the entity to attach the loaded component to.
 	 * @param shape the class shape of the component to load.
 	 */
-	private void loadComponent(Entity entity, Class<? extends Component> type) {
+	synchronized private void loadComponent(Entity entity, Class<? extends Component> type) {
 		
 		// leave early if there is no component of shape for this entity
 		StringBuilder sql = StringHelper.getBuilder();
@@ -312,7 +347,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * Iterate over all entities in the entity manager storing
 	 * them and their components in the database.
 	 */
-	public void save() {
+	synchronized public void save() {
 		
 		// delete all recycled entities from the database
 		for(int i = 0, n = this.deathrow.size; i < n; i += 1) {
@@ -331,7 +366,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * 
 	 * @param entityId
 	 */
-	private void deleteEntity(int entityId) {
+	synchronized private void deleteEntity(int entityId) {
 		
 		Log.info(Config.SQL_ERR, "Deleting entity " + entityId);
 		
@@ -363,7 +398,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * @param entityId the entity
 	 * @param shape the shape of the component
 	 */
-	private void deleteComponent(int entityId, Class<? extends Component> type) {
+	synchronized private void deleteComponent(int entityId, Class<? extends Component> type) {
 		
 		Log.info(Config.SQL_ERR, "Deleting component " + type.getSimpleName() + " from entity " + entityId);
 		
@@ -391,7 +426,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * 
 	 * @param entity the entity to store.
 	 */
-	private void storeEntity(Entity entity) {
+	synchronized private void storeEntity(Entity entity) {
 
 		Log.info(Config.SQL_ERR, "Storing entity " + entity.getId());
 				
@@ -442,7 +477,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * @param entity
 	 * @param component
 	 */
-	private void insertComponent(Entity entity, Component component) {
+	synchronized private void insertComponent(Entity entity, Component component) {
 
 		Log.info(Config.SQL_ERR, "Inserting component " + component.getClass().getSimpleName() + " from entity " + entity.getId());
 				
@@ -467,9 +502,23 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 				try {
 					// adding quotes to deal with strings and chars
 					// other data types don't seem to mind this
-					sql.append(", ");
+					sql.append(", ");					
 					sql.append("\"");
-					sql.append(f.get(component)); // get the field data
+					
+					// check if we have to convert a boolean value to 1 or 0
+					if(f.getType().equals(boolean.class)) {
+						Boolean value = (Boolean) f.get(component);
+						if(value) {
+							sql.append(1);
+						}
+						else {
+							sql.append(0);
+						}
+					}
+					else {
+						sql.append(f.get(component)); // get the field data
+					}
+										
 					sql.append("\"");
 				}
 				catch (IllegalArgumentException e) {
@@ -503,7 +552,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * @param entity
 	 * @param component
 	 */
-	private void updateComponent(Entity entity, Component component) {
+	synchronized private void updateComponent(Entity entity, Component component) {
 
 		Log.info(Config.SQL_ERR, "Updating component " + component.getClass().getSimpleName() + " from entity " + entity.getId());
 		
@@ -531,7 +580,21 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 					sql.append(", ");
 					sql.append(f.getName()); // get the field name
 					sql.append("=\"");
-					sql.append(f.get(component)); // get the field data
+					
+					// check if we have to convert a boolean value to 1 or 0
+					if(f.getType().equals(boolean.class)) {
+						Boolean value = (Boolean) f.get(component);
+						if(value) {
+							sql.append(1);
+						}
+						else {
+							sql.append(0);
+						}
+					}
+					else {
+						sql.append(f.get(component)); // get the field data
+					}
+					
 					sql.append("\"");
 				}
 				catch (IllegalArgumentException e) {
@@ -546,7 +609,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 				throw new Error("Unknown shape: " + datatype + " can only store primitives and Strings.");
 			}
 		}
-		sql.append(") WHERE entityId=");
+		sql.append(" WHERE entityId=");
 		sql.append(entity.getId());
 		sql.append(";");
 
@@ -592,7 +655,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 	 * @param campaignName
 	 * @param levelName
 	 */
-	protected void importEntities(String databasePath) {
+	synchronized protected void importEntities(String databasePath) {
 		
 		// attach the database for the selected world
 		String attachName = "world";

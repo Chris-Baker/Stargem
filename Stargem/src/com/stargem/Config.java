@@ -54,8 +54,11 @@ public class Config {
 	public static final String TABLE_PLAYERS		= "Players";
 	
 	// Physics time step
-	public static final int MAX_UPDATE_ITERATIONS = 5;
-	public static final float FIXED_TIME_STEP = 1 / 60f;
-	public static final int tweenTimeStep = (int) (FIXED_TIME_STEP * 1000);
-	public static final int NUM_SUBSTEPS = 3;
+	public static final int MAX_UPDATE_ITERATIONS 	= 5;
+	public static final float FIXED_TIME_STEP 		= 1 / 60f;
+	public static final int tweenTimeStep 			= (int) (FIXED_TIME_STEP * 1000);
+	public static final int NUM_SUBSTEPS 			= 3;
+	
+	// auto save frequency in seconds
+	public static final float AUTO_SAVE_FREQUENCY 	= 5;
 }

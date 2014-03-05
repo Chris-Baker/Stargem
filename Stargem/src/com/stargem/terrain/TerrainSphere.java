@@ -4,6 +4,7 @@
 package com.stargem.terrain;
 
 
+
 /**
  * TerrainSphere.java
  * 
@@ -22,6 +23,8 @@ public class TerrainSphere {
 	
 	
 	/**
+	 * 
+	 * 
 	 * @param scale
 	 * @param segmentWidth
 	 * @param numSegments the number of segments

@@ -3,7 +3,6 @@
  */
 package com.stargem.graphics;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -29,11 +28,17 @@ public class TerrainRepresentation extends AbstractIterableRepresentation {
 
 	private final int segmentWidth;
 	private final int numSegments;
+	private final Texture texture_1;
+	private final Texture texture_2;
+	private final Texture texture_3;
 	
-	public TerrainRepresentation(TerrainSphere terrain) {
+	public TerrainRepresentation(TerrainSphere terrain, Texture texture_1, Texture texture_2, Texture texture_3) {
 		super(TerrainSphere.NUM_FACES, TerrainSphere.NUM_FACES * terrain.getNumSegments() * terrain.getNumSegments());
 		this.segmentWidth = terrain.getSegmentWidth();
 		this.numSegments = terrain.getNumSegments();
+		this.texture_1 = texture_1;
+		this.texture_2 = texture_2;
+		this.texture_3 = texture_3;
 		this.build(terrain);
 	}
 
@@ -45,7 +50,7 @@ public class TerrainRepresentation extends AbstractIterableRepresentation {
 	private void build(TerrainSphere terrain) {
 		ModelBuilder modelBuilder = new ModelBuilder();
 		
-		TextureAttribute diff = new TextureAttribute(TextureAttribute.Diffuse, new Texture(Gdx.files.internal("data/textures/Seamless_Grass.jpg"), true));
+		TextureAttribute diff = new TextureAttribute(TextureAttribute.Diffuse, texture_1);
 		Material material = new Material(diff);
 				
 		for (int orientation = 0; orientation < TerrainSphere.NUM_FACES; orientation += 1) {

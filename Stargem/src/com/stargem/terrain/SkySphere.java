@@ -18,16 +18,14 @@ public class SkySphere {
 	private final int segmentWidth;
 	private final float segmentOffset;
 	private final QuadSphereSegment[] segments;
-	private final String skyName;
 	
 	/**
 	 * @param scale
 	 * @param segmentWidth
 	 * @param numSegments the number of segments
 	 */
-	public SkySphere(String skyName) {
+	public SkySphere() {
 		super();
-		this.skyName = skyName;
 		this.scale = 1;
 		this.segmentWidth = 2;
 		this.segmentOffset = -0.5f;
@@ -69,13 +67,6 @@ public class SkySphere {
 	 */
 	public QuadSphereSegment[] getSegments() {
 		return this.segments;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getSkyName() {
-		return this.skyName;
 	}
 	
 }

@@ -9,21 +9,18 @@ import java.util.Observer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.graphics.Texture;
 import com.stargem.Config;
 import com.stargem.GameManager;
-import com.stargem.PlayersManager;
 import com.stargem.Stargem;
 import com.stargem.controllers.AnyKeyPressedProcessor;
-import com.stargem.entity.Entity;
-import com.stargem.entity.EntityManager;
 import com.stargem.graphics.RepresentationManager;
-import com.stargem.persistence.EntityPersistence;
 import com.stargem.persistence.PersistenceManager;
 import com.stargem.persistence.SimulationPersistence;
 import com.stargem.physics.PhysicsManager;
 import com.stargem.profile.PlayerProfile;
 import com.stargem.profile.ProfileManager;
+import com.stargem.scripting.ScriptManager;
 import com.stargem.terrain.SkySphere;
 import com.stargem.terrain.TerrainSphere;
 import com.stargem.utils.AssetList;
@@ -31,6 +28,7 @@ import com.stargem.utils.Log;
 import com.stargem.utils.StringHelper;
 import com.stargem.views.LoadingScreenView;
 import com.stargem.views.View;
+import com.stargem.world.WorldDetails;
 
 /**
  * LoadingScreen.java
@@ -54,7 +52,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 	
 	LoadingScreenState currentState = LoadingScreenState.LOADING_VIEW;
 	
-	//private final LuaScript script = LuaScript.getInstance();
+	//private final ScriptManager script = ScriptManager.getInstance();
 	private AssetList currentWorldAssets;
 	private AssetList oldWorldAssets;
 	private final AssetManager assets;
@@ -69,10 +67,16 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 	// location of the current terrain file
 	private String terrainPath;
 	
+	// texture and dimension details for the terrain, skybox terrain, music name, ambiance name, and world name
+	private final WorldDetails worldDetails;
+	
 	// an input processor which listens for any key press or mouse click and updates observers
 	private final AnyKeyPressedProcessor anyKeyPressedProcessor;
 	
 	private View view;
+	
+	// manages the scripting, this is used to load entities so that scripts have references
+	ScriptManager scriptManager = ScriptManager.getInstance();
 	
 	/**
 	 * @param game
@@ -81,6 +85,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 		super(game);
 		this.assets = GameManager.getInstance().getAssetManager();
 		this.anyKeyPressedProcessor = new AnyKeyPressedProcessor();
+		this.worldDetails = new WorldDetails();
 	}
 		
 	/**
@@ -173,26 +178,34 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				// build a terrain object
 				// the terrain
 				
-				// TODO get these from the terrain file
 				// TODO load the terrain file with the asset loader
 				// TODO pass terrain file directly to terrain constructor
-				int scale = 90;
-				int segmentWidth = 3;
-				int numSegments = 25;
+				int scale = this.worldDetails.getTerrainScale();
+				int segmentWidth = this.worldDetails.getTerrainSegmentWidth();
+				int numSegments = this.worldDetails.getTerrainNumSegments();
 				TerrainSphere terrain = new TerrainSphere(scale, segmentWidth, numSegments);
 				
 				// pass the terrain to the physics manager
 				PhysicsManager.getInstance().createBodyFromTerrain(terrain);
 				
-				// pass the terrain to the representation manager
-				RepresentationManager.getInstance().createInstanceFromTerrain(terrain);
+				// pass the terrain to the representation manager with the loaded textures
+				Texture terrain_1 = this.assets.get(this.worldDetails.getTerrainTexture_1(), Texture.class);
+				Texture terrain_2 = this.assets.get(this.worldDetails.getTerrainTexture_2(), Texture.class);
+				Texture terrain_3 = this.assets.get(this.worldDetails.getTerrainTexture_3(), Texture.class);
+				RepresentationManager.getInstance().createInstanceFromTerrain(terrain, terrain_1, terrain_2, terrain_3);
 				
 				// create the skybox
 				// the skybox textures will be loaded by the asset manager
-				SkySphere sky = new SkySphere("hires-green-");
+				SkySphere sky = new SkySphere();
 				
-				// pass the skybox to the representation  manager
-				RepresentationManager.getInstance().createInstanceFromSky(sky);
+				// pass the skybox to the representation manager with the loaded textures
+				Texture sky_1 = this.assets.get(this.worldDetails.getSkyboxTexture_1(), Texture.class);
+				Texture sky_2 = this.assets.get(this.worldDetails.getSkyboxTexture_2(), Texture.class);
+				Texture sky_3 = this.assets.get(this.worldDetails.getSkyboxTexture_3(), Texture.class);
+				Texture sky_4 = this.assets.get(this.worldDetails.getSkyboxTexture_4(), Texture.class);
+				Texture sky_5 = this.assets.get(this.worldDetails.getSkyboxTexture_5(), Texture.class);
+				Texture sky_6 = this.assets.get(this.worldDetails.getSkyboxTexture_6(), Texture.class);
+				RepresentationManager.getInstance().createInstanceFromSky(sky, sky_1, sky_2, sky_3, sky_4, sky_5, sky_6);
 				
 				// can this happen on another thread for feedback purposes?
 				
@@ -208,61 +221,26 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 			
 				// render the view
 				this.view.render(delta);
-				
-				//Log.info(Config.INFO, "Loading Entities");
-				
-				// load all entities using the loading script. we do this in script so that
-				// the scripting environment knows about entities and can access them in 
-				// triggers.
-				
-				// can this be threaded for feedback purposes?
-				
-				EntityPersistence entityPersistence = PersistenceManager.getInstance().getEntityPersistence();
-				EntityManager entityManager = EntityManager.getInstance();
-				
-				// map of player entity IDs and the corresponding player number
-				IntMap<Integer> playerIDs = PersistenceManager.getInstance().getPlayerIDs();
-				
-				int numEntities = entityPersistence.beginLoading();
-				Entity[] entities = new Entity[numEntities];
-				
-				Log.info(Config.ENTITY_ERR, "Loading " + numEntities + " entities");
-				
-				for (int i = 0; i < numEntities; i += 1) {
-					Entity e = entityManager.createEntity();
-					
-					// if this is a player then we want to keep it persistent across worlds
-					if(playerIDs.containsValue(e.getId(), false)) {
-												
-						// get the key associated with the entity id, this is the player number
-						int playerNum = playerIDs.findKey(e.getId(), false, -1);
-						
-						// we only load the player if it has joined the game
-						if(PlayersManager.getInstance().hasJoined(playerNum)) {
-						
-							// this is a player entity so check if there is already an entity object
-							// stored in the players manager.
-							if(PlayersManager.getInstance().playerEntityExists(playerNum)) {
 								
-								// if there is then only copy the transform info to the physics component
-								entityPersistence.loadPlayerEntity(e);
-								
-							}
-							else {							
-								// otherwise, load the entity as normal and add it to the player manager
-								entityPersistence.loadEntity(e);
-								PlayersManager.getInstance().addPlayerEntity(playerNum, e);
-							}
-						}
-					}
-					else {
-						// this is not a player entity so load it as normal
-						entityPersistence.loadEntity(e);
-					}
-					
-					
-					entities[i] = e;
-				}
+//				EntityPersistence entityPersistence = PersistenceManager.getInstance().getEntityPersistence();
+//				EntityManager entityManager = EntityManager.getInstance();
+//								
+//				int numEntities = entityPersistence.beginLoading();
+//				Entity[] entities = new Entity[numEntities];
+//				
+//				Log.info(Config.ENTITY_ERR, "Loading " + numEntities + " entities");
+//				
+//				for (int i = 0; i < numEntities; i += 1) {					
+//					Entity e = entityPersistence.loadEntity();					
+//					entities[i] = e;
+//				}
+				
+				// This script loads all the entities, it is the same as the above but allows the script
+				// environment to have a copy of each entity reference.
+				this.scriptManager.execute("entities", "load");				
+				
+				// we are now ready to transition
+				// TODO this should be done on a separate thread and a callback should switch the state 
 				
 				// set an input processor to listen for any key presses
 				this.anyKeyPressedProcessor.addObserver(this);
@@ -280,7 +258,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				this.view.render(delta);
 				
 				// wait for user to click or press the any key
-				//
+				// Once the player has clicked, the Observer update method will be called
 				
 			break;
 			
@@ -324,7 +302,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 	@Override
 	public void show() {
 		
-		// Create a new loading screen view. which is destroyed 
+		// Create a new loading screen view.
 		this.view = new LoadingScreenView(assets);
 				
 		// read the current world name
@@ -332,7 +310,10 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 		
 		String world 	= profile.getWorldName();
 		String campaign = profile.getCampaignName();
-				
+		
+		// populate the world details
+		PersistenceManager.getInstance().getSimulationPersistence().populateWorldDetails(worldDetails);
+		
 		// get the filepath for the current world
 		StringBuilder sb = StringHelper.getBuilder();
 		sb.append(Config.CAMPAIGN_PATH);
@@ -354,9 +335,9 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 		sb.append("terrain.raw");
 		this.terrainPath = sb.toString();
 		
-		//script.close();
-		//script.initialise(scriptPath);
-		//name.execute("entities", "load");
+		// reset and initialise the sctipting environment
+		this.scriptManager.close();
+		this.scriptManager.initialise(scriptPath);
 	}
 
 	@Override

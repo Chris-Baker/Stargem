@@ -4,6 +4,7 @@
 package com.stargem.graphics;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Matrix4;
@@ -118,16 +119,19 @@ public class RepresentationManager {
 
 	/**
 	 * @param terrain
+	 * @param texture_3 
+	 * @param texture_2 
+	 * @param texture_1 
 	 */
-	public void createInstanceFromTerrain(TerrainSphere terrain) {
-		this.terrain = new TerrainRepresentation(terrain);
+	public void createInstanceFromTerrain(TerrainSphere terrain, Texture texture_1, Texture texture_2, Texture texture_3) {
+		this.terrain = new TerrainRepresentation(terrain, texture_1, texture_2, texture_3);
 	}
 
 	/**
 	 * @param sky
 	 */
-	public void createInstanceFromSky(SkySphere sky) {
-		this.sky = new SkyRepresentation(sky);
+	public void createInstanceFromSky(SkySphere sky, Texture texture_1, Texture texture_2, Texture texture_3, Texture texture_4, Texture texture_5, Texture texture_6) {
+		this.sky = new SkyRepresentation(sky, texture_1, texture_2, texture_3, texture_4, texture_5, texture_6);
 	}
 	
 	/**

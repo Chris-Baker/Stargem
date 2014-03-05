@@ -14,32 +14,30 @@ import com.stargem.utils.Log;
 import com.stargem.utils.StringHelper;
 
 /**
- * LuaScript.java
+ * ScriptManager.java
  *
  * @author 	Chris B
  * @date	21 Oct 2013
  * @version	1.0
  */
-public class LuaScript {
+public class ScriptManager {
 	
-	private static LuaScript instance;
+	private static ScriptManager instance;
 	private static boolean isInitialised = false;
 	
 	private LuaState luaState;
 	
-	public static LuaScript getInstance() {
+	public static ScriptManager getInstance() {
 		if(instance == null) {
-			instance = new LuaScript();
+			instance = new ScriptManager();
 		}
 		return instance;
 	}
-	
+
 	/**
-	 * 
-	 * 
-	 * @param filePath path to the Lua name file.
+	 * Default constructor
 	 */
-	private LuaScript() {
+	private ScriptManager() {
 		super();
 	}
 		
@@ -55,7 +53,7 @@ public class LuaScript {
 		this.luaState = LuaStateFactory.newLuaState();
 		this.luaState.openLibs();
 		this.luaState.LdoString(Gdx.files.internal(filePath).readString());
-		LuaScript.isInitialised = true;
+		ScriptManager.isInitialised = true;
 	}
 	
 	/**
@@ -75,7 +73,7 @@ public class LuaScript {
 	 */
 	public void execute(String method, Object...parameters) {		
 		try {
-			if (!LuaScript.isInitialised) {
+			if (!ScriptManager.isInitialised) {
 				Log.error(Config.SCRIPT_ERR, "Lua name file not initialised");
 				throw new Error("Lua name file not initialised");
 			}
@@ -91,13 +89,13 @@ public class LuaScript {
 	/**
 	 * Execute a method belonging to an object passing it 0 or more parameters
 	 * 
-	 * @param object the name of the object to access
+	 * @param object the name of the Lua object to access
 	 * @param method the name of the method to execute
 	 * @param parameters 0 or more parameters
 	 */
 	public void execute(String object, String method, Object...parameters) {		
 		try {
-			if (!LuaScript.isInitialised) {
+			if (!ScriptManager.isInitialised) {
 				Log.error(Config.SCRIPT_ERR, "Lua name file not initialised");
 				throw new Error("Lua name file not initialised");
 			}
