@@ -86,7 +86,7 @@ public class PersistenceManager {
 	}
 	
 	/**
-	 * Register a new connection listener
+	 * Register a new connection contactListener
 	 * @param o
 	 */
 	public void registerConnectionListener(ConnectionListener o) {
@@ -94,7 +94,7 @@ public class PersistenceManager {
 	}
 	
 	/**
-	 * Unregister the connection listener 
+	 * Unregister the connection contactListener 
 	 * @param o
 	 */
 	public void unregisterConnectionListener(ConnectionListener o) {

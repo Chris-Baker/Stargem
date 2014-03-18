@@ -105,9 +105,9 @@ public class WorldEditor {
 	}
 
 	/**
-	 * Add a world event listener
+	 * Add a world event contactListener
 	 * 
-	 * @param listener
+	 * @param contactListener
 	 */
 	public void addListener(WorldEditorListener listener) {
 		if(!this.listeners.contains(listener, false)) {
@@ -116,9 +116,9 @@ public class WorldEditor {
 	}
 	
 	/**
-	 * Remove a world event listener
+	 * Remove a world event contactListener
 	 * 
-	 * @param listener
+	 * @param contactListener
 	 */
 	public void removeListener(WorldEditorListener listener) {
 		this.listeners.removeValue(listener, false);

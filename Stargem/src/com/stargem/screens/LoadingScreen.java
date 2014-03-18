@@ -3,12 +3,12 @@
  */
 package com.stargem.screens;
 
-import java.io.File;
 import java.util.Observable;
 import java.util.Observer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.stargem.Config;
 import com.stargem.GameManager;
@@ -64,8 +64,8 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 	// location of the current script file
 	private String scriptPath;
 
-	// location of the current terrain file
-	private String terrainPath;
+	// location of the current terrain file containing height data
+	private String terrainHeightMapPath;
 	
 	// texture and dimension details for the terrain, skybox terrain, music name, ambiance name, and world name
 	private final WorldDetails worldDetails;
@@ -115,8 +115,8 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 			this.oldWorldAssets = null;
 		}
 		
-		Log.info(Config.IO_ERR, "Asset list created for the world.");
-		Log.info(Config.IO_ERR, this.currentWorldAssets.toString());
+		Log.debug(Config.IO_ERR, "Asset list created for the world.");
+		Log.debug(Config.IO_ERR, this.currentWorldAssets.toString());
 	}
 	
 	@Override
@@ -183,7 +183,8 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				int scale = this.worldDetails.getTerrainScale();
 				int segmentWidth = this.worldDetails.getTerrainSegmentWidth();
 				int numSegments = this.worldDetails.getTerrainNumSegments();
-				TerrainSphere terrain = new TerrainSphere(scale, segmentWidth, numSegments);
+				Pixmap heightMap = this.assets.get(this.terrainHeightMapPath, Pixmap.class);
+				TerrainSphere terrain = new TerrainSphere(scale, segmentWidth, numSegments, heightMap);
 				
 				// pass the terrain to the physics manager
 				PhysicsManager.getInstance().createBodyFromTerrain(terrain);
@@ -246,7 +247,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				this.anyKeyPressedProcessor.addObserver(this);
 				Gdx.input.setInputProcessor(this.anyKeyPressedProcessor);
 				
-				Log.info(Config.INFO, "ready...");
+				Log.debug(Config.INFO, "ready...");
 				
 				this.currentState = LoadingScreenState.READY;
 				
@@ -318,22 +319,23 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 		StringBuilder sb = StringHelper.getBuilder();
 		sb.append(Config.CAMPAIGN_PATH);
 		sb.append(campaign);
-		sb.append(File.separator);
+		sb.append("/");
 		sb.append(world);
-		sb.append(File.separator);	
+		sb.append("/");	
 		this.currentWorldFilePath = sb.toString();
 		
 		// get the script filepath
 		sb.setLength(0);
 		sb.append(this.currentWorldFilePath);
-		sb.append("triggers.lua");
+		sb.append(Config.WORLD_SCRIPT_NAME);
+		sb.append(Config.SCRIPT_EXTENSION);
 		this.scriptPath = sb.toString();
 		
 		// get the terrain filepath
 		sb.setLength(0);
 		sb.append(this.currentWorldFilePath);
-		sb.append("terrain.raw");
-		this.terrainPath = sb.toString();
+		sb.append("heightMap.png");
+		this.terrainHeightMapPath = sb.toString();
 		
 		// reset and initialise the sctipting environment
 		this.scriptManager.close();

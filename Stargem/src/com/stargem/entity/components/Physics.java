@@ -51,6 +51,11 @@ public class Physics extends AbstractComponent {
 	// activation state
 	public int activationState;
 	
+	// the contact group of this body and the groups which trigger a contact callback.
+	// this uses bitwise operations, the groups are found in ContactCallbackFlags
+	public int contactGroup;
+	public int contactWith;
+	
 	@Override
 	public void free() {
 		// remove the associated physics object from the simulation

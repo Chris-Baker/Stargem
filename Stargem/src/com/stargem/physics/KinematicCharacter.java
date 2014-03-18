@@ -256,11 +256,19 @@ public class KinematicCharacter extends btRigidBody {
 		// if we are on the ground then we can move along and change direction
 		// when we aren;t on the ground we can't change direction but will continue to move
 		// in the direction we were going for a time
-		if(this.isOnGround) {
 		
+		// TODO rework this algorithm to allow slowly altering direction in mid air but not with full control
+		// half the run speed when not on the ground
+		//if(!this.isOnGround) {
+		//	runSpeed /= 2;
+		//}
+		//if(!this.isOnGround) {
+				
+		if(this.isOnGround) {
+	
 			this.direction.x = 0;
 			this.direction.z = 0;
-	
+			
 			if (moveForward) {
 				this.direction.z += 1;
 			}
@@ -273,18 +281,19 @@ public class KinematicCharacter extends btRigidBody {
 			if (moveRight) {
 				this.direction.x -= 1;
 			}
-	
+			
 			horizontalOffsetNormalised.set(direction).nor();
 			horizontalOffset.set(horizontalOffsetNormalised).scl(runSpeed);
+			
 		}
-		else {
-			// else gradually lose horizontal momentum if we are not jumping
-			// this might feel a bit wrong when we walk off ledges
-			// maybe we should be falling for a while before we degrade the horizontal movement
-			if(!this.isJumping) {
-				horizontalOffset.scl(0.95f);
-			}
-		}
+//		else {
+//			// else gradually lose horizontal momentum if we are not jumping
+//			// this might feel a bit wrong when we walk off ledges
+//			// maybe we should be falling for a while before we degrade the horizontal movement
+//			if(!this.isJumping) {
+//				horizontalOffset.scl(0.95f);
+//			}
+//		}
 	}
 
 	/**

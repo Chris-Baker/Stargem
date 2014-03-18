@@ -95,7 +95,7 @@ public class RepresentationManager {
 	 * @return
 	 */
 	public Matrix4 getTransformMatrix(Entity entity) {
-				
+		
 		Matrix4 transform = null;
 		
 		// look for an animated model component
@@ -153,11 +153,11 @@ public class RepresentationManager {
 	}
 	
 	/**
-	 * Returns the entity model instances.
+	 * Returns the entity model instances as an Iterable.
 	 * 
-	 * @return the entity model instances.
+	 * @return the entity model instances as an Iterable.
 	 */
-	public Array<ModelInstance> getEntityInstances() {
+	public Iterable<ModelInstance> getEntityInstances() {
 		return this.modelInstances;
 	}
 	

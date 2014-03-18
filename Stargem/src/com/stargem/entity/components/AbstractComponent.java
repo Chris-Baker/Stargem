@@ -3,6 +3,7 @@
  */
 package com.stargem.entity.components;
 
+
 /**
  * AbstractComponent.java
  *
@@ -11,7 +12,7 @@ package com.stargem.entity.components;
  * @version	1.0
  */
 public abstract class AbstractComponent implements Component {
-
+	
 	/**
 	 * this can be optionally overridden to free up any members
 	 * which can be placed back into pools. components which do

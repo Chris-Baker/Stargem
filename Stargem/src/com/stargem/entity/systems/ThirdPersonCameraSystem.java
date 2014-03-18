@@ -31,9 +31,9 @@ public class ThirdPersonCameraSystem extends AbstractSystem {
 	}
 
 	@Override
-	public void process(float deltaTime) {
+	public void process(float delta) {
 		super.entities = em.getAllEntitiesPossessingComponent(ThirdPersonCamera.class);
-		super.process(deltaTime);
+		super.process(delta);
 	}
 	
 	@Override

@@ -10,7 +10,9 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.stargem.entity.systems.ThirdPersonCameraSystem;
+import com.stargem.graphics.PhysicsDebugDraw;
 import com.stargem.graphics.RepresentationManager;
+import com.stargem.physics.PhysicsManager;
 
 /**
  * SimulationView.java
@@ -31,6 +33,7 @@ public class SimulationView implements View {
 	private final Vector3 camPosition;
 	
 	private final RepresentationManager representationManager;
+	private final PhysicsDebugDraw physicsDebugDraw;
 	
 	public SimulationView() {
 		super();
@@ -38,6 +41,7 @@ public class SimulationView implements View {
 		this.stage = new Stage();
 		this.camPosition = new Vector3();
 		this.representationManager = RepresentationManager.getInstance();
+		this.physicsDebugDraw = PhysicsDebugDraw.getInstance();
 		this.initCamera();
 		
 		this.cameraSystem = new ThirdPersonCameraSystem(this.camera);
@@ -98,6 +102,9 @@ public class SimulationView implements View {
 		modelBatch.begin(camera);
 		modelBatch.render(representationManager.getTerrainInstances());
 		modelBatch.render(representationManager.getEntityInstances());
+		if(PhysicsManager.getInstance().debug()) {
+			modelBatch.render(physicsDebugDraw.getEntityInstances());
+		}
 		modelBatch.end();
 				
 		// render the hud

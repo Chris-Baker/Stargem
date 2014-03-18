@@ -10,12 +10,15 @@ import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
 import com.stargem.entity.components.Component;
 import com.stargem.entity.components.Expires;
+import com.stargem.entity.components.Health;
 import com.stargem.entity.components.KeyboardMouseController;
 import com.stargem.entity.components.Physics;
+import com.stargem.entity.components.PlayerStats;
 import com.stargem.entity.components.RenderableSkinned;
 import com.stargem.entity.components.RenderableStatic;
 import com.stargem.entity.components.RunSpeed;
 import com.stargem.entity.components.ThirdPersonCamera;
+import com.stargem.entity.components.Timer;
 import com.stargem.entity.components.Trigger;
 import com.stargem.graphics.RepresentationManager;
 import com.stargem.persistence.DatabaseFactory;
@@ -88,12 +91,15 @@ public class GameManager {
 		
 		// add all the component types which need to be tracked.		
 		this.componentTypes.add(Expires.class);
+		this.componentTypes.add(Health.class);
 		this.componentTypes.add(KeyboardMouseController.class);
 		this.componentTypes.add(Physics.class);
+		this.componentTypes.add(PlayerStats.class);
 		this.componentTypes.add(RenderableStatic.class);
 		this.componentTypes.add(RenderableSkinned.class);
 		this.componentTypes.add(RunSpeed.class);
 		this.componentTypes.add(ThirdPersonCamera.class);
+		this.componentTypes.add(Timer.class);
 		this.componentTypes.add(Trigger.class);
 		
 		// create the entity persistence layer

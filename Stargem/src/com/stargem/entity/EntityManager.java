@@ -1,14 +1,14 @@
 package com.stargem.entity;
 
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.PooledLinkedList;
+import com.stargem.Config;
 import com.stargem.entity.components.Component;
+import com.stargem.utils.Log;
 
 /**
  * Standard design: c.f. http://entity-systems.wikidot.com/rdbms-with-code-in-systems
@@ -21,7 +21,7 @@ public class EntityManager {
 	
 	private static final Array<Entity> entityPool = new Array<Entity>();
 	
-	private final Set<Entity> allEntities;
+	private final Array<Entity> allEntities;
 	private final ObjectMap<Class<?>, ObjectMap<Entity, ? extends Component>> componentStores;
 	private final ObjectMap<Entity, PooledLinkedList<? extends Component>> entityComponents;
 	private final IntMap<Entity> entityId;
@@ -56,7 +56,7 @@ public class EntityManager {
 	}
 	
 	private EntityManager() {
-		allEntities = new HashSet<Entity>();
+		allEntities = new Array<Entity>();
 		componentStores = new ObjectMap<Class<?>, ObjectMap<Entity, ? extends Component>>();
 		entityComponents = new ObjectMap<Entity, PooledLinkedList<? extends Component>>();
 		entityId = new IntMap<Entity>();
@@ -67,6 +67,11 @@ public class EntityManager {
 	 */
 	@SuppressWarnings("unchecked")
 	synchronized public <T extends Component> T getComponent(Entity entity, Class<T> componentType) {
+		
+//		if(componentType.equals(Health.class) ) {
+//			Log.debug(Config.ENTITY_ERR, "getting health component");
+//		}
+		
 		ObjectMap<Entity, ? extends Component> store = componentStores.get( componentType );
 
 		if (store == null)
@@ -77,11 +82,12 @@ public class EntityManager {
 
 		T result = (T) store.get(entity);
 		if (result == null)
-		 {
+		 {			
+			Log.debug(Config.ENTITY_ERR, "null component returned");
 			return null;
-		//throw new IllegalArgumentException( "GET FAIL: "+entity+" does not possess Component of class\n   missing: "+componentType );
+			//throw new IllegalArgumentException( "GET FAIL: "+entity+" does not possess Component of class\n   missing: "+componentType );
 		}
-
+		
 		return result;
 	}
 
@@ -173,7 +179,7 @@ public class EntityManager {
 	}
 
 	/**
-	 * Un-map a component from an entity. this is a slow process because the list of
+	 * Un-map a component from an entity. this is a relatively slow process because the list of
 	 * components is walked to find an instance of the component type.
 	 * 
 	 * @param e
@@ -217,7 +223,7 @@ public class EntityManager {
 		}
 		else {
 			entity = entityPool.pop();
-			entity.setId(0);
+			entity.id = 0;
 		}
 		
 		allEntities.add(entity);
@@ -233,12 +239,18 @@ public class EntityManager {
 			if(entityId.containsValue(entity, false)) {
 				entityId.remove(entityId.findKey(entity, false, 0));
 			}
-			allEntities.remove(entity);
+			allEntities.removeValue(entity, false);
 			entityPool.add(entity);
 			entity.id = 0;
 		}
 	}
 	
+	/**
+	 * Free the entity and all its components putting them all back into their
+	 * respective pools.
+	 * 
+	 * @param entity the entity to recycle.
+	 */
 	public void recycle(Entity entity) {
 		int id = entity.id;
 		synchronized (this) {
@@ -270,6 +282,12 @@ public class EntityManager {
 		}
 	}
 
+	/**
+	 * Free the entity and all its components putting them all back into their
+	 * respective pools.
+	 * 
+	 * @param id the id of the entity to recycle.
+	 */
 	public void recycle(int id) {
 		if(entityId.containsKey(id)) {
 			recycle(entityId.get(id));
@@ -277,19 +295,28 @@ public class EntityManager {
 	}
 	
 	/**
+	 * Set the id of the given entity to the given id value and place it
+	 * in the entityId map at that key.
+	 * 
 	 * @param id
 	 * @param e
 	 */
 	public void setEntityId(Entity e, int id) {
 		entityId.put(id, e);
+		e.id = id;
 	}
 	
+	/**
+	 * Get all the entities as an Iterable.
+	 * 
+	 * @return all the entities as an Iterable.
+	 */
 	synchronized public Iterable<Entity> getAllEntities() {
 		return this.allEntities;
 	}
 	
 	/**
-	 * Register a new component attachment observer 
+	 * Register a new entity recycle observer 
 	 * @param o
 	 */
 	public void registerEntityRecycleObserver(EntityRecycleObserver o) {
@@ -297,7 +324,7 @@ public class EntityManager {
 	}
 	
 	/**
-	 * Unregister the component attachment observer 
+	 * Unregister the entity recycle observer 
 	 * @param o
 	 */
 	public void unregisterEntityRecycleObserver(EntityRecycleObserver o) {

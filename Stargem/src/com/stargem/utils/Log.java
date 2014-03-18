@@ -23,37 +23,37 @@ public class Log {
 
 	private static int level = NONE;
 
-	public static void debug(String tag, String message) {
+	synchronized public static void debug(String tag, String message) {
 		if (level >= DEBUG) {
 			Gdx.app.debug(tag, message);
 		}
 	}
 
-	public static void debug(String tag, String message, Exception exception) {
+	synchronized public static void debug(String tag, String message, Throwable exception) {
 		if (level >= DEBUG) {
 			Gdx.app.debug(tag, message, exception);
 		}
 	}
 
-	public static void info(String tag, String message) {
+	synchronized public static void info(String tag, String message) {
 		if (level >= INFO) {
 			Gdx.app.log(tag, message);
 		}
 	}
 
-	public static void info(String tag, String message, Exception exception) {
+	synchronized public static void info(String tag, String message, Throwable exception) {
 		if (level >= INFO) {
 			Gdx.app.log(tag, message, exception);
 		}
 	}
 
-	public static void error(String tag, String message) {
+	synchronized public static void error(String tag, String message) {
 		if (level >= ERROR) {
 			Gdx.app.error(tag, message);
 		}
 	}
 
-	public static void error(String tag, String message, Throwable exception) {
+	synchronized public static void error(String tag, String message, Throwable exception) {
 		if (level >= ERROR) {
 			Gdx.app.error(tag, message, exception);
 		}
@@ -66,9 +66,5 @@ public class Log {
 
 	public static int getLogLevel() {
 		return level;
-	}
-	
-	public static void echo(String message) {
-		System.out.println(message);
 	}
 }

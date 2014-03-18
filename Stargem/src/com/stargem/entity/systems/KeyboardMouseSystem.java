@@ -52,9 +52,9 @@ public class KeyboardMouseSystem extends AbstractSystem {
 		
 		if(super.em.getComponent(entity, KeyboardMouseController.class).hasFocus) {
 		
-			ThirdPersonCamera camera 	= entity.getComponent(ThirdPersonCamera.class);
-			RunSpeed runSpeed 			= entity.getComponent(RunSpeed.class);
-			Physics p 					= entity.getComponent(Physics.class);
+			ThirdPersonCamera camera 	= em.getComponent(entity, ThirdPersonCamera.class);
+			RunSpeed runSpeed 			= em.getComponent(entity, RunSpeed.class);
+			Physics p 					= em.getComponent(entity, Physics.class);
 			
 			// we need all three of these components too otherwise this controller won't work
 			if(p == null || camera == null || runSpeed == null) {
@@ -72,7 +72,10 @@ public class KeyboardMouseSystem extends AbstractSystem {
 			// pitch the camera up or down
 			camera.deltaPitch = input.getDeltaY() * Preferences.MOUSE_SENSITIVITY;
 			
-			// make the player jump
+			// make the player jump.
+			// jumping before applying movement makes the player jump in a single direction
+			// when the jump button is held down.
+			// this needs to be fixed in the controller
 			if(this.isJumping) {
 				player.jump();
 				this.isJumping = false;
@@ -96,6 +99,8 @@ public class KeyboardMouseSystem extends AbstractSystem {
 			
 			// move the player
 			player.move(runSpeed.speed, this.moveForward, this.moveBackward, this.moveLeft, this.moveRight);
+			
+			
 			
 			// reset the cursor location to the middle of the screen
 			input.setCursorPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);

@@ -22,6 +22,7 @@ public class Config {
 	// scripting
 	public static final String SCRIPT_PATH 			= "data/lua/";
 	public static final String SCRIPT_EXTENSION 	= ".lua";
+	public static final String WORLD_SCRIPT_NAME	= "Script";
 	
 	// Error tags for logging
 	public static final String EDITOR_ERR 			= "EDITOR";
@@ -56,7 +57,7 @@ public class Config {
 	// Physics time step
 	public static final int MAX_UPDATE_ITERATIONS 	= 5;
 	public static final float FIXED_TIME_STEP 		= 1 / 60f;
-	public static final int tweenTimeStep 			= (int) (FIXED_TIME_STEP * 1000);
+	public static final int TWEEN_TIME_STEP			= (int) (FIXED_TIME_STEP * 1000);
 	public static final int NUM_SUBSTEPS 			= 3;
 	
 	// auto save frequency in seconds

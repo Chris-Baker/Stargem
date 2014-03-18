@@ -71,6 +71,15 @@ public class QuadSphereSegment {
 	private final Vector3 dav = new Vector3();
 	private final Vector3 norm = new Vector3();
 	
+	private final Vector3 vertex = new Vector3();
+	private final Vector2 uv = new Vector2();
+	
+	private final float[][] heights;
+	
+	public QuadSphereSegment(int width, int orientation, int scale, float startX, float startY, float startZ, boolean isInverted) {
+		this(width, orientation, scale, startX, startY, startZ, isInverted, new float[width][width]);
+	}
+	
 	/**
 	 * A quad sphere segment is a section of one of the faces of the cube which makes up
 	 * the quad sphere. The starting coordinates given are the first vertex of the segment, the
@@ -84,7 +93,7 @@ public class QuadSphereSegment {
 	 * @param startZ the z coordinate of the first vertex of the segment
 	 * @param isInverted whether or not the surface normals should be reversed
 	 */
-	public QuadSphereSegment(int width, int orientation, int scale, float startX, float startY, float startZ, boolean isInverted) {
+	public QuadSphereSegment(int width, int orientation, int scale, float startX, float startY, float startZ, boolean isInverted, float[][] heights) {
 
 		// orientation must be 0 - 5
 		if (orientation < 0 || orientation > 5) {
@@ -112,6 +121,8 @@ public class QuadSphereSegment {
 		this.normals = new Vector3[width][width];
 		this.uvCoords = new Vector2[width][width];
 
+		this.heights = heights;
+		
 		this.initVertices();
 
 	}
@@ -149,11 +160,13 @@ public class QuadSphereSegment {
 					throw new GdxRuntimeException("Unknown orientation " + orientation + ". Orientation must be 0 - 5");
 				}
 
+				//vertex.set(px, py, pz);
+				
 				Vector3 vertex = new Vector3(px, py, pz);
 				vertex.nor();
 				//vertex.scl(scale + (r.nextFloat() / 2));
-				vertex.scl(scale);
-				
+				//vertex.scl(scale);
+				vertex.scl(scale + heights[x][y]);
 
 				// UV coordinates 
 				float u;
@@ -210,6 +223,7 @@ public class QuadSphereSegment {
 				}
 				
 				Vector2 uv = new Vector2(u, v);
+				//uv.set(u, v);
 
 				// add coords and position
 				vertices[x][y] = vertex;

@@ -162,7 +162,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 					entity = PlayersManager.getInstance().getPlayerEntity(playerNum);
 					
 					// set its new id to the player entity id
-					entity.setId(entityID);
+					em.setEntityId(entity, entityID);
 					
 					// replace its physics component
 					this.em.removeComponent(entity, Physics.class);
@@ -172,7 +172,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 					// otherwise, load the entity as normal and add it to the player manager
 					
 					entity = this.em.createEntity();
-					entity.setId(entityID);
+					em.setEntityId(entity, entityID);
 					
 					// iterate over component types and load them
 					for (Class<? extends Component> type : componentTypes) {
@@ -189,7 +189,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 		else {
 			// this is not a player entity so load it as normal
 			entity = this.em.createEntity();
-			entity.setId(entityID);
+			em.setEntityId(entity, entityID);
 			
 			// iterate over component types and load them
 			for (Class<? extends Component> type : componentTypes) {
@@ -444,7 +444,7 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 
 				// get the id of the entity
 				int id = statement.getGeneratedKeys().getInt(1);
-				entity.setId(id);
+				em.setEntityId(entity, id);
 				
 				statement.close();
 				

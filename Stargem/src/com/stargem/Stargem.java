@@ -49,7 +49,10 @@ public class Stargem implements ApplicationListener {
 		
 		// Set the logging level to everything
 		Gdx.app.setLogLevel(Application.LOG_INFO);
-		Log.setLogLevel(Log.INFO);
+		Log.setLogLevel(Log.DEBUG);
+		
+		// set the debug renderer as on for the physics simulation
+		//PhysicsManager.getInstance().setDebug(true);
 		
 		// set the game instance in the Game Manager
 		this.gameManager.setGame(this);

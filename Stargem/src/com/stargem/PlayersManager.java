@@ -5,6 +5,7 @@ package com.stargem;
 
 import com.badlogic.gdx.utils.IntMap;
 import com.stargem.entity.Entity;
+import com.stargem.entity.EntityManager;
 import com.stargem.utils.Log;
 
 /**
@@ -27,7 +28,7 @@ import com.stargem.utils.Log;
  * @version	1.0
  */
 public class PlayersManager {
-
+	
 	// a counter which tracks the next localPlayer number to be assigned
 	// localPlayer numbers are used as keys in the Map which stores localPlayer entities
 	private int nextPlayerNum = 1;
@@ -85,10 +86,11 @@ public class PlayersManager {
 	 * a new set of entities is imported because the new world will have its own set 
 	 * of player entity IDs.
 	 */
-	public void resetPlayerIds() {		
+	public void resetPlayerIds() {
+		EntityManager em = EntityManager.getInstance();
 		for(Entity entity : this.players.values()) {
 			if(entity != null) {
-				entity.setId(0);
+				em.setEntityId(entity, 0);
 			}
 		}
 	}
@@ -109,6 +111,7 @@ public class PlayersManager {
 	 * @param playerIDs the map of player numbers and entity IDs
 	 */
 	public void setPlayerIDs(IntMap<Integer> playerIDs) {
+		EntityManager em = EntityManager.getInstance();
 		for(Integer entityId : playerIDs.values()) {
 			
 			int playerNum = playerIDs.findKey(entityId, false, -1);
@@ -125,7 +128,7 @@ public class PlayersManager {
 				
 				// the entity can be null if this is the first load of the game
 				if(e != null) {
-					e.setId(entityId);
+					em.setEntityId(e, entityId);
 				}
 			}
 		}

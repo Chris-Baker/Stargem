@@ -28,6 +28,7 @@ import com.stargem.Config;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
 import com.stargem.entity.components.Physics;
+import com.stargem.graphics.PhysicsDebugDraw;
 import com.stargem.graphics.RepresentationManager;
 import com.stargem.terrain.TerrainSphere;
 import com.stargem.utils.Log;
@@ -40,7 +41,7 @@ import com.stargem.utils.Log;
  * @version	1.0
  */
 public class PhysicsManager {
-	
+		
 	public static final int SHAPE_SPHERE	= 0;
 	public static final int SHAPE_BOX 		= 1;
 	public static final int SHAPE_CYLINDER 	= 2;
@@ -71,8 +72,9 @@ public class PhysicsManager {
 	private final Vector3 acceleration = new Vector3();
 	private final Vector3 position = new Vector3(0, 0, 0);
 	
-	// the collision callback listener
-	ContactProcessedListener listener;
+	// the collision callback contactListener
+	StargemContactListener contactListener;
+	private boolean debug;
 	
 	// Singleton instance
 	private static PhysicsManager instance;
@@ -102,9 +104,9 @@ public class PhysicsManager {
 		ghostPairCallback = new btGhostPairCallback();
 		dynamicsWorld.getPairCache().setInternalGhostPairCallback(ghostPairCallback);
 		
-		// Collision callback, this is set active upon instantiation
-		//listener = new ContactProcessedListener();
-		//listener.enableOnAdded
+		// Collision callback, this is set active upon instantiation automagically by the Bullet wrapper
+		contactListener = new StargemContactListener();
+		contactListener.enable();
 		
 	}
 	
@@ -152,6 +154,10 @@ public class PhysicsManager {
 		this.motionStates.add(motionState);
 		
 		this.dynamicsWorld.addRigidBody(body, group, collidesWith);
+		//this.dynamicsWorld.addRigidBody(body);
+		
+		// set the index as the body user value, it is used for collision callbacks
+		body.setUserValue(this.bodies.size - 1);
 		
 		return this.bodies.size - 1;
 	}
@@ -220,7 +226,7 @@ public class PhysicsManager {
 			String message = "Cannot create unknown physics body type for entity ID: " + entity.getId();
 			Log.error(Config.PHYSICS_ERR, message);
 			throw new Error(message);
-		}		
+		}
 		
 		// set the motionstate
 		body.setMotionState(motionState);
@@ -235,11 +241,18 @@ public class PhysicsManager {
 		body.setRestitution(component.restitution);
 		body.setActivationState(component.activationState);
 		
-		//body.setContactCallbackFilter(CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-		//body.setContactCallbackFlag(body.getContactCallbackFlag() | CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+		body.setContactCallbackFilter(component.contactWith);
+		body.setContactCallbackFlag(component.contactGroup);
 		
-		// add the body to the simulation
-		return this.addRigidBody(info, shape, body, motionState, (short) component.collisionGroup, (short) component.collidesWith);
+		int index = this.addRigidBody(info, shape, body, motionState, (short) component.collisionGroup, (short) component.collidesWith);
+		
+		// if debug mode is set then we add a model to the debug draw
+		if(this.debug) {
+			PhysicsDebugDraw.getInstance().createDebugInstance(index, motionState.transform, component.shape, component.width, component.height, component.depth);
+		}
+		
+		// add the body to the simulation returning the index it is added at
+		return index;
 		
 	}
 		
@@ -290,23 +303,22 @@ public class PhysicsManager {
 		
 		// remove the body
 		this.dynamicsWorld.removeRigidBody(this.bodies.get(index));
+				
+		// remove the stored references to the objects and dispose the bullet objects
+		this.bodies.removeIndex(index).dispose();
+		this.bodyInfos.removeIndex(index).dispose();
+		this.shapes.removeIndex(index); // disposing this crashes Bullet
+		this.motionStates.removeIndex(index).dispose();
 		
-		// dispose the bullet objects
-		this.bodies.get(index).dispose();
-		this.shapes.get(index).dispose();
-		this.bodyInfos.get(index).dispose();
-		this.motionStates.get(index).dispose();
-		
-		// remove the stored references to the objects
-		this.bodyInfos.removeIndex(index);
-		this.shapes.removeIndex(index);
-		this.bodies.removeIndex(index);
-		this.motionStates.removeIndex(index);
-		
-		// update the body copied over the deleted body
-		Entity entity = (Entity) this.bodies.get(index).userData;
-		Physics component = EntityManager.getInstance().getComponent(entity, Physics.class);
-		component.bodyIndex = index;
+		// update the body copied over the deleted body unless the body was last in the array
+		// then the body is null doesn't need updating
+		if(index < this.bodies.size) {
+			btRigidBody body = this.bodies.get(index);
+			Entity entity = (Entity) body.userData;
+			Physics component = EntityManager.getInstance().getComponent(entity, Physics.class);
+			component.bodyIndex = index;
+			body.setUserValue(index);
+		}
 	}
 	
 	/**
@@ -323,7 +335,7 @@ public class PhysicsManager {
 	 * Dispose of all physics objects
 	 */
 	public void dispose() {
-		this.listener.dispose();
+		this.contactListener.dispose();
 		this.collisionConfiguration.dispose();
 		this.dispatcher.dispose();
 		this.broadphase.dispose();
@@ -367,19 +379,7 @@ public class PhysicsManager {
 		}
 		
 	}
-	
-	public void updateCharacters(float delta) {
 		
-		for(btRigidBody body : bodies) {
-		
-			if(body.getClass().equals(KinematicCharacter.class)) {
-				KinematicCharacter character = (KinematicCharacter) body;
-				character.updateAction(this.dynamicsWorld, delta);
-			}
-			
-		}		
-	}
-	
 	/**
 	 * Step the physics simulation
 	 * 
@@ -431,7 +431,22 @@ public class PhysicsManager {
 			MotionState s = this.motionStates.get(p.bodyIndex);
 			transform = s.transform;
 		}
+		
 		return transform;		
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean debug() {
+		return this.debug;
+	}
+
+	/**
+	 * @param debug the debug to set
+	 */
+	public void setDebug(boolean debug) {
+		this.debug = debug;
 	}
 	
 }

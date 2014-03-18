@@ -3,6 +3,8 @@
  */
 package com.stargem.scripting;
 
+import java.lang.reflect.Field;
+
 import org.keplerproject.luajava.LuaException;
 import org.keplerproject.luajava.LuaObject;
 import org.keplerproject.luajava.LuaState;
@@ -40,7 +42,13 @@ public class ScriptManager {
 	private ScriptManager() {
 		super();
 	}
-		
+	
+	/**
+	 * Initialise the Lua state passing it the contents of the file
+	 * pointed to by the given file path.
+	 * 
+	 * @param filePath path to the lua file to initialise
+	 */
 	public void initialise(String filePath) {
 				
 		// throw an appropriate error if no name is found
@@ -110,7 +118,8 @@ public class ScriptManager {
 	}
 	
 	/**
-	 * Add the contents of the given file to the Lua State
+	 * Add the contents of the given file to the Lua State.
+	 * This will silently eat errors in required scripts so beware!
 	 * 
 	 * @param filename the name of the Lua file to add, minus the extension
 	 */
@@ -122,6 +131,7 @@ public class ScriptManager {
 			throw new Error("Lua name file not found: " + filePath);
 		}
 		
+		// TODO this will silently eat errors in required scripts so beware!
 		this.luaState.LdoString(Gdx.files.internal(filePath).readString());
 	}
 	
@@ -138,5 +148,34 @@ public class ScriptManager {
 		luaPath.append(filename);
 		luaPath.append(Config.SCRIPT_EXTENSION);
 		return luaPath.toString();
+	}
+	
+	/**
+	 * A generic setter for fields because Lua can't write to public fields.
+	 * 
+	 * @param instance the object instance to set the field value on
+	 * @param fieldName the name of the field to set
+	 * @param value the value to set
+	 */
+	public void setField(Object instance, String fieldName, Object value) {
+		
+		try {
+			Class<?> type = instance.getClass();			
+			Field field = type.getField(fieldName);
+			field.set(instance, value);
+		}
+		catch (NoSuchFieldException e) {
+			Log.error(Config.REFLECTION_ERR, e.getMessage());
+		}
+		catch (SecurityException e) {
+			Log.error(Config.REFLECTION_ERR, e.getMessage());
+		}
+		catch (IllegalArgumentException e) {
+			Log.error(Config.REFLECTION_ERR, e.getMessage());
+		}
+		catch (IllegalAccessException e) {
+			Log.error(Config.REFLECTION_ERR, e.getMessage());
+		}
+		
 	}
 }
