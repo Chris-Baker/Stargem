@@ -6,6 +6,8 @@ package com.stargem.terrain;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.stargem.utils.Log;
+import com.stargem.utils.SimplexNoise;
 
 /**
  * QuadSphereSegment.java
@@ -132,6 +134,12 @@ public class QuadSphereSegment {
 	 * 
 	 */
 	public void initVertices() {
+		
+		int largestFeature = 10;
+		double persistence = 0.5d;
+		int seed = 100;
+		SimplexNoise noise = new SimplexNoise(largestFeature, persistence, seed);
+		
 		// calculate vertex positions and uv coords
 		for (int y = 0; y < width; y += 1) {
 			for (int x = 0; x < width; x += 1) {
@@ -162,13 +170,18 @@ public class QuadSphereSegment {
 				}
 
 				//vertex.set(px, py, pz);
-				
+								
 				Vector3 vertex = new Vector3(px, py, pz);
 				vertex.nor();
+				Vector3 scaled = new Vector3(vertex).scl(scale);
 				//vertex.scl(scale + (r.nextFloat() / 2));
 				//vertex.scl(scale);
-				vertex.scl(scale + (heights[x][y] * 5));
-
+				float height = (float)(noise.getNoise(scaled.x, scaled.y, scaled.z) + 1) / 2;
+				Log.debug("Terrain", "height: " + height);
+				
+				//vertex.scl(scale + (heights[x][y] * 5));
+				vertex.scl(scale + (height * 2));
+				
 				// UV coordinates 
 				float u;
 				float v;			
@@ -262,6 +275,7 @@ public class QuadSphereSegment {
 				// deal with edge case we are at the bottom of the segment
 				if (y == 0) {
 					a.set(south.vertices[x][width - 1]);
+					a.set(vertices[x][y]);
 				}
 				else {
 					a.set(vertices[x][y - 1]);
@@ -270,6 +284,7 @@ public class QuadSphereSegment {
 				// deal with edge case we are at the left of the segment
 				if (x == 0) { 
 					b.set(west.vertices[width - 1][y]);
+					b.set(vertices[x][y]);
 				} 
 				else {
 					b.set(vertices[x - 1][y]);
@@ -278,6 +293,7 @@ public class QuadSphereSegment {
 				// deal with edge case we are at the top of the segment
 				if (y == width - 1) {
 					c.set(north.vertices[x][0]);
+					c.set(vertices[x][y]);
 				}
 				else {
 					c.set(vertices[x][y + 1]);
@@ -286,6 +302,7 @@ public class QuadSphereSegment {
 				// deal with edge case we are at the right of the segment
 				if (x == width - 1) {
 					d.set(east.vertices[0][y]);
+					d.set(vertices[x][y]);
 				}
 				else {
 					d.set(vertices[x + 1][y]);

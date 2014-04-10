@@ -4,7 +4,6 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.stargem.editor.screens.EditorScreen;
 import com.stargem.persistence.PersistenceManager;
 import com.stargem.screens.LoadingScreen;
 import com.stargem.screens.PlayScreen;
@@ -28,10 +27,7 @@ public class Stargem implements ApplicationListener {
 	// game screens
 	private Screen loadingScreen;
 	private Screen playScreen;
-	
-	// editor screen
-	private Screen editorScreen;
-	
+		
 	// resume currentScreen
 	// splash currentScreen
 	// main menu currentScreen
@@ -58,7 +54,6 @@ public class Stargem implements ApplicationListener {
 		this.gameManager.setGame(this);
 		
 		// Create the screens
-		this.editorScreen = new EditorScreen(this);
 		this.loadingScreen = new LoadingScreen(this);
 		this.playScreen = new PlayScreen(this);
 		
