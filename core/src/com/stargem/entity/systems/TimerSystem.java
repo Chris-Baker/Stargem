@@ -3,12 +3,10 @@
  */
 package com.stargem.entity.systems;
 
-import com.stargem.Config;
 import com.stargem.entity.Entity;
 import com.stargem.entity.components.Timer;
 import com.stargem.entity.components.Trigger;
 import com.stargem.scripting.ScriptManager;
-import com.stargem.utils.Log;
 
 /**
  * TimerSystem.java
@@ -43,8 +41,7 @@ public class TimerSystem extends AbstractSystem {
 			// call a trigger if one exists
 			Trigger trigger = em.getComponent(entity, Trigger.class);
 			
-			if(trigger != null) {
-				Log.debug(Config.SCRIPT_ERR, "Calling trigger " + trigger.name);
+			if(trigger != null) {				
 				ScriptManager.getInstance().execute("triggers", trigger.name, entity);				
 			}
 			

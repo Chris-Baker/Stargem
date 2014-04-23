@@ -51,7 +51,7 @@ public class Stargem implements ApplicationListener {
 		//PhysicsManager.getInstance().setDebug(true);
 		
 		// set the game instance in the Game Manager
-		this.gameManager.setGame(this);
+		this.gameManager.init(this);
 		
 		// Create the screens
 		this.loadingScreen = new LoadingScreen(this);

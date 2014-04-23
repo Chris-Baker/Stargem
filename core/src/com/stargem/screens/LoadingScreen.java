@@ -6,9 +6,7 @@ package com.stargem.screens;
 import java.util.Observable;
 import java.util.Observer;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.stargem.Config;
 import com.stargem.GameManager;
@@ -21,6 +19,8 @@ import com.stargem.physics.PhysicsManager;
 import com.stargem.profile.PlayerProfile;
 import com.stargem.profile.ProfileManager;
 import com.stargem.scripting.ScriptManager;
+import com.stargem.terrain.HeightStrategy;
+import com.stargem.terrain.NoiseHeightStrategy;
 import com.stargem.terrain.SkySphere;
 import com.stargem.terrain.TerrainSphere;
 import com.stargem.utils.AssetList;
@@ -175,16 +175,13 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				// render the view
 				this.view.render(delta);
 				
-				// build a terrain object
 				// the terrain
-				
-				// TODO load the terrain file with the asset loader
-				// TODO pass terrain file directly to terrain constructor
 				int scale = this.worldDetails.getTerrainScale();
 				int segmentWidth = this.worldDetails.getTerrainSegmentWidth();
 				int numSegments = this.worldDetails.getTerrainNumSegments();
-				Pixmap heightMap = this.assets.get(this.terrainHeightMapPath, Pixmap.class);
-				TerrainSphere terrain = new TerrainSphere(scale, segmentWidth, numSegments, heightMap);
+				//Pixmap heightMap = this.assets.get(this.terrainHeightMapPath, Pixmap.class);
+				HeightStrategy heights = new NoiseHeightStrategy(10, 0.5, 100);
+				TerrainSphere terrain = new TerrainSphere(scale, segmentWidth, numSegments, heights);
 				
 				// pass the terrain to the physics manager
 				PhysicsManager.getInstance().createBodyFromTerrain(terrain);
@@ -245,7 +242,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				
 				// set an input processor to listen for any key presses
 				this.anyKeyPressedProcessor.addObserver(this);
-				Gdx.input.setInputProcessor(this.anyKeyPressedProcessor);
+				GameManager.getInstance().addInputProcessor(anyKeyPressedProcessor);
 				
 				Log.debug(Config.INFO, "ready...");
 				
@@ -263,7 +260,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				
 			break;
 			
-			case FADING_OUT:
+			case FADING_OUT:				
 				
 				// render the view
 				this.view.render(delta);
@@ -276,6 +273,9 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 			break;
 			
 			case UNLOADING_VIEW:
+				
+				// remove the input listener
+				GameManager.getInstance().removeInputProcessor(anyKeyPressedProcessor);
 				
 				// dispose the view
 				this.view.dispose();

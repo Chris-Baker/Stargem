@@ -21,7 +21,6 @@ public class RenderableSkinned extends AbstractComponent {
 	
 	@Override
 	public void free() {
-		// remove the associated physics object from the simulation
 		RepresentationManager.getInstance().removeModelInstance(modelIndex);
 	}
 }

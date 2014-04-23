@@ -299,13 +299,13 @@ public class EntityPersistence implements EntityRecycleObserver, ConnectionListe
 				Log.error(Config.REFLECTION_ERR, e.getMessage() + ": Unable to create new component.");
 			}
 			catch (IllegalAccessException e) {
-				Log.error(Config.REFLECTION_ERR, e.getMessage());
+				Log.error(Config.REFLECTION_ERR, e.getMessage() + " Illegal access exception " + type.getSimpleName());
 			}
 			catch (IllegalArgumentException e) {
-				Log.error(Config.REFLECTION_ERR, e.getMessage());
+				Log.error(Config.REFLECTION_ERR, e.getMessage() + ": Illegal argument whilst loading " + type.getSimpleName());
 			}
-			catch (InvocationTargetException e) {
-				Log.error(Config.REFLECTION_ERR, e.getMessage());
+			catch (InvocationTargetException e) {				
+				Log.error(Config.REFLECTION_ERR, e.getMessage() + " Invocation target exception " + type.getSimpleName());
 			}
 
 		}

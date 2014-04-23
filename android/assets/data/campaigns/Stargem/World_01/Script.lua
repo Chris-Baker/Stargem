@@ -1,18 +1,7 @@
 -- these two lines enable importing other Lua files
 ScriptManager = luajava.bindClass("com.stargem.scripting.ScriptManager")
 script = ScriptManager:getInstance()
-
--- imports
-script:require("Log")
-script:require("Entities")
-script:require("Components")
-script:require("Physics")
-
---  Other functions that need to be created in Java
---   - Change music
---   - Change the current world script
---   - ...
---
+script:require("Init")
 
 triggers = {}
 

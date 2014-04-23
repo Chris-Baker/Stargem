@@ -21,12 +21,13 @@ import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
 import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBodyConstructionInfo;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody.btRigidBodyConstructionInfo;
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
 import com.badlogic.gdx.utils.Array;
 import com.stargem.Config;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
+import com.stargem.entity.components.AISphericalSensor;
 import com.stargem.entity.components.Physics;
 import com.stargem.graphics.PhysicsDebugDraw;
 import com.stargem.graphics.RepresentationManager;
@@ -106,7 +107,7 @@ public class PhysicsManager {
 		
 		// Collision callback, this is set active upon instantiation automagically by the Bullet wrapper
 		contactListener = new StargemContactListener();
-		
+		contactListener.enableOnAdded();
 	}
 	
 	/**
@@ -119,13 +120,21 @@ public class PhysicsManager {
 	}
 
 	/**
-	 * @param motionStateIndex
+	 * @param index
 	 * @return
 	 */
 	public MotionState getMotionState(int index) {
 		return this.motionStates.get(index);
 	}
 
+	/**
+	 * @param index
+	 * @return
+	 */
+	public KinematicCharacter getCharacter(int index) {
+		return (KinematicCharacter) this.bodies.get(index);
+	}
+	
 	/**
 	 * @param motionStateIndex
 	 * @return
@@ -152,8 +161,7 @@ public class PhysicsManager {
 		this.bodies.add(body);
 		this.motionStates.add(motionState);
 		
-		this.dynamicsWorld.addRigidBody(body, group, collidesWith);
-		//this.dynamicsWorld.addRigidBody(body);
+		this.dynamicsWorld.addRigidBody(body, group, collidesWith);			
 		
 		// set the index as the body user value, it is used for collision callbacks
 		body.setUserValue(this.bodies.size - 1);
@@ -254,7 +262,56 @@ public class PhysicsManager {
 		return index;
 		
 	}
+	
+	/**
+	 * Create a spherical AI sensor physics object
+	 * 
+	 * @param entity
+	 * @param component
+	 * @return
+	 */
+	public int createBodyFromComponent(Entity entity, AISphericalSensor component) {
 		
+		// shape
+		btCollisionShape shape = this.getShape(entity.getId(), SHAPE_SPHERE, component.radius, component.radius, component.radius);
+		shapes.add(shape);
+		shape.calculateLocalInertia(0, tempVector.set(Vector3.Zero));
+		
+		// motion state
+		MotionState motionState = new MotionState(new Matrix4());
+		
+		// info
+		btRigidBodyConstructionInfo info = new btRigidBodyConstructionInfo(0, null, shape, tempVector.set(1, 1, 1));
+				
+		info.setMotionState(motionState);
+				
+		// create either a character or a rigid body
+		btRigidBody body = new btRigidBody(info);;
+				
+		// set the motionstate
+		body.setMotionState(motionState);
+		
+		// store the entity in the body
+		body.userData = entity;
+		
+		// callback contact groups
+		body.setContactCallbackFilter(component.contactWith);
+		body.setContactCallbackFlag(component.contactGroup);
+		
+		short collidesWith = CollisionFilterGroups.DEFAULT_GROUP | CollisionFilterGroups.KINEMATIC_GROUP | CollisionFilterGroups.CHARACTER_GROUP;
+		short collisionGroup = CollisionFilterGroups.DEFAULT_GROUP | CollisionFilterGroups.KINEMATIC_GROUP;
+		int index = this.addRigidBody(info, shape, body, motionState, collisionGroup, collidesWith);
+				
+		// if debug mode is set then we add a model to the debug draw
+		if(this.debug) {
+			PhysicsDebugDraw.getInstance().createDebugInstance(index, motionState.transform, SHAPE_SPHERE, component.radius, component.radius, component.radius);
+		}
+		
+		// add the body to the simulation returning the index it is added at
+		return index;
+		
+	}
+	
 	/**
 	 * @param shape
 	 * @return

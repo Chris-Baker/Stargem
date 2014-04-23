@@ -20,7 +20,6 @@ public class RenderableStatic extends AbstractComponent {
 	
 	@Override
 	public void free() {
-		// remove the associated physics object from the simulation
 		RepresentationManager.getInstance().removeModelInstance(modelIndex);
 	}
 	

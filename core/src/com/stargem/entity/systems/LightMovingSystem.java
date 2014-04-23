@@ -48,7 +48,7 @@ public class LightMovingSystem extends AbstractSystem {
 		PointLight pointLight = environmentManager.getPointLight(pointLightComponent.lightIndex);
 		
 		// get the world transform of the body
-		body.getWorldTransform(transform);
+		body.getMotionState().getWorldTransform(transform);
 		
 		// get the new position
 		float x = transform.val[12];

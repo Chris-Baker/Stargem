@@ -60,8 +60,9 @@ public class ThirdPersonCameraSystem extends AbstractSystem {
 			this.upOffset.set(up).scl(c.heightOffset);
 			
 			// find the cameras pitch pivot point to the right of the target
-			this.pivot.set(right).scl(-1).add(targetPosition).add(upOffset);
-					
+			//this.pivot.set(right).scl(-1).add(targetPosition).add(upOffset);
+			this.pivot.set(targetPosition).add(upOffset);
+			
 			// translate the camera backwards
 			this.camera.position.set(out).scl(-c.currentDistance).add(pivot);;
 			
@@ -71,7 +72,7 @@ public class ThirdPersonCameraSystem extends AbstractSystem {
 			// set the camera up direction to stop the camera rolling as it rotates
 			this.camera.up.set(up);
 							
-			// rotate the camera up or down
+			// pitch
 			c.pitch += c.deltaPitch * delta;
 			if(c.pitch < -90) {
 				c.pitch = -90;
@@ -80,7 +81,14 @@ public class ThirdPersonCameraSystem extends AbstractSystem {
 				c.pitch = 90;
 			}
 			this.camera.rotateAround(pivot, right, c.pitch);
-									
+			
+			// yaw
+			c.yaw -= c.deltaYaw * delta;
+			this.camera.rotateAround(pivot, up, c.yaw);
+			
+			// do a raycast here from the pivot to the camera 
+			// and place camera where the collision is if any happens
+			
 			this.camera.update();
 		}
 	}

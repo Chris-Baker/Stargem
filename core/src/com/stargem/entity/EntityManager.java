@@ -67,23 +67,19 @@ public class EntityManager {
 	 */
 	@SuppressWarnings("unchecked")
 	synchronized public <T extends Component> T getComponent(Entity entity, Class<T> componentType) {
-		
-//		if(componentType.equals(Health.class) ) {
-//			Log.debug(Config.ENTITY_ERR, "getting health component");
-//		}
-		
+				
 		ObjectMap<Entity, ? extends Component> store = componentStores.get( componentType );
 
 		if (store == null)
 		 {
 			return null;
-		//throw new IllegalArgumentException( "GET FAIL: there are no entities with a Component of class: "+componentType );
+			//throw new IllegalArgumentException( "GET FAIL: there are no entities with a Component of class: "+componentType );
 		}
 
 		T result = (T) store.get(entity);
 		if (result == null)
 		 {			
-			Log.debug(Config.ENTITY_ERR, "null component returned");
+			Log.debug(Config.ENTITY_ERR, "No component of type " + componentType.getName() + " returning null");
 			return null;
 			//throw new IllegalArgumentException( "GET FAIL: "+entity+" does not possess Component of class\n   missing: "+componentType );
 		}

@@ -3,14 +3,18 @@
  */
 package com.stargem;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.Array;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
+import com.stargem.entity.components.AISphericalSensor;
 import com.stargem.entity.components.Component;
+import com.stargem.entity.components.Controller;
 import com.stargem.entity.components.Health;
-import com.stargem.entity.components.KeyboardMouseController;
 import com.stargem.entity.components.Physics;
 import com.stargem.entity.components.PlayerStats;
 import com.stargem.entity.components.RenderablePointLight;
@@ -73,7 +77,9 @@ public class GameManager {
 
 	// the game instance that this game manager manages.
 	private Stargem game;
-			
+	
+	private final InputMultiplexer multiplexer = new InputMultiplexer();
+	
 	/**
 	 * Return the singleton instance of the game manager.
 	 * 
@@ -89,9 +95,10 @@ public class GameManager {
 	
 	private GameManager () {
 		
-		// add all the component types which need to be tracked.		
+		// add all the component types which need to be tracked.
+		this.componentTypes.add(AISphericalSensor.class);
+		this.componentTypes.add(Controller.class);
 		this.componentTypes.add(Health.class);
-		this.componentTypes.add(KeyboardMouseController.class);
 		this.componentTypes.add(Physics.class);
 		this.componentTypes.add(PlayerStats.class);
 		this.componentTypes.add(RenderablePointLight.class);
@@ -127,7 +134,19 @@ public class GameManager {
 		this.representationManager.setAssetManager(this.assetManager);
 		
 	}
-		
+	
+	/**
+	 * This is called by the application listener on create
+	 * setting the application listener in the game manager
+	 * and setting the multiplexer as the input processor.
+	 * 
+	 * @param stargem
+	 */
+	public void init(Stargem game) {
+		this.game = game;
+		Gdx.input.setInputProcessor(multiplexer);
+	}
+	
 	/**
 	 * this method simulates creating a new world from the
 	 * world editor.
@@ -312,13 +331,6 @@ public class GameManager {
 	public AssetManager getAssetManager() {
 		return this.assetManager;
 	}
-
-	/**
-	 * @param stargem
-	 */
-	public void setGame(Stargem game) {
-		this.game = game;
-	}
 	
 	/**
 	 * Save the current game to disk
@@ -340,5 +352,13 @@ public class GameManager {
 		this.physicsManager.dispose();
 		this.representationManager.dispose();
 		this.assetManager.dispose();	
+	}
+
+	public void addInputProcessor(InputProcessor processor) {
+		multiplexer.addProcessor(processor);
+	}
+	
+	public void removeInputProcessor(InputProcessor processor) {
+		multiplexer.removeProcessor(processor);
 	}
 }

@@ -10,9 +10,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
+import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.IntMap;
 import com.stargem.Config;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
@@ -37,7 +39,8 @@ public class RepresentationManager {
 	private AbstractIterableRepresentation terrain;
 	private final Array<ModelInstance> modelInstances = new Array<ModelInstance>();
 	private final Array<Model> models = new Array<Model>();
-	private AssetManager assetManager;	
+	private AssetManager assetManager;
+	private final IntMap<AnimationController> animationControllers = new IntMap<AnimationController>();	
 	
 	// Singleton instance
 	public static RepresentationManager getInstance() {
@@ -58,10 +61,14 @@ public class RepresentationManager {
 		}
 				
 		Model model = this.assetManager.get(component.modelPath, Model.class);
+		
+		// we need to add all the animations for this skinned model
+		this.addAnimations(model, component.modelPath);
+		
 		ModelInstance instance = new ModelInstance(model);
 		this.modelInstances.add(instance);
 		component.modelIndex = this.modelInstances.size - 1;
-		
+				
 		// set the transform to that of the physics component if there is one
 		Matrix4 transform = PhysicsManager.getInstance().getTransformMatrix(entity);
 		if(transform != null) {
@@ -71,9 +78,9 @@ public class RepresentationManager {
 		// this is needed for deleting instances and updating the indices in the entities components
 		instance.userData = entity;
 		
-		// we need to add all the animations for this skinned model
-		this.addAnimations(instance, component.modelPath);
-		
+		// we need to create an animation controller for this instance
+		AnimationController controller = new AnimationController(instance);
+		this.animationControllers.put(component.modelIndex, controller);
 	}
 	
 	/**
@@ -85,10 +92,8 @@ public class RepresentationManager {
 	 * @param instance the instance to add animations to
 	 * @param modelPath the path to the directory containing the animations and also the name of the base model
 	 */
-	private void addAnimations(ModelInstance instance, String modelPath) {
-		
-		Log.debug(Config.INFO, "Add animations called");
-		
+	private void addAnimations(Model model, String modelPath) {
+				
 		// cut up the path to get the name of the model without an extension
 		String[] pathParts = modelPath.split("/|\\\\");
 		String[] nameParts = pathParts[pathParts.length - 1].split("\\.");
@@ -127,8 +132,8 @@ public class RepresentationManager {
 				if(this.assetManager.isLoaded(path + fileName)) {				
 				
 					// if so then we grab the animations from the model
-					Model model = this.assetManager.get(path + fileName, Model.class);
-					Animation anim = model.animations.get(0);
+					Model animationModel = this.assetManager.get(path + fileName, Model.class);
+					Animation anim = animationModel.animations.get(0);
 					
 					// get the animation name
 					String[] animNameParts = fileName.split("\\.|@");
@@ -137,7 +142,7 @@ public class RepresentationManager {
 					anim.id = animNameParts[1];
 					
 					// add the animation to the main instance we are building
-					instance.animations.add(anim);
+					model.animations.add(anim);
 				}
 				else {
 					Log.debug(Config.IO_ERR, "Animation not loaded because the asset is not loaded: " + fileName);
@@ -184,7 +189,20 @@ public class RepresentationManager {
 	}
 	
 	/**
-	 * @param assetManager
+	 * Given an index returns the animation controller at that index.
+	 * The index is usually stored in the skinned representation component
+	 * 
+	 * @param index the index of the controller to return
+	 * @return the animation controller at the index given
+	 */
+	public AnimationController getAnimationController(int index) {
+		return this.animationControllers.get(index);
+	}
+	
+	/**
+	 * Set the asset manager which has all the loaded assets
+	 * 
+	 * @param assetManager the asset manager which has all the loaded assets
 	 */
 	public void setAssetManager(AssetManager assetManager) {
 		this.assetManager = assetManager;

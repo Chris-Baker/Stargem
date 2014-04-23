@@ -29,4 +29,10 @@ public class ThirdPersonCamera extends AbstractComponent {
 	// the amount to change the pitch of the camera by next update
 	public float deltaPitch;
 	
+	// the current yaw of the camera
+	public float yaw;
+		
+	// the amount to change the yaw of the camera by next update
+	public float deltaYaw;
+	
 }

@@ -1,10 +1,3 @@
--- import all the required physics classes
-PhysicsManager = luajava.bindClass("com.stargem.physics.PhysicsManager")
-ContactCallbackFlags = luajava.bindClass("com.stargem.physics.ContactCallbackFlags")
-
--- get the physics manager instance
-physicsManager = PhysicsManager:getInstance()
-
 -- the collisions table holds the callback dispatcher 
 -- and the callback functions for physics collisions
 collisions = {}
@@ -27,11 +20,19 @@ function collisions.dispatch(body, other)
     collisions.trigger(body, other)
   end
   
-  if ContactCallbackFlags:compare(bodyFlag, ContactCallbackFlags.PLAYER) then
+  if ContactCallbackFlags:compare(bodyFlag, ContactCallbackFlags.TEAM_CFP) then
     -- do nothing with players
   end
   
-  if ContactCallbackFlags:compare(bodyFlag, ContactCallbackFlags.ENEMY) then
+  if ContactCallbackFlags:compare(bodyFlag, ContactCallbackFlags.TEAM_BOT) then
+    -- do nothing with enemies
+  end
+  
+  if ContactCallbackFlags:compare(bodyFlag, ContactCallbackFlags.TEAM_DMC) then
+    -- do nothing with enemies
+  end
+  
+  if ContactCallbackFlags:compare(bodyFlag, ContactCallbackFlags.TEAM_PIRATE) then
     -- do nothing with enemies
   end
   
@@ -53,6 +54,10 @@ function collisions.dispatch(body, other)
   
   if ContactCallbackFlags:compare(bodyFlag, ContactCallbackFlags.SPECIAL_POWER) then
     collisions.specialPower(body, other)
+  end
+  
+  if ContactCallbackFlags:compare(bodyFlag, ContactCallbackFlags.AI_SENSOR) then
+    collisions.aiSensor(body, other)
   end
   
 end
@@ -111,7 +116,7 @@ function collisions.smallGem(gem, recipient)
   stats = em:getComponent(entity, PlayerStats)
   
   if not (stats == nil) then
-    components.set(stats, "gems", (stats.cores + 5))
+    components.set(stats, "gems", (stats.gems + 5))
     em:recycle(gem.userData)
   end
 end
@@ -122,7 +127,7 @@ function collisions.largeGem(gem, recipient)
   stats = em:getComponent(entity, PlayerStats)
   
   if not (stats == nil) then
-    components.set(stats, "gems", (stats.cores + 10))
+    components.set(stats, "gems", (stats.gems + 10))
     em:recycle(gem.userData)
   end
 end
@@ -133,7 +138,23 @@ function collisions.specialPower(specialPower, recipient)
   stats = em:getComponent(entity, PlayerStats)
   
   if not (stats == nil) then
-    components.set(stats, "specials", (stats.cores + 1))
+    components.set(stats, "specials", (stats.specials + 1))
     em:recycle(specialPower.userData)
   end
+end
+
+-- Due to the way the sensor is set up to contact only
+-- certain groups, the body collided with is always a threat 
+-- to the brain and can be added to the threat list
+function collisions.aiSensor(sensor, threat)
+
+  threatEntity = threat.userData
+  sensorEntity = sensor.userData
+  
+  brain = aiManager:getBrain(sensorEntity)
+  threatAmount = 0
+  brain:increaseThreat(threatEntity, threatAmount)
+
+  debug("threat added")
+
 end

@@ -36,7 +36,7 @@ public class SkySphere extends AbstractQuadSphere {
 					float startZ = (segmentOffset * (segmentWidth - 1));
 					
 					// create the terrain segment at the calculated location
-					QuadSphereSegment s = new QuadSphereSegment(segmentWidth, orientation, scale, startX, startY, startZ, true);
+					QuadSphereSegment s = new QuadSphereSegment(segmentWidth, orientation, scale, startX, startY, startZ, true, NullHeightStrategy.getInstance());
 					
 					// add the segment to the array for later processing
 					segments[orientation][segmentNumX][segmentNumY] = s;

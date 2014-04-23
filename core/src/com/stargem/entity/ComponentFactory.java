@@ -3,8 +3,10 @@
  */
 package com.stargem.entity;
 
+import com.stargem.controllers.ControllerManager;
+import com.stargem.entity.components.AISphericalSensor;
+import com.stargem.entity.components.Controller;
 import com.stargem.entity.components.Health;
-import com.stargem.entity.components.KeyboardMouseController;
 import com.stargem.entity.components.Physics;
 import com.stargem.entity.components.PlayerStats;
 import com.stargem.entity.components.RenderablePointLight;
@@ -31,6 +33,32 @@ import com.stargem.physics.PhysicsManager;
  */
 public class ComponentFactory {
 	
+	/* @formatter:off */
+	
+	/**
+	 * Create an AISphericalSensor Component
+	 * 
+	 * @param entity
+	 * @param bodyIndex
+	 * @param radius
+	 * @param contactGroup
+	 * @param contactWith
+	 * @return
+	 */
+	public static AISphericalSensor aisphericalsensor(Entity entity, int bodyIndex,  
+			float radius, 
+			int contactGroup, int contactWith) {
+		AISphericalSensor c = ComponentManager.getInstance().newComponentOfType(AISphericalSensor.class);
+		c.bodyIndex = bodyIndex;
+		c.radius = radius;
+		c.contactGroup = contactGroup;
+		c.contactWith = contactWith;
+		
+		c.bodyIndex = PhysicsManager.getInstance().createBodyFromComponent(entity, c);
+		
+		return c;
+	}
+	
 	/**
 	 * Create a Trigger component.
 	 * 
@@ -43,8 +71,6 @@ public class ComponentFactory {
 		c.name = name;
 		return c;
 	}
-		
-	/* @formatter:off */
 	
 	/**
 	 * Takes a row from the database and converts it into a physics component.
@@ -199,21 +225,36 @@ public class ComponentFactory {
 	public static RenderableSkinned renderableskinned(Entity entity, int index, String modelPath, String currentAnimation) {
 		RenderableSkinned c = ComponentManager.getInstance().newComponentOfType(RenderableSkinned.class);
 		c.modelPath = modelPath;
-		c.currentAnimationName = currentAnimation;		
-		RepresentationManager.getInstance().createInstanceFromComponent(entity, c);		
+		c.currentAnimationName = currentAnimation;
+		RepresentationManager.getInstance().createInstanceFromComponent(entity, c);
 		return c;
 	}
 	
 	/**
 	 * 
-	 * 
 	 * @param entity
-	 * @param hasFocus
+	 * @param strategyIndex
+	 * @param strategyType
+	 * @param script
+	 * @param moveForward
+	 * @param moveBackward
+	 * @param moveLeft
+	 * @param moveRight
+	 * @param isJumping
 	 * @return
 	 */
-	public static KeyboardMouseController keyboardmousecontroller(Entity entity, boolean hasFocus) {
-		KeyboardMouseController c = ComponentManager.getInstance().newComponentOfType(KeyboardMouseController.class);
-		c.hasFocus = hasFocus;
+	public static Controller controller(Entity entity, int strategyIndex, int strategyType, String script, boolean moveForward, boolean moveBackward, boolean moveLeft, boolean moveRight, boolean isJumping) {
+		Controller c = ComponentManager.getInstance().newComponentOfType(Controller.class);
+		c.strategyIndex = strategyIndex;
+		c.strategyType = strategyType;
+		c.script = script;
+		c.moveForward = moveForward;
+		c.moveBackward = moveBackward;
+		c.moveLeft = moveLeft;
+		c.moveRight = moveRight;
+		
+		ControllerManager.getInstance().createControllerFromComponent(entity, c);
+		
 		return c;		
 	}
 	
@@ -241,7 +282,7 @@ public class ComponentFactory {
 	 * @param deltaPitch
 	 * @return
 	 */
-	public static ThirdPersonCamera thirdpersoncamera(Entity entity, boolean hasFocus, float minDistance, float maxDistance, float currentDistance, float heightOffset, float pitch, float deltaPitch) {
+	public static ThirdPersonCamera thirdpersoncamera(Entity entity, boolean hasFocus, float minDistance, float maxDistance, float currentDistance, float heightOffset, float pitch, float deltaPitch, float yaw, float deltaYaw) {
 		ThirdPersonCamera c = ComponentManager.getInstance().newComponentOfType(ThirdPersonCamera.class);
 		c.hasFocus = hasFocus;
 		c.minDistance = maxDistance;
@@ -250,6 +291,8 @@ public class ComponentFactory {
 		c.heightOffset = heightOffset;
 		c.pitch = pitch;
 		c.deltaPitch = deltaPitch;
+		c.yaw = yaw;
+		c.deltaYaw = deltaYaw;
 		return c;		
 	}
 	

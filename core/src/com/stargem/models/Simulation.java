@@ -4,8 +4,10 @@
 package com.stargem.models;
 
 import com.stargem.Config;
+import com.stargem.ai.AIManager;
+import com.stargem.entity.systems.AISensorMovingSystem;
 import com.stargem.entity.systems.AutoSaveSystem;
-import com.stargem.entity.systems.KeyboardMouseSystem;
+import com.stargem.entity.systems.ControllerSystem;
 import com.stargem.entity.systems.LightMovingSystem;
 import com.stargem.entity.systems.PhysicsSystem;
 import com.stargem.entity.systems.TimerSystem;
@@ -21,24 +23,29 @@ import com.stargem.physics.PhysicsManager;
 public class Simulation implements Model {
 
 	private final PhysicsManager physicsManager;
+	private final AIManager aiManager;
 	
 	private final PhysicsSystem physicsSystem;
-	private final KeyboardMouseSystem keyboardMouseSystem;
+	private final ControllerSystem keyboardMouseSystem;
 	private final AutoSaveSystem autoSaveSystem;
 	private final TimerSystem timerSystem;
 	private final LightMovingSystem lightMovingSystem;
+	private final AISensorMovingSystem aiSensorSystem;
+	
 	
 	public Simulation() {
 		
 		// get a copy of the physics manager so we can step the simulation each tick
 		physicsManager 	= PhysicsManager.getInstance();
+		aiManager = AIManager.getInstance();
 		
 		// create all systems
 		physicsSystem = new PhysicsSystem();
-		keyboardMouseSystem = new KeyboardMouseSystem();
+		keyboardMouseSystem = new ControllerSystem();
 		autoSaveSystem = new AutoSaveSystem(Config.AUTO_SAVE_FREQUENCY);
 		timerSystem = new TimerSystem();
 		lightMovingSystem = new LightMovingSystem();
+		aiSensorSystem = new AISensorMovingSystem();
 	}
 	
 	/* (non-Javadoc)
@@ -46,7 +53,10 @@ public class Simulation implements Model {
 	 */
 	@Override
 	public void update(float delta) {
-				
+		
+		// move all ai sensors
+		aiSensorSystem.process(delta);
+		
 		// move all lights which are coupled with physics components
 		lightMovingSystem.process(delta);
 		
@@ -61,7 +71,8 @@ public class Simulation implements Model {
 		// get network updates
 		
 		// update ai
-				
+		aiManager.update(delta);
+		
 		// update physics simulation	
 		physicsManager.stepSimulation(delta);
 		

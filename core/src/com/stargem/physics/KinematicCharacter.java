@@ -22,7 +22,6 @@ import com.badlogic.gdx.physics.bullet.collision.btPersistentManifold;
 import com.badlogic.gdx.physics.bullet.collision.btPersistentManifoldArray;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBodyConstructionInfo;
 import com.stargem.Config;
 
 /**
@@ -342,6 +341,14 @@ public class KinematicCharacter extends btRigidBody {
 		super.setWorldTransform(this.motionState.transform);
 	}
 
+	/**
+	 * @param yaw
+	 */
+	public void snapRotateTo(float yaw) {
+		// apply rotation around the character's local up vector
+		motionState.transform.rotate(defaultUp, yaw);
+	}
+	
 	/**
 	 * @param deltaTime
 	 */

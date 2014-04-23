@@ -6,8 +6,6 @@ package com.stargem.terrain;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.stargem.utils.Log;
-import com.stargem.utils.SimplexNoise;
 
 /**
  * QuadSphereSegment.java
@@ -76,12 +74,8 @@ public class QuadSphereSegment {
 	private final Vector3 vertex = new Vector3();
 	private final Vector2 uv = new Vector2();
 	
-	private final float[][] heights;
-	
-	public QuadSphereSegment(int width, int orientation, int scale, float startX, float startY, float startZ, boolean isInverted) {
-		this(width, orientation, scale, startX, startY, startZ, isInverted, new float[width][width]);
-	}
-	
+	private final HeightStrategy heights;
+		
 	/**
 	 * A quad sphere segment is a section of one of the faces of the cube which makes up
 	 * the quad sphere. The starting coordinates given are the first vertex of the segment, the
@@ -95,7 +89,7 @@ public class QuadSphereSegment {
 	 * @param startZ the z coordinate of the first vertex of the segment
 	 * @param isInverted whether or not the surface normals should be reversed
 	 */
-	public QuadSphereSegment(int width, int orientation, int scale, float startX, float startY, float startZ, boolean isInverted, float[][] heights) {
+	public QuadSphereSegment(int width, int orientation, int scale, float startX, float startY, float startZ, boolean isInverted, HeightStrategy heights) {
 
 		// orientation must be 0 - 5
 		if (orientation < 0 || orientation > 5) {
@@ -135,10 +129,10 @@ public class QuadSphereSegment {
 	 */
 	public void initVertices() {
 		
-		int largestFeature = 10;
-		double persistence = 0.5d;
-		int seed = 100;
-		SimplexNoise noise = new SimplexNoise(largestFeature, persistence, seed);
+//		int largestFeature = 10;
+//		double persistence = 0.5d;
+//		int seed = 100;
+//		SimplexNoise noise = new SimplexNoise(largestFeature, persistence, seed);
 		
 		// calculate vertex positions and uv coords
 		for (int y = 0; y < width; y += 1) {
@@ -168,19 +162,11 @@ public class QuadSphereSegment {
 				else {
 					throw new GdxRuntimeException("Unknown orientation " + orientation + ". Orientation must be 0 - 5");
 				}
-
-				//vertex.set(px, py, pz);
 								
-				Vector3 vertex = new Vector3(px, py, pz);
-				vertex.nor();
+				Vector3 vertex = new Vector3(px, py, pz).nor();
 				Vector3 scaled = new Vector3(vertex).scl(scale);
-				//vertex.scl(scale + (r.nextFloat() / 2));
-				//vertex.scl(scale);
-				float height = (float)(noise.getNoise(scaled.x, scaled.y, scaled.z) + 1) / 2;
-				Log.debug("Terrain", "height: " + height);
-				
-				//vertex.scl(scale + (heights[x][y] * 5));
-				vertex.scl(scale + (height * 2));
+				float height = this.heights.getHeight(scaled.x, scaled.y, scaled.z);				
+				vertex.scl(scale + height);
 				
 				// UV coordinates 
 				float u;
