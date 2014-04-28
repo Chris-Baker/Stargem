@@ -4,24 +4,14 @@
 package com.stargem.entity.components;
 
 /**
- * PlayerStats.java
+ * SkillModifiers.java
  *
  * @author 	Chris B
- * @date	12 Mar 2014
+ * @date	25 Apr 2014
  * @version	1.0
  */
-public class PlayerStats extends AbstractComponent {
+public class SkillModifiers extends AbstractComponent {
 
-	// the number of power cores the player has. These are used to unlock the exits
-	public int cores;
-	
-	// Special powers allow the player to activate some ability.
-	// When this happens a special power is consumed.
-	public int specials;
-	
-	// gems are used to purchase statistic increases in the store
-	public int gems;
-	
 	// there are 3 main modifiers. Each increase is tracked here but
 	// the actual values are kept in the individual components 
 	// These tracker values are used to cap the increase amounts
@@ -35,5 +25,5 @@ public class PlayerStats extends AbstractComponent {
 	
 	// run speed increases maximum velocity
 	public int speedIncrease;
-
+	
 }

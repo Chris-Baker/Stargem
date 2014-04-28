@@ -48,7 +48,7 @@ public class Stargem implements ApplicationListener {
 		Log.setLogLevel(Log.DEBUG);
 		
 		// set the debug renderer as on for the physics simulation
-		//PhysicsManager.getInstance().setDebug(true);
+		//hysicsManager.getInstance().setDebug(true);
 		
 		// set the game instance in the Game Manager
 		this.gameManager.init(this);
@@ -70,7 +70,7 @@ public class Stargem implements ApplicationListener {
 		// play currentScreen
 		// shop currentScreen		
 
-		// sound manager
+		// audio manager
 
 		// start the editor
 		//this.setScreen(this.editorScreen);
@@ -96,7 +96,6 @@ public class Stargem implements ApplicationListener {
 		// start the game
 		this.gameManager.loadGame();
 		//this.gameManager.createWorld();
-		
 	}
 	
 	/**

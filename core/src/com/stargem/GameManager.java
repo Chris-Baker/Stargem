@@ -7,23 +7,30 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
-import com.stargem.entity.components.AISphericalSensor;
 import com.stargem.entity.components.Component;
 import com.stargem.entity.components.Controller;
 import com.stargem.entity.components.Health;
+import com.stargem.entity.components.Inventory;
+import com.stargem.entity.components.Parent;
 import com.stargem.entity.components.Physics;
-import com.stargem.entity.components.PlayerStats;
 import com.stargem.entity.components.RenderablePointLight;
 import com.stargem.entity.components.RenderableSkinned;
 import com.stargem.entity.components.RenderableStatic;
 import com.stargem.entity.components.RunSpeed;
+import com.stargem.entity.components.SkillModifiers;
 import com.stargem.entity.components.ThirdPersonCamera;
 import com.stargem.entity.components.Timer;
 import com.stargem.entity.components.Trigger;
+import com.stargem.entity.components.Weapon;
 import com.stargem.graphics.RepresentationManager;
 import com.stargem.persistence.DatabaseFactory;
 import com.stargem.persistence.EntityPersistence;
@@ -80,6 +87,10 @@ public class GameManager {
 	
 	private final InputMultiplexer multiplexer = new InputMultiplexer();
 	
+	private PerspectiveCamera camera;	
+	private Viewport viewport;
+	private final Vector3 cameraPosition = new Vector3();
+	
 	/**
 	 * Return the singleton instance of the game manager.
 	 * 
@@ -96,24 +107,26 @@ public class GameManager {
 	private GameManager () {
 		
 		// add all the component types which need to be tracked.
-		this.componentTypes.add(AISphericalSensor.class);
 		this.componentTypes.add(Controller.class);
 		this.componentTypes.add(Health.class);
+		this.componentTypes.add(Inventory.class);
+		this.componentTypes.add(Parent.class);
 		this.componentTypes.add(Physics.class);
-		this.componentTypes.add(PlayerStats.class);
 		this.componentTypes.add(RenderablePointLight.class);
 		this.componentTypes.add(RenderableStatic.class);
 		this.componentTypes.add(RenderableSkinned.class);
 		this.componentTypes.add(RunSpeed.class);
+		this.componentTypes.add(SkillModifiers.class);
 		this.componentTypes.add(ThirdPersonCamera.class);
 		this.componentTypes.add(Timer.class);
 		this.componentTypes.add(Trigger.class);
+		this.componentTypes.add(Weapon.class);
 		
 		// create the entity persistence layer
 		// It needs to be registered with the entity manager
 		// so that it can observe and track entity recycle events.
 		EntityPersistence entityPersistence = new EntityPersistence();
-		entityManager.registerEntityRecycleObserver(entityPersistence);
+		entityManager.registerEntityRecycleListener(entityPersistence);
 		
 		for(Class<? extends Component> type : this.componentTypes) {
 			entityPersistence.registerComponentType(type);
@@ -143,8 +156,22 @@ public class GameManager {
 	 * @param stargem
 	 */
 	public void init(Stargem game) {
+		// set the game instance
 		this.game = game;
+		
+		// set the input processor
 		Gdx.input.setInputProcessor(multiplexer);
+		
+		// create the in game camera
+		camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		viewport = new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
+	    this.camera.fieldOfView = 67;
+		this.camera.position.set(0, 92, 0);
+		this.camera.lookAt(0, 92, 90);
+		this.camera.near = 0.1f;
+		this.camera.far = 100f;
+		this.camera.update();
+		
 	}
 	
 	/**
@@ -360,5 +387,38 @@ public class GameManager {
 	
 	public void removeInputProcessor(InputProcessor processor) {
 		multiplexer.removeProcessor(processor);
+	}
+	
+	/**
+	 * @return
+	 */
+	public Viewport getViewport() {
+		return this.viewport;
+	}
+	
+	/**
+	 * 
+	 * @param screenX
+	 * @param screenY
+	 * @return
+	 */
+	public Ray getPickRay(float screenX, float screenY) {
+		return this.camera.getPickRay(screenX, screenY);
+	}
+
+	/**
+	 * Moves the camera to position then casts a ray and moves camera back again
+	 * 
+	 * @param position
+	 * @param screenX
+	 * @param screenY
+	 * @return
+	 */
+	public Ray getPickRayFrom(Vector3 position, float screenX, float screenY) {
+		this.cameraPosition.set(camera.position);
+		this.camera.position.set(position);
+		Ray ray = this.camera.getPickRay(screenX, screenY);
+		camera.position.set(cameraPosition);
+		return ray;
 	}
 }

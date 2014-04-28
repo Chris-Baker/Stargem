@@ -161,9 +161,9 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				// update the asset manager
 				if (assets.update()) {
 					
-					// TODO set music track specified in the database in the sound manager
+					// TODO set music track specified in the database in the audio manager
 					
-					// TODO set ambiance track in the sound manager
+					// TODO set ambiance track in the audio manager
 					
 					this.currentState = LoadingScreenState.LOADING_TERRAIN;
 				}
@@ -181,6 +181,7 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				int numSegments = this.worldDetails.getTerrainNumSegments();
 				//Pixmap heightMap = this.assets.get(this.terrainHeightMapPath, Pixmap.class);
 				HeightStrategy heights = new NoiseHeightStrategy(10, 0.5, 100);
+				//HeightStrategy heights = NullHeightStrategy.getInstance();
 				TerrainSphere terrain = new TerrainSphere(scale, segmentWidth, numSegments, heights);
 				
 				// pass the terrain to the physics manager

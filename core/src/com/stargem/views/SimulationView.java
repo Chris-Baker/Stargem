@@ -4,13 +4,14 @@
 package com.stargem.views;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.stargem.GameManager;
 import com.stargem.entity.systems.ThirdPersonCameraSystem;
 import com.stargem.graphics.EnvironmentManager;
 import com.stargem.graphics.PhysicsDebugDraw;
@@ -30,8 +31,8 @@ public class SimulationView implements View {
 	
 	private final ModelBatch modelBatch;
 	private final Stage stage;
-	private PerspectiveCamera camera;
-	private Viewport viewport;
+	private final Camera camera;
+	private final Viewport viewport;
 	
 	// used to rotate the sky box
 	private final Vector3 camPosition;
@@ -46,25 +47,9 @@ public class SimulationView implements View {
 		this.camPosition = new Vector3();
 		this.representationManager = RepresentationManager.getInstance();
 		this.physicsDebugDraw = PhysicsDebugDraw.getInstance();
-		this.initCamera();
-		
+		this.viewport = GameManager.getInstance().getViewport();
+		this.camera = viewport.getCamera();
 		this.cameraSystem = new ThirdPersonCameraSystem(this.camera);
-	}
-
-	/**
-	 * Initialise the perspective camera
-	 */
-	private void initCamera() {
-		
-		camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-	    viewport = new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
-	    this.camera.fieldOfView = 67;
-		this.camera.position.set(0, 92, 0);
-		this.camera.lookAt(0, 92, 90);
-		this.camera.near = 0.1f;
-		this.camera.far = 100f;
-		this.camera.update();
-		
 	}
 
 	/* (non-Javadoc)

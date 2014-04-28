@@ -4,21 +4,24 @@
 package com.stargem.entity;
 
 import com.stargem.controllers.ControllerManager;
-import com.stargem.entity.components.AISphericalSensor;
 import com.stargem.entity.components.Controller;
 import com.stargem.entity.components.Health;
+import com.stargem.entity.components.Inventory;
+import com.stargem.entity.components.Parent;
 import com.stargem.entity.components.Physics;
-import com.stargem.entity.components.PlayerStats;
 import com.stargem.entity.components.RenderablePointLight;
 import com.stargem.entity.components.RenderableSkinned;
 import com.stargem.entity.components.RenderableStatic;
 import com.stargem.entity.components.RunSpeed;
+import com.stargem.entity.components.SkillModifiers;
 import com.stargem.entity.components.ThirdPersonCamera;
 import com.stargem.entity.components.Timer;
 import com.stargem.entity.components.Trigger;
+import com.stargem.entity.components.Weapon;
 import com.stargem.graphics.EnvironmentManager;
 import com.stargem.graphics.RepresentationManager;
 import com.stargem.physics.PhysicsManager;
+import com.stargem.weapons.WeaponManager;
 
 
 
@@ -34,30 +37,6 @@ import com.stargem.physics.PhysicsManager;
 public class ComponentFactory {
 	
 	/* @formatter:off */
-	
-	/**
-	 * Create an AISphericalSensor Component
-	 * 
-	 * @param entity
-	 * @param bodyIndex
-	 * @param radius
-	 * @param contactGroup
-	 * @param contactWith
-	 * @return
-	 */
-	public static AISphericalSensor aisphericalsensor(Entity entity, int bodyIndex,  
-			float radius, 
-			int contactGroup, int contactWith) {
-		AISphericalSensor c = ComponentManager.getInstance().newComponentOfType(AISphericalSensor.class);
-		c.bodyIndex = bodyIndex;
-		c.radius = radius;
-		c.contactGroup = contactGroup;
-		c.contactWith = contactWith;
-		
-		c.bodyIndex = PhysicsManager.getInstance().createBodyFromComponent(entity, c);
-		
-		return c;
-	}
 	
 	/**
 	 * Create a Trigger component.
@@ -243,15 +222,17 @@ public class ComponentFactory {
 	 * @param isJumping
 	 * @return
 	 */
-	public static Controller controller(Entity entity, int strategyIndex, int strategyType, String script, boolean moveForward, boolean moveBackward, boolean moveLeft, boolean moveRight, boolean isJumping) {
+	public static Controller controller(Entity entity, int strategyIndex, int strategyType, String controller, String behaviour, boolean moveForward, boolean moveBackward, boolean moveLeft, boolean moveRight, boolean isJumping) {
 		Controller c = ComponentManager.getInstance().newComponentOfType(Controller.class);
-		c.strategyIndex = strategyIndex;
+		c.strategyIndex = entity.id;
 		c.strategyType = strategyType;
-		c.script = script;
+		c.controller = controller;
+		c.behaviour = behaviour;
 		c.moveForward = moveForward;
 		c.moveBackward = moveBackward;
 		c.moveLeft = moveLeft;
 		c.moveRight = moveRight;
+		c.isJumping = isJumping;
 		
 		ControllerManager.getInstance().createControllerFromComponent(entity, c);
 		
@@ -328,19 +309,74 @@ public class ComponentFactory {
 	 * @param cores
 	 * @param specials
 	 * @param gems
+	 * @return
+	 */
+	public static Inventory inventory(Entity entity, int cores, int specials, int gems) {
+		Inventory c = ComponentManager.getInstance().newComponentOfType(Inventory.class);
+		c.cores = cores;
+		c.specials = specials;
+		c.gems = gems;
+		return c;
+	}
+	
+	/**
+	 * 
+	 * @param entity
 	 * @param damageIncrease
 	 * @param healthIncrease
 	 * @param speedIncrease
 	 * @return
 	 */
-	public static PlayerStats playerstats(Entity entity, int cores, int specials, int gems, int damageIncrease, int healthIncrease, int speedIncrease) {
-		PlayerStats c = ComponentManager.getInstance().newComponentOfType(PlayerStats.class);
-		c.cores = cores;
-		c.specials = specials;
-		c.gems = gems;
+	public static SkillModifiers skillmodifiers(Entity entity, int damageIncrease, int healthIncrease, int speedIncrease) {
+		SkillModifiers c = ComponentManager.getInstance().newComponentOfType(SkillModifiers.class);
 		c.damageIncrease = damageIncrease;
 		c.healthIncrease = healthIncrease;
 		c.speedIncrease = speedIncrease;
+		return c;
+	}
+	
+	/**
+	 * 
+	 * @param entity
+	 * @param weapons
+	 * @param currentWeapon
+	 * @param isShooting
+	 * @param isReady
+	 * @param maxHeat
+	 * @param currentHeat
+	 * @param heatRate
+	 * @param coolRate
+	 * @param overHeatingPenalty
+	 * @return
+	 */
+	public static Weapon weapon(Entity entity, int weapons, int currentWeapon, boolean isShooting, boolean isReady, int maxHeat, float currentHeat, int heatRate, int coolRate, int overHeatingPenalty, float remainingPenalty) {
+		Weapon c = ComponentManager.getInstance().newComponentOfType(Weapon.class);
+		c.weapons = weapons;
+		c.currentWeapon = currentWeapon;
+		c.isShooting = isShooting;
+		c.isReady = isReady;
+		c.maxHeat = maxHeat;
+		c.currentHeat = currentHeat;
+		c.heatRate = heatRate;
+		c.coolRate = coolRate;
+		c.overHeatingPenalty = overHeatingPenalty;
+		c.remainingPenalty = remainingPenalty;
+		
+		// this sets weapon from the script file registered with the manager
+		WeaponManager.getInstance().switchToWeapon(currentWeapon, c);
+		
+		return c;
+	}
+	
+	/**
+	 * Create and return a Parent component
+	 * 
+	 * @param entity
+	 * @return
+	 */
+	public static Parent parent(Entity entity, int parentId) {
+		Parent c = ComponentManager.getInstance().newComponentOfType(Parent.class);
+		c.parentId = parentId;
 		return c;
 	}
 }

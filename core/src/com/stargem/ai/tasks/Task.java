@@ -1,7 +1,8 @@
 /**
  * 
  */
-package com.stargem.ai;
+package com.stargem.ai.tasks;
+
 
 /**
  * Task.java
@@ -15,6 +16,5 @@ public interface Task {
 	public boolean update(float delta);
 	public int getMask();
 	public boolean isBlocking();
-	public void setActionList(ActionList actionList);
 	
 }

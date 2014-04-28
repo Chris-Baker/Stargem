@@ -21,7 +21,7 @@ import com.stargem.PlayersManager;
 import com.stargem.entity.ComponentFactory;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
-import com.stargem.entity.EntityRecycleObserver;
+import com.stargem.entity.EntityRecycleListener;
 import com.stargem.entity.components.Component;
 import com.stargem.entity.components.Physics;
 import com.stargem.utils.Log;
@@ -34,7 +34,7 @@ import com.stargem.utils.StringHelper;
  * @date 12 Nov 2013
  * @version 1.0
  */
-public class EntityPersistence implements EntityRecycleObserver, ConnectionListener {
+public class EntityPersistence implements EntityRecycleListener, ConnectionListener {
 
 	// the entity manager
 	private final EntityManager em = EntityManager.getInstance();

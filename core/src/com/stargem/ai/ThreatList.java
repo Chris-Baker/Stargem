@@ -2,6 +2,8 @@ package com.stargem.ai;
 
 import com.badlogic.gdx.utils.IdentityMap;
 import com.stargem.entity.Entity;
+import com.stargem.entity.EntityManager;
+import com.stargem.entity.EntityRecycleListener;
 
 /**
  * The threat list keeps track of the perceived danger other entities
@@ -11,10 +13,10 @@ import com.stargem.entity.Entity;
  * @date	22 Apr 2014
  * @version	1.0
  */
-public class ThreatList {
+public class ThreatList implements EntityRecycleListener {
 
-	private final IdentityMap<Entity, Integer> threats;
-	private final IdentityMap<Entity, Integer> removed;
+	private final IdentityMap<Integer, Integer> threats;
+	private final IdentityMap<Integer, Integer> removed;
 	
 	/**
 	 * The threat list keeps track of the perceived danger other entities
@@ -25,8 +27,9 @@ public class ThreatList {
 	 */
 	public ThreatList() {
 		super();
-		this.threats = new IdentityMap<Entity, Integer>();
-		this.removed = new IdentityMap<Entity, Integer>();
+		this.threats = new IdentityMap<Integer, Integer>();
+		this.removed = new IdentityMap<Integer, Integer>();
+		EntityManager.getInstance().registerEntityRecycleListener(this);
 	}
 
 	/**
@@ -35,7 +38,7 @@ public class ThreatList {
 	 * @param entity
 	 * @param amount
 	 */
-	public void increaseThreat(Entity entity, int amount) {
+	public void increaseThreat(int entity, int amount) {
 		
 		// check for a remembered threat
 		if(removed.containsKey(entity)) {
@@ -58,7 +61,7 @@ public class ThreatList {
 	 * @param entity
 	 * @param amount
 	 */
-	public void decreaseThreat(Entity entity, int amount) {
+	public void decreaseThreat(int entity, int amount) {
 		if(!threats.containsKey(entity)) {
 			return;
 		}
@@ -73,7 +76,7 @@ public class ThreatList {
 	 * 
 	 * @param entity
 	 */
-	public void removeThreat(Entity entity) {
+	public void removeThreat(int entity) {
 		if(threats.containsKey(entity)) {
 			threats.remove(entity);
 		}
@@ -86,10 +89,54 @@ public class ThreatList {
 	 * 
 	 * @param entity
 	 */
-	public void removeAndRememberThreat(Entity entity) {
+	public void removeAndRememberThreat(int entity) {
 		if(threats.containsKey(entity)) {
 			removed.put(entity, threats.get(entity));
 			threats.remove(entity);
 		}
+	}
+
+	public void removeRemembered(int entity) {
+		if(removed.containsKey(entity)) {
+			removed.remove(entity);
+		}
+	}
+	
+	/**
+	 * The size of the threat list
+	 * 
+	 * @return the size of the threat list
+	 */
+	public int size() {
+		return threats.size;
+	}
+
+	/**
+	 * Get the biggest threat on the threat list
+	 * 
+	 * @return the biggest threat on the threat list
+	 */
+	public Entity getBiggestThreat() {
+		int id = -1;
+		int biggestThreat = Integer.MIN_VALUE;
+		int amount = Integer.MIN_VALUE;
+		
+		for(int e : this.threats.keys()) {
+			amount = threats.get(e);			
+			if(amount > biggestThreat) {
+				id = e;
+			}
+		}
+		Entity entity = EntityManager.getInstance().getEntityByID(id);
+		return entity;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.stargem.entity.EntityRecycleListener#recycle(int)
+	 */
+	@Override
+	public void recycle(int entityId) {
+		this.removeThreat(entityId);
+		this.removeRemembered(entityId);
 	}
 }

@@ -1,19 +1,23 @@
 Gdx = luajava.bindClass("com.badlogic.gdx.Gdx")
 Input = luajava.bindClass("com.stargem.utils.InputAdapter")
 Preferences = luajava.bindClass("com.stargem.Preferences");
+AbstractTask = luajava.bindClass("com.stargem.ai.tasks.AbstractTask");
+Config = luajava.bindClass("com.stargem.Config");
 
 -- import all the component classes
-Component = luajava.bindClass("com.stargem.entity.components.AbstractComponent")
-Health = luajava.bindClass("com.stargem.entity.components.Health")
 Controller = luajava.bindClass("com.stargem.entity.components.Controller")
+Health = luajava.bindClass("com.stargem.entity.components.Health")
+Inventory = luajava.bindClass("com.stargem.entity.components.Inventory")
+Parent = luajava.bindClass("com.stargem.entity.components.Parent")
 Physics = luajava.bindClass("com.stargem.entity.components.Physics")
-PlayerStats = luajava.bindClass("com.stargem.entity.components.PlayerStats")
 RenderableSkinned = luajava.bindClass("com.stargem.entity.components.RenderableSkinned")
 RenderableStatic = luajava.bindClass("com.stargem.entity.components.RenderableStatic")
 RunSpeed = luajava.bindClass("com.stargem.entity.components.RunSpeed")
+SkillModifiers = luajava.bindClass("com.stargem.entity.components.SkillModifiers")
 ThirdPersonCamera = luajava.bindClass("com.stargem.entity.components.ThirdPersonCamera")
 Timer = luajava.bindClass("com.stargem.entity.components.Timer")
 Trigger = luajava.bindClass("com.stargem.entity.components.Trigger")
+Weapon = luajava.bindClass("com.stargem.entity.components.Weapon")
 
 -- import managers
 EntityManager = luajava.bindClass("com.stargem.entity.EntityManager")
@@ -23,18 +27,28 @@ PhysicsManager = luajava.bindClass("com.stargem.physics.PhysicsManager")
 ContactCallbackFlags = luajava.bindClass("com.stargem.physics.ContactCallbackFlags")
 RepresentationManager = luajava.bindClass("com.stargem.graphics.RepresentationManager")
 AIManager = luajava.bindClass("com.stargem.ai.AIManager")
+BehaviourManager = luajava.bindClass("com.stargem.behaviour.BehaviourManager")
+WeaponManager = luajava.bindClass("com.stargem.weapons.WeaponManager")
+GameManager = luajava.bindClass("com.stargem.GameManager")
 
 -- get global instances of required managers
 em = EntityManager:getInstance()
-persistence = PersistenceManager:getInstance():getEntityPersistence()
+persistenceManager = PersistenceManager:getInstance():getEntityPersistence()
 physicsManager = PhysicsManager:getInstance()
 representationManager = RepresentationManager:getInstance()
 aiManager = AIManager:getInstance()
+behaviourManager = BehaviourManager:getInstance()
+weaponManager = WeaponManager:getInstance()
+gameManager = GameManager:getInstance()
 
 -- import all the other scripts for stargem
-script:require("AI")
+script:require("Behaviour")
 script:require("Components")
 script:require("Controllers")
 script:require("Entities")
 script:require("Log")
 script:require("Physics")
+script:require("Weapons")
+
+-- register the weapons
+weapons.register()

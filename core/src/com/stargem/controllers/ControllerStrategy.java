@@ -12,4 +12,6 @@ package com.stargem.controllers;
  */
 public interface ControllerStrategy {
 	
+	public void update(float delta);
+	
 }

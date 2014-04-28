@@ -30,11 +30,16 @@ public class AIController extends AbstractControllerStrategy implements Controll
 		// create a new action list
 		brain = new AIBrain();
 		
-		// populate the action list based on the script in the component
-		// except send the name to the ai table in lua with the action list instance
-		// that way all ai is data driven
-		// the actual actions should be written with lua
-		ScriptManager.getInstance().execute("ai", component.script, entity, brain);
-		AIManager.getInstance().addBrain(entity, brain);
+		// add the brain to the ai manager's list of brains
+		AIManager.getInstance().addBrain(entity.getId(), brain);
+		
+		// populate the brain based on the behaviour script referenced in the component
+		ScriptManager.getInstance().execute("behaviour", component.behaviour, entity, brain);
 	}
+	
+	@Override
+	public void update(float delta) {
+		this.brain.update(delta);
+	}
+	
 }

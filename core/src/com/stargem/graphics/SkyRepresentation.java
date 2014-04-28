@@ -30,7 +30,14 @@ public class SkyRepresentation extends AbstractIterableRepresentation {
 	private final int segmentWidth;	
 	
 	/**
+	 * 
 	 * @param sky
+	 * @param texture_1
+	 * @param texture_2
+	 * @param texture_3
+	 * @param texture_4
+	 * @param texture_5
+	 * @param texture_6
 	 */
 	public SkyRepresentation(SkySphere sky, Texture texture_1, Texture texture_2, Texture texture_3, Texture texture_4, Texture texture_5, Texture texture_6) {
 		super(SkySphere.NUM_FACES, SkySphere.NUM_FACES);
@@ -39,7 +46,14 @@ public class SkyRepresentation extends AbstractIterableRepresentation {
 	}
 
 	/**
+	 * 
 	 * @param sky
+	 * @param texture_1
+	 * @param texture_2
+	 * @param texture_3
+	 * @param texture_4
+	 * @param texture_5
+	 * @param texture_6
 	 */
 	private void build(SkySphere sky, Texture texture_1, Texture texture_2, Texture texture_3, Texture texture_4, Texture texture_5, Texture texture_6) {
 		

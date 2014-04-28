@@ -4,6 +4,7 @@
 package com.stargem.ai;
 
 import com.badlogic.gdx.utils.Array;
+import com.stargem.ai.tasks.Task;
 
 /**
  * http://sonargame.com/2011/06/05/action-lists/#more-58
@@ -24,7 +25,7 @@ public class ActionList {
 		
 		for(int i = tasks.size - 1; i >= 0; i -= 1) {
 			task = tasks.get(i);
-						
+			
 			// if any of this task's lanes are blocked, do not execute the task
 			if((task.getMask() & blockMask) != 0) {
 				continue;
@@ -49,14 +50,13 @@ public class ActionList {
 	}
 	
 	/**
-	 * Set the task's action list and add it the the list of
-	 * tasks belonging to this action list.
+	 * Add the task to the list of tasks belonging to 
+	 * this action list.
 	 * 
-	 * @param t
+	 * @param task the task to push onto the action list
 	 */
-	public void push(Task t) {
-		t.setActionList(this);
-		this.tasks.add(t);
+	public void push(Task task) {
+		this.tasks.add(task);
 	}
 	
 }

@@ -3,8 +3,7 @@
  */
 package com.stargem.ai;
 
-import com.badlogic.gdx.utils.IdentityMap;
-import com.stargem.entity.Entity;
+import com.badlogic.gdx.utils.IntMap;
 
 
 /**
@@ -16,24 +15,35 @@ import com.stargem.entity.Entity;
  */
 public class AIManager {
 
-	private final IdentityMap<Entity, AIBrain> brains;
+	private final IntMap<AIBrain> brains;
 	
 	private final static AIManager instance = new AIManager();
 	public static AIManager getInstance() {
 		return instance;
 	}
 	private AIManager() {
-		brains = new IdentityMap<Entity, AIBrain>();
+		brains = new IntMap<AIBrain>();
 	}
 	
 	/**
-	 * Manage the given AI Brain
+	 * map the brain to the entity. Brains are controlled and updated
+	 * indirectly by the controller manager. This allows the entity
+	 * owning the brain to be switched to network or player control easily.
 	 * 
 	 * @param entity
 	 * @param brain
 	 */
-	public void addBrain(Entity entity, AIBrain brain) {
-		brains.put(entity, brain);
+	public void addBrain(int entityID, AIBrain brain) {
+		brains.put(entityID, brain);
+	}
+	
+	/**
+	 * Remove the brain from the brain map
+	 * 
+	 * @param entityID
+	 */
+	public void removeBrain(int entityID) {
+		brains.remove(entityID);
 	}
 	
 	/**
@@ -42,19 +52,8 @@ public class AIManager {
 	 * @param entity
 	 * @return the brain mapped to the given entity
 	 */
-	public AIBrain getBrain(Entity entity) {
-		return brains.get(entity);
-	}	
-	
-	/**
-	 * Update all ai brains
-	 * 
-	 * @param delta
-	 */
-	public void update(float delta) {
-		for(AIBrain brain : brains.values()) {
-			brain.update(delta);
-		}
+	public AIBrain getBrain(int entityID) {
+		return brains.get(entityID);
 	}
 	
 }

@@ -70,6 +70,9 @@ public class TerrainPhysicsBody {
 					btRigidBodyConstructionInfo info = new btRigidBodyConstructionInfo(0f, null, shape, Vector3.Zero);
 					btRigidBody body = new btRigidBody(info);
 					
+					// set collision flag as terrain object needed for smoother walking on lumpy terrain
+					body.setContactCallbackFlag(ContactCallbackFlags.TERRAIN);
+					
 					// keep track of all the builder objects so that the GC doesn't collect them
 					this.meshes.add(mesh);
 					this.shapes.add(shape);

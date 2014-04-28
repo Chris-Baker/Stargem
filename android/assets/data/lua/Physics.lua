@@ -13,8 +13,8 @@ end
 -- dispatch the body to the callback based on its type
 function collisions.dispatch(body, other)
 
-  bodyFlag = body:getContactCallbackFlag()
-  otherFlag = other:getContactCallbackFlag()
+  local bodyFlag = body:getContactCallbackFlag()
+  local otherFlag = other:getContactCallbackFlag()
   
   if ContactCallbackFlags:compare(bodyFlag, ContactCallbackFlags.TRIGGER) then
     collisions.trigger(body, other)
@@ -64,8 +64,8 @@ end
 
 function collisions.trigger(trigger, activator)
   
-  entity = trigger.userData
-  trig = em:getComponent(entity, Trigger)
+  local entity = trigger.userData
+  local trig = em:getComponent(entity, Trigger)
   
   if not (trig == nil) then
     -- call the function name stored in the trigger component
@@ -77,8 +77,8 @@ end
 function collisions.healthPack(healthPack, recipient)
 
   -- update the recipients health component
-  entity = recipient.userData
-  health = em:getComponent(entity, Health)
+  local entity = recipient.userData
+  local health = em:getComponent(entity, Health)
   
   if not (health == nil) then
         
@@ -101,8 +101,8 @@ end
 
 function collisions.powerCore(powerCore, recipient)
   -- update the recipients health component
-  entity = recipient.userData
-  stats = em:getComponent(entity, PlayerStats)
+  local entity = recipient.userData
+  local stats = em:getComponent(entity, PlayerStats)
   
   if not (stats == nil) then
     components.set(stats, "cores", (stats.cores + 1))
@@ -112,8 +112,8 @@ end
 
 function collisions.smallGem(gem, recipient)
   -- update the recipients health component
-  entity = recipient.userData
-  stats = em:getComponent(entity, PlayerStats)
+  local entity = recipient.userData
+  local stats = em:getComponent(entity, PlayerStats)
   
   if not (stats == nil) then
     components.set(stats, "gems", (stats.gems + 5))
@@ -123,8 +123,8 @@ end
 
 function collisions.largeGem(gem, recipient)
   -- update the recipients health component
-  entity = recipient.userData
-  stats = em:getComponent(entity, PlayerStats)
+  local entity = recipient.userData
+  local stats = em:getComponent(entity, PlayerStats)
   
   if not (stats == nil) then
     components.set(stats, "gems", (stats.gems + 10))
@@ -134,8 +134,8 @@ end
 
 function collisions.specialPower(specialPower, recipient)
   -- update the recipients health component
-  entity = recipient.userData
-  stats = em:getComponent(entity, PlayerStats)
+  local entity = recipient.userData
+  local stats = em:getComponent(entity, PlayerStats)
   
   if not (stats == nil) then
     components.set(stats, "specials", (stats.specials + 1))
@@ -148,13 +148,13 @@ end
 -- to the brain and can be added to the threat list
 function collisions.aiSensor(sensor, threat)
 
-  threatEntity = threat.userData
-  sensorEntity = sensor.userData
-  
-  brain = aiManager:getBrain(sensorEntity)
-  threatAmount = 0
+  local threatEntity = threat.userData
+  local sensorEntity = sensor.userData
+  local parentComponent = em:getComponent(sensorEntity, Parent)
+  local parentEntity = em:getEntityByID(parentComponent.parentId) 
+    
+  local brain = aiManager:getBrain(parentEntity:getId())
+  local threatAmount = 0
   brain:increaseThreat(threatEntity, threatAmount)
-
-  debug("threat added")
 
 end

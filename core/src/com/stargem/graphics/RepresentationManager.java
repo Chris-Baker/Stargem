@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.IntMap;
 import com.stargem.Config;
@@ -37,16 +36,18 @@ public class RepresentationManager {
 
 	private AbstractIterableRepresentation sky;
 	private AbstractIterableRepresentation terrain;
-	private final Array<ModelInstance> modelInstances = new Array<ModelInstance>();
-	private final Array<Model> models = new Array<Model>();
+	private final IntMap<ModelInstance> modelInstances = new IntMap<ModelInstance>();
 	private AssetManager assetManager;
-	private final IntMap<AnimationController> animationControllers = new IntMap<AnimationController>();	
-	
+	private final IntMap<AnimationController> animationControllers = new IntMap<AnimationController>();
+		
 	// Singleton instance
 	public static RepresentationManager getInstance() {
+		if(instance == null) {
+			 instance = new RepresentationManager();
+		}
 		return instance;
 	}
-	private static final RepresentationManager instance = new RepresentationManager();
+	private static RepresentationManager instance;
 	private RepresentationManager(){}
 	
 	/**
@@ -66,8 +67,8 @@ public class RepresentationManager {
 		this.addAnimations(model, component.modelPath);
 		
 		ModelInstance instance = new ModelInstance(model);
-		this.modelInstances.add(instance);
-		component.modelIndex = this.modelInstances.size - 1;
+		this.modelInstances.put(entity.getId(), instance);
+		component.modelIndex = entity.getId();
 				
 		// set the transform to that of the physics component if there is one
 		Matrix4 transform = PhysicsManager.getInstance().getTransformMatrix(entity);
@@ -163,8 +164,8 @@ public class RepresentationManager {
 		}
 		Model model = this.assetManager.get(component.modelPath, Model.class);
 		ModelInstance instance = new ModelInstance(model);
-		this.modelInstances.add(instance);
-		component.modelIndex = this.modelInstances.size - 1;
+		this.modelInstances.put(entity.getId(), instance);
+		component.modelIndex = entity.getId();
 		
 		// set the transform to that of the physics component if there is one
 		Matrix4 transform = PhysicsManager.getInstance().getTransformMatrix(entity);
@@ -290,7 +291,7 @@ public class RepresentationManager {
 	 * @return the entity model instances as an Iterable.
 	 */
 	public Iterable<ModelInstance> getEntityInstances() {
-		return this.modelInstances;
+		return this.modelInstances.values();
 	}
 
 	/**
@@ -299,37 +300,15 @@ public class RepresentationManager {
 	 * @param modelIndex the index of the model to remove from the list of model instances
 	 */
 	public void removeModelInstance(int modelIndex) {
-		this.modelInstances.removeIndex(modelIndex);
-		
-		// if the model index removed was the last in the list then we are done
-		// otherwise we need to update the component of the model which
-		// has been copied into that index
-		if(modelIndex < this.modelInstances.size) {
-			
-			Entity entity = (Entity) this.modelInstances.get(modelIndex).userData;
-			
-			RenderableStatic renderableStatic = EntityManager.getInstance().getComponent(entity, RenderableStatic.class);
-			if (renderableStatic != null) {
-				renderableStatic.modelIndex = modelIndex;
-			}
-			
-			RenderableSkinned renderableSkinned = EntityManager.getInstance().getComponent(entity, RenderableSkinned.class);
-			if (renderableSkinned != null) {
-				renderableSkinned.modelIndex = modelIndex;
-			}
-			
-		}
-		
+		this.modelInstances.remove(modelIndex);		
 	}
 	
 	/**
-	 * Dispose all model objects
+	 * Clear the models array
+	 * The asset manager should dispose the model instances
 	 */
 	public void dispose() {	
 		this.terrain.dispose();
-		for(Model model : this.models) {
-			model.dispose();
-		}
 	}
 	
 }

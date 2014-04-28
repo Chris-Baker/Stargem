@@ -4,6 +4,7 @@
 package com.stargem.physics;
 
 
+
 /**
  * ContactCallbackFlags.java
  *
@@ -14,19 +15,21 @@ package com.stargem.physics;
 public class ContactCallbackFlags {
 	
 	// The default flags go up to 128
+	// CollisionFlags.CF_NO_CONTACT_RESPONSE == 4;
 	
 	// These are the extensions for Stargem
 	public static final int TRIGGER 		= 128;
 	public static final int TEAM_CFP 		= 256;
 	public static final int TEAM_BOT 		= 512;
 	public static final int TEAM_DMC 		= 1024;
-	public static final int AI_SENSOR 		= 2048;
+	public static final int TEAM_PIRATE 	= 2048;
 	public static final int HEALTH_PACK 	= 4096;
 	public static final int POWER_CORE 		= 8192;
 	public static final int SMALL_GEM 		= 16384;
 	public static final int LARGE_GEM 		= 32768;
 	public static final int SPECIAL_POWER 	= 65536;
-	public static final int TEAM_PIRATE 	= 131072;
+	public static final int AI_SENSOR 		= 131072;
+	public static final int TERRAIN 		= 262144;
 	
 	/**
 	 * Performs a bitwise AND to see if the flag given has any

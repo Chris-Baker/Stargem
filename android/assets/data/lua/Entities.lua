@@ -1,4 +1,5 @@
 entities = {}
+factory = {}
 
 --
 -- Load all entities from the current database
@@ -6,7 +7,7 @@ entities = {}
 function entities.load()
 	
 	-- get the number of entities in the world
-	numEntities = persistence:beginLoading()
+	numEntities = persistenceManager:beginLoading()
 	
 	debug("loading entities")
 	
@@ -14,7 +15,7 @@ function entities.load()
 	for i = 1, numEntities do
 		
 		-- load an entity and get a reference to it
-		e = persistence:loadEntity()
+		e = persistenceManager:loadEntity()
 				
 		-- if the entity is not null then store it
 		if e == nil then
@@ -27,4 +28,34 @@ function entities.load()
 	
 	debug("loaded all entities")
 	
+end
+
+-- spawn a small gem at the given location
+function factory.smallGem(transform)
+
+end
+
+-- spawn a large gem at the given location
+function factory.largeGem(transform)
+
+end
+
+-- spawn a special power at the given location
+function factory.specialPower(transform)
+
+end
+
+-- spawn a power core at the given location
+function factory.powerCore(transform)
+
+end
+
+-- spawn a minebot at the given location
+function factory.minebot(transform)
+
+end
+
+-- spawn a damage zone at the given location
+function factory.damageZone(transform)
+
 end

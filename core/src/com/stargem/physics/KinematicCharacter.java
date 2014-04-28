@@ -23,6 +23,7 @@ import com.badlogic.gdx.physics.bullet.collision.btPersistentManifoldArray;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.stargem.Config;
+import com.stargem.utils.Log;
 
 /**
  * KinematicCharacter.java
@@ -192,26 +193,12 @@ public class KinematicCharacter extends btRigidBody {
 //		motionState.transform.setToRotation(defaultUp, up);
 //		motionState.transform.trn(position);
 	}
-		
-	/**
-	 * If the character controller is on the ground then attempt to jump
-	 * 
-	 * @return true if the character could jump, false otherwise
-	 */
-	public boolean jump() {
-		
-		boolean success = false;
-		
-		if(this.isOnGround && !this.isJumping) {
-			this.isJumping = true;
-			this.isOnGround = false;
-			verticalVelocity = jumpSpeed;
-			success = true;
-		}
-		
-		return success;
-	}
 	
+	@Override
+	public MotionState getMotionState() {
+		return this.motionState;
+	}
+		
 	/**
 	 * Set the character to rotate around the up axis either clockwise
 	 * or counter clockwise. If both are set to true, one will simply 
@@ -240,27 +227,9 @@ public class KinematicCharacter extends btRigidBody {
 		this.rotationSpeed = Math.abs(rotationSpeed);
 	}
 
-	/**
-	 * Translate the player in the direction of the vector given.
-	 * The vector is normalised and scaled by the player's run speed.
-	 * Typical usage involves setting the direction.z to 1 or -1, This
-	 * moves the player forward and backward respectively.
-	 * 
-	 * @param direction the direction to move the player
-	 */
-	public void move(int runSpeed, boolean moveForward, boolean moveBackward, boolean moveLeft, boolean moveRight) {
+	
+	public void move(int runSpeed, boolean moveForward, boolean moveBackward, boolean moveLeft, boolean moveRight, boolean jump) {
 		
-		// if we are on the ground then we can move along and change direction
-		// when we aren;t on the ground we can't change direction but will continue to move
-		// in the direction we were going for a time
-		
-		// TODO rework this algorithm to allow slowly altering direction in mid air but not with full control
-		// half the run speed when not on the ground
-		//if(!this.isOnGround) {
-		//	runSpeed /= 2;
-		//}
-		//if(!this.isOnGround) {
-				
 		if(this.isOnGround) {
 	
 			this.direction.x = 0;
@@ -282,17 +251,32 @@ public class KinematicCharacter extends btRigidBody {
 			horizontalOffsetNormalised.set(direction).nor();
 			horizontalOffset.set(horizontalOffsetNormalised).scl(runSpeed);
 			
+			// rotate the offset into world coordinates
+			horizontalOffset.rot(this.motionState.transform);	
+			
+			// scale by the time delta for frame rate independence
+			// doing this here solves a bug whereby the order of
+			// operations (jump then move, move then jump) severely broke movement
+			// by either not scaling the horizontal offset or failing to
+			// process direction changes whilst holding the jump button
+			// This was previously done in the step slide function
+			// this solution, whilst less than elegant fixes it
+			horizontalOffset.scl(Config.FIXED_TIME_STEP);
+			
 		}
-//		else {
-//			// else gradually lose horizontal momentum if we are not jumping
-//			// this might feel a bit wrong when we walk off ledges
-//			// maybe we should be falling for a while before we degrade the horizontal movement
-//			if(!this.isJumping) {
-//				horizontalOffset.scl(0.95f);
-//			}
-//		}
+		
+		// jumping must happen after movement else no movement direction
+		// is processed
+		if(jump) {
+			if(this.isOnGround && !this.isJumping) {
+				this.isJumping = true;
+				this.isOnGround = false;
+				verticalVelocity = jumpSpeed;
+			}
+		}
+		
 	}
-
+	
 	/**
 	 * 
 	 * @param collisionWorld
@@ -428,18 +412,7 @@ public class KinematicCharacter extends btRigidBody {
 				
 		KinematicClosestNotMeConvexResultCallback verticalCB;
 		KinematicClosestNotMeConvexResultCallback horizontalCB;		
-		
-		// we check if on ground here because the offset is only updated when on ground
-		// we don't want to rotate and scale it if it hasn't changed i.e when jumping
-		if(this.isOnGround) {
-			
-			// rotate the offset into world coordinates
-			horizontalOffset.rot(this.motionState.transform);	
-			
-			// scale by the time delta for frame rate independence
-			horizontalOffset.scl(deltaTime);
-		}
-				
+						
 		// set the start position and desired end position
 		start.set(this.motionState.transform);
 		end.set(this.motionState.transform);
@@ -585,6 +558,16 @@ public class KinematicCharacter extends btRigidBody {
 
 	private boolean recoverFromPenetration(btCollisionWorld collisionWorld) {
 		
+		// Here we must refresh the overlapping paircache as the penetrating movement itself or the
+		// previous recovery iteration might have used setWorldTransform and pushed us into an object
+		// that is not in the previous cache contents from the last timestep, as will happen if we
+		// are pushed into a new AABB overlap. Unhandled this means the next convex sweep gets stuck.
+		//
+		// Do this by calling the broadphase's setAabb with the moved AABB, this will update the broadphase
+		// paircache and the ghostobject's internal paircache at the same time.    /BW
+		convexShape.getAabb(ghost.getWorldTransform(), minAabb, maxAabb);
+		collisionWorld.getBroadphase().setAabb(ghost.getBroadphaseHandle(), minAabb, maxAabb, collisionWorld.getDispatcher());
+
 		boolean isPenetrating = false;
 		deltaPosition.set(0, 0, 0);
 		
@@ -599,14 +582,24 @@ public class KinematicCharacter extends btRigidBody {
 			if(!objA.equals(ghost) && !objB.equals(ghost)) {				
 				continue;
 			}		
-			
+						
 			float directionSign = (objA.equals(ghost)) ? -1.0f : 1.0f;
 			
 			for (int k = 0, p = manifold.getNumContacts(); k < p; k++) {
 				btManifoldPoint pt = manifold.getContactPoint(k);
 				float dist = pt.getDistance();
 				if (dist < 0.0f) {
-					normalWorldOnB.set(pt.getNormalWorldOnB().getX(), pt.getNormalWorldOnB().getY(), pt.getNormalWorldOnB().getZ());
+					
+					// if one of the objects is terrain then we need to only recover directly up from the origin
+					if((objA.getContactCallbackFlag() & ContactCallbackFlags.TERRAIN) > 0 || (objB.getContactCallbackFlag() & ContactCallbackFlags.TERRAIN) > 0) {				
+						motionState.transform.getTranslation(normalWorldOnB);
+						normalWorldOnB.add(pt.getNormalWorldOnB().getX(), pt.getNormalWorldOnB().getY(), pt.getNormalWorldOnB().getZ());
+						normalWorldOnB.nor();					
+					}
+					else {
+						normalWorldOnB.set(pt.getNormalWorldOnB().getX(), pt.getNormalWorldOnB().getY(), pt.getNormalWorldOnB().getZ());
+						deltaPosition.add(normalWorldOnB.scl(directionSign * dist * 0.2f));	
+					}
 					deltaPosition.add(normalWorldOnB.scl(directionSign * dist * 0.2f));
 					isPenetrating = true;
 				}
@@ -621,6 +614,27 @@ public class KinematicCharacter extends btRigidBody {
 		return isPenetrating;
 	}
 	
+	/**
+	 * Get the forward vector from the bodies transform matrix
+	 * 
+	 * @param out
+	 * @return
+	 */
+	public Vector3 getForward(Vector3 out) {
+		out.set(motionState.transform.val[8], motionState.transform.val[9], motionState.transform.val[10]);
+		return out;
+	}
+	
+	/**
+	 * Get the translation from the bodies transform matrix
+	 * 
+	 * @param out
+	 * @return
+	 */
+	public Vector3 getTranslation(Vector3 out) {
+		motionState.transform.getTranslation(out);
+		return out;
+	}
 	
 	/**
 	 * 
@@ -630,15 +644,15 @@ public class KinematicCharacter extends btRigidBody {
 	 */
 //	private boolean recoverFromPenetration(btCollisionWorld collisionWorld) {
 //
-//		// Here we must refresh the overlapping paircache as the penetrating movement itself or the
-//		// previous recovery iteration might have used setWorldTransform and pushed us into an object
-//		// that is not in the previous cache contents from the last timestep, as will happen if we
-//		// are pushed into a new AABB overlap. Unhandled this means the next convex sweep gets stuck.
-//		//
-//		// Do this by calling the broadphase's setAabb with the moved AABB, this will update the broadphase
-//		// paircache and the ghostobject's internal paircache at the same time.    /BW
-//		//convexShape.getAabb(ghost.getWorldTransform(), minAabb, maxAabb);
-//		//collisionWorld.getBroadphase().setAabb(ghost.getBroadphaseHandle(), minAabb, maxAabb, collisionWorld.getDispatcher());
+		// Here we must refresh the overlapping paircache as the penetrating movement itself or the
+		// previous recovery iteration might have used setWorldTransform and pushed us into an object
+		// that is not in the previous cache contents from the last timestep, as will happen if we
+		// are pushed into a new AABB overlap. Unhandled this means the next convex sweep gets stuck.
+		//
+		// Do this by calling the broadphase's setAabb with the moved AABB, this will update the broadphase
+		// paircache and the ghostobject's internal paircache at the same time.    /BW
+		//convexShape.getAabb(ghost.getWorldTransform(), minAabb, maxAabb);
+		//collisionWorld.getBroadphase().setAabb(ghost.getBroadphaseHandle(), minAabb, maxAabb, collisionWorld.getDispatcher());
 //
 //		boolean isPenetrating = false;
 //
@@ -803,7 +817,7 @@ public class KinematicCharacter extends btRigidBody {
 				hitNormalWorld.set(convexResult.getHitNormalLocal().getX(), convexResult.getHitNormalLocal().getY(), convexResult.getHitNormalLocal().getZ());
 			}
 			else {
-				System.out.println("Normal not in world space, converting... this may not work as intended please check");
+				Log.error(Config.PHYSICS_ERR, "Normal not in world space, converting... this may not work as intended please check");
 				// TODO test this
 				//need to transform normal into worldspace
 				tmp.set(hitCollisionObject.getWorldTransform());

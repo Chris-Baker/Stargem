@@ -3,8 +3,8 @@
  */
 package com.stargem.controllers;
 
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.IntMap;
 import com.stargem.entity.Entity;
 import com.stargem.entity.components.Controller;
 
@@ -22,14 +22,14 @@ public class ControllerManager {
 	public static final int NETWORK			= 2;
 	public static final int AI				= 3;
 	
-	private final Array<ControllerStrategy> controllers;
+	private final IntMap<ControllerStrategy> controllers;
 	
 	private final static ControllerManager instance = new ControllerManager();
 	public static ControllerManager getInstance() {
 		return instance;
 	}
 	private ControllerManager() {
-		this.controllers = new Array<ControllerStrategy>();
+		this.controllers = new IntMap<ControllerStrategy>();
 	}
 	
 	/**
@@ -71,8 +71,7 @@ public class ControllerManager {
 				throw new GdxRuntimeException("Unknown controller type");
 		}
 		
-		this.controllers.add(controller);
-		component.strategyIndex = this.controllers.size - 1;
+		this.controllers.put(entity.getId(), controller);
 	}
 	
 	/**
@@ -114,7 +113,27 @@ public class ControllerManager {
 				throw new GdxRuntimeException("Unknown controller type");
 		}
 		component.strategyType = newStrategyType;
-		this.controllers.set(component.strategyIndex, controller);		
+		this.controllers.put(entity.getId(), controller);	
+	}
+	
+	/**
+	 * Remove the controller at the given index
+	 * 
+	 * @param index
+	 */
+	public void removeController(int index) {
+		this.controllers.remove(index);
+	}
+	
+	/**
+	 * Call the update method on every controller
+	 * 
+	 * @param delta
+	 */
+	public void update(float delta) {
+		for(ControllerStrategy c : this.controllers.values()) {
+			c.update(delta);
+		}
 	}
 	
 }

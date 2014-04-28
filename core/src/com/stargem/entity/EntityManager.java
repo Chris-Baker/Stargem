@@ -47,7 +47,7 @@ public class EntityManager {
 	};
 
 	// registered observers
-	private final Array<EntityRecycleObserver> recycleObservers = new Array<EntityRecycleObserver>();
+	private final Array<EntityRecycleListener> recycleObservers = new Array<EntityRecycleListener>();
 	
 	private static final EntityManager instance = new EntityManager();
 	
@@ -273,7 +273,7 @@ public class EntityManager {
 			}			
 		}
 		// update observers
-		for(EntityRecycleObserver o : this.recycleObservers) {
+		for(EntityRecycleListener o : this.recycleObservers) {
 			o.recycle(id);
 		}
 	}
@@ -315,7 +315,7 @@ public class EntityManager {
 	 * Register a new entity recycle observer 
 	 * @param o
 	 */
-	public void registerEntityRecycleObserver(EntityRecycleObserver o) {
+	public void registerEntityRecycleListener(EntityRecycleListener o) {
 		this.recycleObservers.add(o);
 	}
 	
@@ -323,7 +323,14 @@ public class EntityManager {
 	 * Unregister the entity recycle observer 
 	 * @param o
 	 */
-	public void unregisterEntityRecycleObserver(EntityRecycleObserver o) {
+	public void unregisterEntityRecycleObserver(EntityRecycleListener o) {
 		this.recycleObservers.removeValue(o, false);
+	}
+
+	/**
+	 * @return the entity with the given id
+	 */
+	public Entity getEntityByID(int id) {
+		return entityId.get(id);
 	}
 }

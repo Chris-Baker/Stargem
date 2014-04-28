@@ -2,31 +2,37 @@ controllers = {}
 
 function controllers.minebot(entity, delta)
 
-  runSpeed = em:getComponent(entity, RunSpeed)
-  physics = em:getComponent(entity, Physics)
-  character = physicsManager:getCharacter(physics.bodyIndex)
-
-  character:move(runSpeed.speed, true, false, false, false);
-
-  -- animation controls
-  skinned = em:getComponent(entity, RenderableSkinned);
-  animation = representationManager:getAnimationController(skinned.modelIndex)
+  local runSpeed = em:getComponent(entity, RunSpeed)
+  local physics = em:getComponent(entity, Physics)
+  local controller = em:getComponent(entity, Controller)
   
-  if animation.current == nil then
-      animation:setAnimation("forward", -1);
-  end
+  local character = physicsManager:getCharacter(physics.bodyIndex)
 
-  animation:update(delta);
+  local moveForward  = controller.moveForward
+  local moveBackward = controller.moveBackward
+  local moveLeft     = controller.moveLeft
+  local moveRight    = controller.moveRight
+  local jump         = controller.isJumping
+  
+  character:move(runSpeed.speed, moveForward, moveBackward, moveLeft, moveRight, jump);
+
+  -- animations are changed by the ai brain but they must be updated here
+  local skinned = em:getComponent(entity, RenderableSkinned);
+  local animation = representationManager:getAnimationController(skinned.modelIndex)
+      
+  if animation.current ~= nil then
+      animation:update(delta);
+  end
 
 end
 
 function controllers.localPlayer(entity, delta)
   
   -- get the players components
-  camera     = em:getComponent(entity, ThirdPersonCamera)
-  runSpeed   = em:getComponent(entity, RunSpeed)
-  physics    = em:getComponent(entity, Physics)
-  controller = em:getComponent(entity, Controller)
+  local camera     = em:getComponent(entity, ThirdPersonCamera)
+  local runSpeed   = em:getComponent(entity, RunSpeed)
+  local physics    = em:getComponent(entity, Physics)
+  local controller = em:getComponent(entity, Controller)
   
   -- return early if a component is missing
   if camera == nil or runSpeed == nil or physics == nil or controller == nil then
@@ -40,23 +46,23 @@ function controllers.localPlayer(entity, delta)
   end
   
   -- get the character physics object
-  character = physicsManager:getCharacter(physics.bodyIndex)
+  local character = physicsManager:getCharacter(physics.bodyIndex)
+  
+  -- debug player position
+--  local position = luajava.newInstance("com.badlogic.gdx.math.Vector3")
+--  character:getTranslation(position)
+--  debug(position:toString())
   
   -- get the keyboard input
-  isJumping    = controller.isJumping
-  moveForward  = controller.moveForward
-  moveBackward = controller.moveBackward
-  moveLeft     = controller.moveLeft
-  moveRight    = controller.moveRight
-  
-  -- jumping
-  if isJumping then
-    character:jump()
-  end
-  
-  -- moving
-  character:move(runSpeed.speed, moveForward, moveBackward, moveLeft, moveRight);
-  
+  local isJumping    = controller.isJumping
+  local moveForward  = controller.moveForward
+  local moveBackward = controller.moveBackward
+  local moveLeft     = controller.moveLeft
+  local moveRight    = controller.moveRight
+    
+  -- moving and jumping
+  character:move(runSpeed.speed, moveForward, moveBackward, moveLeft, moveRight, isJumping);
+        
   -- pitch the camera if left or right buttons are active
   if Input:isRightButtonPressed() or Input:isLeftButtonPressed() then       
     -- catch cursor and reset the cursor location to the middle of the screen
@@ -92,15 +98,15 @@ end
 
 function controllers.characterAnimation(entity, delta) 
 
-  controller = em:getComponent(entity, Controller)
-  skinned    = em:getComponent(entity, RenderableSkinned);
-  animation  = representationManager:getAnimationController(skinned.modelIndex)
+  local controller = em:getComponent(entity, Controller)
+  local skinned    = em:getComponent(entity, RenderableSkinned);
+  local animation  = representationManager:getAnimationController(skinned.modelIndex)
   
-  isJumping    = controller.isJumping
-  moveForward  = controller.moveForward
-  moveBackward = controller.moveBackward
-  moveLeft     = controller.moveLeft
-  moveRight    = controller.moveRight
+  local isJumping    = controller.isJumping
+  local moveForward  = controller.moveForward
+  local moveBackward = controller.moveBackward
+  local moveLeft     = controller.moveLeft
+  local moveRight    = controller.moveRight
   
   if animation.current == nil then
       animation:setAnimation("idle", -1);

@@ -32,6 +32,13 @@ public class TerrainRepresentation extends AbstractIterableRepresentation {
 	private final Texture texture_2;
 	private final Texture texture_3;
 	
+	/**
+	 * 
+	 * @param terrain
+	 * @param texture_1
+	 * @param texture_2
+	 * @param texture_3
+	 */
 	public TerrainRepresentation(TerrainSphere terrain, Texture texture_1, Texture texture_2, Texture texture_3) {
 		super(TerrainSphere.NUM_FACES, TerrainSphere.NUM_FACES * terrain.getNumSegments() * terrain.getNumSegments());
 		this.segmentWidth = terrain.getSegmentWidth();

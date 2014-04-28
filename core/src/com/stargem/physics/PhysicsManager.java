@@ -6,6 +6,7 @@ package com.stargem.physics;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
+import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseInterface;
 import com.badlogic.gdx.physics.bullet.collision.btCapsuleShape;
@@ -23,11 +24,10 @@ import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody.btRigidBodyConstructionInfo;
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
 import com.stargem.Config;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
-import com.stargem.entity.components.AISphericalSensor;
 import com.stargem.entity.components.Physics;
 import com.stargem.graphics.PhysicsDebugDraw;
 import com.stargem.graphics.RepresentationManager;
@@ -61,10 +61,10 @@ public class PhysicsManager {
 	private final btGhostPairCallback ghostPairCallback;
 	private final Vector3 gravity = new Vector3(0, Config.GRAVITY, 0);
 
-	private final Array<MotionState> motionStates = new Array<MotionState>();
-	private final Array<btRigidBodyConstructionInfo> bodyInfos = new Array<btRigidBodyConstructionInfo>();
-	private final Array<btCollisionShape> shapes = new Array<btCollisionShape>();
-	private final Array<btRigidBody> bodies = new Array<btRigidBody>();	
+	private final IntMap<MotionState> motionStates = new IntMap<MotionState>();
+	private final IntMap<btRigidBodyConstructionInfo> bodyInfos = new IntMap<btRigidBodyConstructionInfo>();
+	private final IntMap<btCollisionShape> shapes = new IntMap<btCollisionShape>();
+	private final IntMap<btRigidBody> bodies = new IntMap<btRigidBody>();	
 	private TerrainPhysicsBody terrain;
 	
 	private final Vector3 tempVector = new Vector3(0, 0, 0);
@@ -154,19 +154,16 @@ public class PhysicsManager {
 	 * @param collidesWith
 	 * @return the index at which the body is stored
 	 */
-	private int addRigidBody(btRigidBodyConstructionInfo info, btCollisionShape shape, btRigidBody body, MotionState motionState, short group, short collidesWith) {
-				
-		this.bodyInfos.add(info);
-		this.shapes.add(shape);
-		this.bodies.add(body);
-		this.motionStates.add(motionState);
+	private void addRigidBody(int key, btRigidBodyConstructionInfo info, btCollisionShape shape, btRigidBody body, MotionState motionState, short group, short collidesWith) {	
+		this.bodyInfos.put(key, info);
+		this.shapes.put(key, shape);
+		this.bodies.put(key, body);
+		this.motionStates.put(key, motionState);
 		
 		this.dynamicsWorld.addRigidBody(body, group, collidesWith);			
-		
+				
 		// set the index as the body user value, it is used for collision callbacks
-		body.setUserValue(this.bodies.size - 1);
-		
-		return this.bodies.size - 1;
+		body.setUserValue(key);
 	}
 	
 	/**
@@ -178,10 +175,12 @@ public class PhysicsManager {
 	 * @return the index at which the body is stored
 	 */
 	public int createBodyFromComponent(Entity entity, Physics component) {
-				
+		
+		int key = entity.getId();
+		
 		// shape
 		btCollisionShape shape = this.getShape(entity.getId(), component.shape, component.width, component.height, component.depth);
-		shapes.add(shape);
+		shapes.put(key, shape);
 		shape.calculateLocalInertia(component.mass, tempVector.set(Vector3.Zero));
 		
 		// motion state
@@ -251,66 +250,23 @@ public class PhysicsManager {
 		body.setContactCallbackFilter(component.contactWith);
 		body.setContactCallbackFlag(component.contactGroup);
 		
-		int index = this.addRigidBody(info, shape, body, motionState, (short) component.collisionGroup, (short) component.collidesWith);
+		this.addRigidBody(key, info, shape, body, motionState, (short) component.collisionGroup, (short) component.collidesWith);
 		
 		// if debug mode is set then we add a model to the debug draw
 		if(this.debug) {
-			PhysicsDebugDraw.getInstance().createDebugInstance(index, motionState.transform, component.shape, component.width, component.height, component.depth);
+			PhysicsDebugDraw.getInstance().createDebugInstance(key, motionState.transform, component.shape, component.width, component.height, component.depth);
 		}
 		
 		// add the body to the simulation returning the index it is added at
-		return index;
+		return key;
 		
 	}
 	
-	/**
-	 * Create a spherical AI sensor physics object
-	 * 
-	 * @param entity
-	 * @param component
-	 * @return
-	 */
-	public int createBodyFromComponent(Entity entity, AISphericalSensor component) {
-		
-		// shape
-		btCollisionShape shape = this.getShape(entity.getId(), SHAPE_SPHERE, component.radius, component.radius, component.radius);
-		shapes.add(shape);
-		shape.calculateLocalInertia(0, tempVector.set(Vector3.Zero));
-		
-		// motion state
-		MotionState motionState = new MotionState(new Matrix4());
-		
-		// info
-		btRigidBodyConstructionInfo info = new btRigidBodyConstructionInfo(0, null, shape, tempVector.set(1, 1, 1));
-				
-		info.setMotionState(motionState);
-				
-		// create either a character or a rigid body
-		btRigidBody body = new btRigidBody(info);;
-				
-		// set the motionstate
-		body.setMotionState(motionState);
-		
-		// store the entity in the body
-		body.userData = entity;
-		
-		// callback contact groups
-		body.setContactCallbackFilter(component.contactWith);
-		body.setContactCallbackFlag(component.contactGroup);
-		
-		short collidesWith = CollisionFilterGroups.DEFAULT_GROUP | CollisionFilterGroups.KINEMATIC_GROUP | CollisionFilterGroups.CHARACTER_GROUP;
-		short collisionGroup = CollisionFilterGroups.DEFAULT_GROUP | CollisionFilterGroups.KINEMATIC_GROUP;
-		int index = this.addRigidBody(info, shape, body, motionState, collisionGroup, collidesWith);
-				
-		// if debug mode is set then we add a model to the debug draw
-		if(this.debug) {
-			PhysicsDebugDraw.getInstance().createDebugInstance(index, motionState.transform, SHAPE_SPHERE, component.radius, component.radius, component.radius);
-		}
-		
-		// add the body to the simulation returning the index it is added at
-		return index;
-		
-	}
+	// groups for sensors
+	//short collidesWith = CollisionFilterGroups.DEFAULT_GROUP | CollisionFilterGroups.KINEMATIC_GROUP | CollisionFilterGroups.CHARACTER_GROUP;
+	//short collisionGroup = CollisionFilterGroups.DEFAULT_GROUP | CollisionFilterGroups.KINEMATIC_GROUP;
+	// 2056 contactgroup
+	// 264 contactwith
 	
 	/**
 	 * @param shape
@@ -361,20 +317,10 @@ public class PhysicsManager {
 		this.dynamicsWorld.removeRigidBody(this.bodies.get(index));
 				
 		// remove the stored references to the objects and dispose the bullet objects
-		this.bodies.removeIndex(index).dispose();
-		this.bodyInfos.removeIndex(index).dispose();
-		this.shapes.removeIndex(index); // disposing this crashes Bullet
-		this.motionStates.removeIndex(index).dispose();
-		
-		// update the body copied over the deleted body unless the body was last in the array
-		// then the body is null doesn't need updating
-		if(index < this.bodies.size) {
-			btRigidBody body = this.bodies.get(index);
-			Entity entity = (Entity) body.userData;
-			Physics component = EntityManager.getInstance().getComponent(entity, Physics.class);
-			component.bodyIndex = index;
-			body.setUserValue(index);
-		}
+		this.bodies.remove(index).dispose();
+		this.bodyInfos.remove(index).dispose();
+		this.shapes.remove(index); // disposing this crashes Bullet
+		this.motionStates.remove(index).dispose();
 	}
 	
 	/**
@@ -395,7 +341,7 @@ public class PhysicsManager {
 	public void stepSimulation(float delta) {
 		
 		// set the gravity for each body based on its position relative to the center of the world
-		for(btRigidBody body : bodies) {
+		for(btRigidBody body : bodies.values()) {
 						
 			if(body.isActive() && !body.isStaticOrKinematicObject() && !body.getClass().equals(KinematicCharacter.class)) {
 			
@@ -471,17 +417,36 @@ public class PhysicsManager {
 		this.solver.dispose();
 		this.ghostPairCallback.dispose();
 		this.dynamicsWorld.dispose();
-		
-		for(int i = 0, n = bodies.size; i < n; i += 1) {
-			this.bodies.removeIndex(i).dispose();
-			//this.shapes.removeIndex(i).dispose(); // disposing this crashes bullet
-			this.bodyInfos.removeIndex(i).dispose();
-			this.motionStates.removeIndex(i).dispose();
+				
+		for(btRigidBody o : bodies.values()) {
+			o.dispose();
 		}
+		
+		for(MotionState o : motionStates.values()) {
+			o.dispose();
+		}
+		
+		for(btRigidBodyConstructionInfo o : bodyInfos.values()) {
+			o.dispose();
+		}
+		
+		bodies.clear();
+		shapes.clear();
+		bodyInfos.clear();
+		motionStates.clear();
 		
 		if(this.terrain != null) {
 			this.terrain.dispose();
 		}
+	}
+
+	/**
+	 * @param rayFrom
+	 * @param rayTo
+	 * @param rayTestCB
+	 */
+	public void rayTest(Vector3 rayFrom, Vector3 rayTo, ClosestRayResultCallback rayTestCB) {
+		this.dynamicsWorld.rayTest(rayFrom, rayTo, rayTestCB);
 	}
 	
 }

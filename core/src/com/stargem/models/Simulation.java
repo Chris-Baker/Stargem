@@ -4,13 +4,14 @@
 package com.stargem.models;
 
 import com.stargem.Config;
-import com.stargem.ai.AIManager;
-import com.stargem.entity.systems.AISensorMovingSystem;
+import com.stargem.controllers.ControllerManager;
 import com.stargem.entity.systems.AutoSaveSystem;
 import com.stargem.entity.systems.ControllerSystem;
 import com.stargem.entity.systems.LightMovingSystem;
+import com.stargem.entity.systems.ParentSystem;
 import com.stargem.entity.systems.PhysicsSystem;
 import com.stargem.entity.systems.TimerSystem;
+import com.stargem.entity.systems.WeaponSystem;
 import com.stargem.physics.PhysicsManager;
 
 /**
@@ -23,21 +24,21 @@ import com.stargem.physics.PhysicsManager;
 public class Simulation implements Model {
 
 	private final PhysicsManager physicsManager;
-	private final AIManager aiManager;
+	private final ControllerManager controllerManager;
 	
 	private final PhysicsSystem physicsSystem;
 	private final ControllerSystem keyboardMouseSystem;
 	private final AutoSaveSystem autoSaveSystem;
 	private final TimerSystem timerSystem;
 	private final LightMovingSystem lightMovingSystem;
-	private final AISensorMovingSystem aiSensorSystem;
-	
+	private final ParentSystem parentSystem;
+	private final WeaponSystem weaponSystem;
 	
 	public Simulation() {
 		
 		// get a copy of the physics manager so we can step the simulation each tick
 		physicsManager 	= PhysicsManager.getInstance();
-		aiManager = AIManager.getInstance();
+		controllerManager = ControllerManager.getInstance();
 		
 		// create all systems
 		physicsSystem = new PhysicsSystem();
@@ -45,7 +46,8 @@ public class Simulation implements Model {
 		autoSaveSystem = new AutoSaveSystem(Config.AUTO_SAVE_FREQUENCY);
 		timerSystem = new TimerSystem();
 		lightMovingSystem = new LightMovingSystem();
-		aiSensorSystem = new AISensorMovingSystem();
+		parentSystem = new ParentSystem();
+		weaponSystem = new WeaponSystem();
 	}
 	
 	/* (non-Javadoc)
@@ -54,8 +56,11 @@ public class Simulation implements Model {
 	@Override
 	public void update(float delta) {
 		
-		// move all ai sensors
-		aiSensorSystem.process(delta);
+		// update weapon heat and ready status
+		weaponSystem.process(delta);
+		
+		// move all child entities to their parents
+		parentSystem.process(delta);
 		
 		// move all lights which are coupled with physics components
 		lightMovingSystem.process(delta);
@@ -70,8 +75,8 @@ public class Simulation implements Model {
 		
 		// get network updates
 		
-		// update ai
-		aiManager.update(delta);
+		// update all controllers player, ai, network
+		controllerManager.update(delta);
 		
 		// update physics simulation	
 		physicsManager.stepSimulation(delta);

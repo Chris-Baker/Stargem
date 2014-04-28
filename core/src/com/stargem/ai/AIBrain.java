@@ -3,6 +3,7 @@
  */
 package com.stargem.ai;
 
+import com.stargem.ai.tasks.Task;
 import com.stargem.entity.Entity;
 
 /**
@@ -45,7 +46,7 @@ public class AIBrain {
 	 * 
 	 * @param task
 	 */
-	public void addAction(Task task) {
+	public void addTask(Task task) {
 		this.actionList.push(task);
 	}
 	
@@ -58,7 +59,7 @@ public class AIBrain {
 	 * @param amount
 	 */
 	public void increaseThreat(Entity entity, int amount) {
-		this.threatList.increaseThreat(entity, amount);
+		this.threatList.increaseThreat(entity.getId(), amount);
 	}
 	
 	/**
@@ -73,7 +74,7 @@ public class AIBrain {
 	 * @param amount
 	 */
 	public void decreaseThreat(Entity entity, int amount) {
-		this.threatList.decreaseThreat(entity, amount);
+		this.threatList.decreaseThreat(entity.getId(), amount);
 	}
 	
 	/**
@@ -82,6 +83,24 @@ public class AIBrain {
 	 * @param entity
 	 */
 	public void removeThreat(Entity entity) {
-		this.threatList.removeThreat(entity);
+		this.threatList.removeThreat(entity.getId());
+	}
+	
+	/**
+	 * Is this brain in combat?
+	 * 
+	 * @return true if the brain is in combat, false otherwise
+	 */
+	public boolean inCombat() {
+		return this.threatList.size() > 0;
+	}
+
+	/**
+	 * Get the biggest threat on the threat list
+	 * 
+	 * @return the biggest threat on the threat list
+	 */
+	public Entity getBiggestThreat() {
+		return this.threatList.getBiggestThreat();
 	}
 }

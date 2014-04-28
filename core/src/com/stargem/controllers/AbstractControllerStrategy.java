@@ -27,4 +27,9 @@ public abstract class AbstractControllerStrategy implements ControllerStrategy {
 		this.entity = entity;
 		this.component = component;
 	}
+	
+	@Override
+	public void update(float delta) {
+		// this can be overridden if the controller needs to be updated
+	}
 }

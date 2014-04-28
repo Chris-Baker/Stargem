@@ -31,7 +31,7 @@ public class ControllerSystem extends AbstractSystem {
 	@Override
 	public void process(float delta, Entity entity) {
 		Controller controller = em.getComponent(entity, Controller.class);
-		ScriptManager.getInstance().execute("controllers", controller.script, entity, delta);
+		ScriptManager.getInstance().execute("controllers", controller.controller, entity, delta);
 	}
 		
 }

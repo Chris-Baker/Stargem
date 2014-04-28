@@ -37,7 +37,7 @@ public class ScriptManager {
 	}
 
 	/**
-	 * Default constructor
+	 * Singleton class, use getInstance
 	 */
 	private ScriptManager() {
 		super();
@@ -70,6 +70,7 @@ public class ScriptManager {
 	public void close() {
 		if(this.luaState != null) {
 			this.luaState.close();
+			ScriptManager.isInitialised = false;
 		}
 	}
 	
@@ -82,8 +83,8 @@ public class ScriptManager {
 	public void execute(String method, Object...parameters) {		
 		try {
 			if (!ScriptManager.isInitialised) {
-				Log.error(Config.SCRIPT_ERR, "Lua name file not initialised");
-				throw new Error("Lua name file not initialised");
+				Log.error(Config.SCRIPT_ERR, "Script file not initialised");
+				throw new Error("Script file not initialised");
 			}
 			else {
 				luaState.getLuaObject(method).call(parameters, 0);
@@ -119,7 +120,7 @@ public class ScriptManager {
 	
 	/**
 	 * Add the contents of the given file to the Lua State.
-	 * This will silently eat errors in required scripts so beware!
+	 * This will silently throw errors in required scripts so beware!
 	 * 
 	 * @param filename the name of the Lua file to add, minus the extension
 	 */
@@ -127,8 +128,8 @@ public class ScriptManager {
 		String filePath = requirePath(filename);
 		
 		if (!Gdx.files.internal(filePath).exists()) {
-			Log.error(Config.SCRIPT_ERR, "Lua name file not found: " + filePath);
-			throw new Error("Lua name file not found: " + filePath);
+			Log.error(Config.SCRIPT_ERR, "Script file not found: " + filePath);
+			throw new Error("Script file not found: " + filePath);
 		}
 		
 		// TODO this will silently eat errors in required scripts so beware!
@@ -175,7 +176,31 @@ public class ScriptManager {
 		}
 		catch (IllegalAccessException e) {
 			Log.error(Config.REFLECTION_ERR, e.getMessage());
-		}
-		
+		}		
 	}
+	
+	/**
+	 * Bitwise OR operation because Lua doesn't support it
+	 * out of the box.
+	 * 
+	 * @param num
+	 * @param other
+	 * @return
+	 */
+	public int bitwiseOr(int num, int other) {
+		return num | other;
+	}
+	
+	/**
+	 * Bitwise AND operation because Lua doesn't support it
+	 * out of the box.
+	 * 
+	 * @param num
+	 * @param other
+	 * @return
+	 */
+	public int bitwiseAnd(int num, int other) {
+		return num & other;
+	}
+	
 }
