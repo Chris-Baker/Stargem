@@ -147,7 +147,9 @@ end
 -- certain groups, the body collided with is always a threat 
 -- to the brain and can be added to the threat list
 function collisions.aiSensor(sensor, threat)
-
+  
+  debug("threat added")
+  
   local threatEntity = threat.userData
   local sensorEntity = sensor.userData
   local parentComponent = em:getComponent(sensorEntity, Parent)

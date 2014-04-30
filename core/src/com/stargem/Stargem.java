@@ -48,7 +48,7 @@ public class Stargem implements ApplicationListener {
 		Log.setLogLevel(Log.DEBUG);
 		
 		// set the debug renderer as on for the physics simulation
-		//hysicsManager.getInstance().setDebug(true);
+		//PhysicsManager.getInstance().setDebug(true);
 		
 		// set the game instance in the Game Manager
 		this.gameManager.init(this);
@@ -74,6 +74,8 @@ public class Stargem implements ApplicationListener {
 
 		// start the editor
 		//this.setScreen(this.editorScreen);
+		
+		//NetworkManager.getInstance().startServer(13000, 13001);
 		
 		// create profile or load it
 		try {
@@ -160,17 +162,35 @@ public class Stargem implements ApplicationListener {
 	}
 
 	/**
-	 * Sets the play screen as the current screen
+	 * 
 	 */
-	public void setPlayScreen() {
-		this.setScreen(this.playScreen);
+	public void setMainMenuScreen() {
 	}
-
+	
+	/**
+	 * 
+	 */
+	public void setProfileMenuScreen() {
+	}
+	
+	/**
+	 * 
+	 */
+	public void setOptionsMenuScreen() {
+	}
+	
 	/**
 	 * Sets the loading screen as the current screen
 	 */
 	public void setLoadingScreen() {
 		this.setScreen(this.loadingScreen);
+	}
+	
+	/**
+	 * Sets the play screen as the current screen
+	 */
+	public void setPlayScreen() {
+		this.setScreen(this.playScreen);
 	}
 	
 	@Override

@@ -33,9 +33,12 @@ import com.stargem.entity.components.Trigger;
 import com.stargem.entity.components.Weapon;
 import com.stargem.graphics.RepresentationManager;
 import com.stargem.persistence.DatabaseFactory;
+import com.stargem.persistence.EntitiesLoadedListener;
+import com.stargem.persistence.EntitiesSavedListener;
 import com.stargem.persistence.EntityPersistence;
 import com.stargem.persistence.GameSaver;
 import com.stargem.persistence.PersistenceManager;
+import com.stargem.persistence.PhaseLoader;
 import com.stargem.persistence.ProfilePersistence;
 import com.stargem.persistence.SimulationPersistence;
 import com.stargem.physics.PhysicsManager;
@@ -78,6 +81,7 @@ public class GameManager {
 	private final PlayersManager playersManager = PlayersManager.getInstance();
 	
 	private final GameSaver gamesaver = new GameSaver();
+	private final PhaseLoader gameloader = new PhaseLoader();
 	
 	// array of all component types
 	private final Array<Class<? extends Component>> componentTypes = new Array<Class<? extends Component>>();
@@ -349,7 +353,7 @@ public class GameManager {
 		}
 		
 		// we have to save entities here so that the deleted entity list is cleared from the db
-		this.saveGame();
+		this.saveGame(null);
 	}
 	
 	/**
@@ -362,13 +366,27 @@ public class GameManager {
 	/**
 	 * Save the current game to disk
 	 */
-	public void saveGame() {
-		
-		// TODO maybe this should be pooled? so as to reduce garbage.
-		// TODO maybe this request should be queued in case the saving isn't done when it is called again.
+	public void saveGame(EntitiesSavedListener l) {
+		gamesaver.setListener(l);
 		Thread t = new Thread(this.gamesaver);
-		t.start();
-		
+		t.start();		
+	}
+	
+	/**
+	 * Load entities from disk in a separate thread
+	 */
+	public void loadPhase(EntitiesLoadedListener l, int phase) {
+		gameloader.setPhase(phase);
+		gameloader.setListener(l);
+		Thread t = new Thread(this.gameloader);
+		t.start();		
+	}
+	
+	/**
+	 * Load entities from disk in a separate thread
+	 */
+	public void loadInitialPhase(EntitiesLoadedListener l) {
+		this.loadPhase(l, -1);				
 	}
 	
 	/**

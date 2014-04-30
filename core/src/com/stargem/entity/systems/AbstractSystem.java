@@ -11,7 +11,7 @@ public abstract class AbstractSystem implements SubSystem {
 	protected final EntityManager em = EntityManager.getInstance();
 	
 	public AbstractSystem() {
-		this.entities = em.nullIterator;
+		this.entities = em.nullEntityIterator;
 	}
 	
 	@Override

@@ -12,6 +12,8 @@ package com.stargem.persistence;
  */
 public class GameSaver implements Runnable {
 	
+	private EntitiesSavedListener listener;
+	
 	/**
 	 * Save the game to disk not on the ui thread so that the player
 	 * experiences no long pause.
@@ -25,6 +27,19 @@ public class GameSaver implements Runnable {
 	@Override
 	public void run() {
 		PersistenceManager.getInstance().getEntityPersistence().save();
+		
+		if(listener != null) {
+			listener.finishedSaving();
+			listener = null;
+		}
+		
+	}
+
+	/**
+	 * @param l
+	 */
+	public void setListener(EntitiesSavedListener l) {
+		this.listener = l;
 	}
 
 }

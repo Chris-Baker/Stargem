@@ -593,7 +593,7 @@ public class KinematicCharacter extends btRigidBody {
 					// if one of the objects is terrain then we need to only recover directly up from the origin
 					if((objA.getContactCallbackFlag() & ContactCallbackFlags.TERRAIN) > 0 || (objB.getContactCallbackFlag() & ContactCallbackFlags.TERRAIN) > 0) {				
 						motionState.transform.getTranslation(normalWorldOnB);
-						normalWorldOnB.add(pt.getNormalWorldOnB().getX(), pt.getNormalWorldOnB().getY(), pt.getNormalWorldOnB().getZ());
+						//normalWorldOnB.add(pt.getNormalWorldOnB().getX(), pt.getNormalWorldOnB().getY(), pt.getNormalWorldOnB().getZ());
 						normalWorldOnB.nor();					
 					}
 					else {

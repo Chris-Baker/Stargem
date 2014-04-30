@@ -133,7 +133,7 @@ public class DatabaseFactory {
 	private static void createEntityTable(Connection connection) {
 
 		StringBuilder sql = StringHelper.getBuilder();
-		sql.append("CREATE TABLE IF NOT EXISTS Entity (entityId INTEGER PRIMARY KEY);");
+		sql.append("CREATE TABLE IF NOT EXISTS Entity (entityId INTEGER PRIMARY KEY, \"phase\" INTEGER, \"load\" NUMERIC, \"active\" NUMERIC);");
 
 		// run the query
 		try {

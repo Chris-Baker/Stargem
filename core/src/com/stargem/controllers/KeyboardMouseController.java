@@ -24,7 +24,7 @@ import com.stargem.weapons.WeaponManager;
  * @date	21 Mar 2014
  * @version	1.0
  */
-public class KeyboardMouseController extends AbstractControllerStrategy implements ControllerStrategy, InputProcessor {
+public class KeyboardMouseController extends AbstractControllerStrategy implements InputProcessor {
 	
 	private final ClosestRayResultCallback rayTestCB = new ClosestRayResultCallback(Vector3.Zero, Vector3.Z);;
 	private final Vector3 rayFrom = new Vector3();

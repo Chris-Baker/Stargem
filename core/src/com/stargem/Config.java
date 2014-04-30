@@ -31,11 +31,13 @@ public class Config {
 	public static final String SCRIPT_ERR 			= "SCRIPT";
 	public static final String SQL_ERR 				= "SQL";
 	public static final String IO_ERR 				= "IO";
+	public static final String NET_ERR 				= "NET";
 	public static final String PHYSICS_ERR 			= "PHYSICS";
 	public static final String REFLECTION_ERR 		= "REFLECTION";
 	public static final String SYSTEM_ERR 			= "SYSTEM";
 	public static final String ENTITY_ERR 			= "ENTITY";
 	public static final String INFO 				= "INFO";
+	
 	
 	public static final int PIXELS_PER_METER 		= 32;
 	

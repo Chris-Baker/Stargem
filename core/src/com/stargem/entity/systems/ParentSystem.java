@@ -34,12 +34,12 @@ public class ParentSystem extends AbstractSystem {
 		
 		Parent parent = em.getComponent(entity, Parent.class);
 		Entity parentEntity = em.getEntityByID(parent.parentId);
-		
+				
 		// if the parent is null then we need to remove this entity also
 		if(parentEntity == null) {
 			em.recycle(entity);
 			return;
-		}
+		}		
 		
 		Physics parentPhysics = em.getComponent(parentEntity, Physics.class);		
 		Physics physics = em.getComponent(entity, Physics.class);

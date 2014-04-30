@@ -3,7 +3,7 @@
  */
 package com.stargem.entity;
 
-import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.IdentityMap;
 import com.badlogic.gdx.utils.Pool;
 import com.stargem.entity.components.Component;
 
@@ -16,7 +16,7 @@ import com.stargem.entity.components.Component;
  */
 public class ComponentManager {
 
-	private final ArrayMap<Class<? extends Component>, Pool<? extends Component>> componentPools;
+	private final IdentityMap<Class<? extends Component>, Pool<? extends Component>> componentPools;
 	
 	private static ComponentManager instance = new ComponentManager();
 	
@@ -25,7 +25,7 @@ public class ComponentManager {
 	}
 	
 	private ComponentManager() {
-		componentPools = new ArrayMap<Class<? extends Component>, Pool<? extends Component>>();
+		componentPools = new IdentityMap<Class<? extends Component>, Pool<? extends Component>>();
 	}
 	
 	/**

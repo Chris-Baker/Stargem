@@ -16,7 +16,7 @@ import com.stargem.scripting.ScriptManager;
  * @date	21 Mar 2014
  * @version	1.0
  */
-public class AIController extends AbstractControllerStrategy implements ControllerStrategy {
+public class AIController extends AbstractControllerStrategy {
 
 	private final AIBrain brain;
 	

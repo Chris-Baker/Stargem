@@ -13,6 +13,8 @@ import com.stargem.GameManager;
 import com.stargem.Stargem;
 import com.stargem.controllers.AnyKeyPressedProcessor;
 import com.stargem.graphics.RepresentationManager;
+import com.stargem.models.WorldDetails;
+import com.stargem.persistence.EntitiesLoadedListener;
 import com.stargem.persistence.PersistenceManager;
 import com.stargem.persistence.SimulationPersistence;
 import com.stargem.physics.PhysicsManager;
@@ -28,7 +30,6 @@ import com.stargem.utils.Log;
 import com.stargem.utils.StringHelper;
 import com.stargem.views.LoadingScreenView;
 import com.stargem.views.View;
-import com.stargem.world.WorldDetails;
 
 /**
  * LoadingScreen.java
@@ -37,13 +38,14 @@ import com.stargem.world.WorldDetails;
  * @date	18 Nov 2013
  * @version	1.0
  */
-public class LoadingScreen extends AbstractScreen implements Observer {
+public class LoadingScreen extends AbstractScreen implements Observer, EntitiesLoadedListener {
 	
 	private enum LoadingScreenState {
 		LOADING_VIEW, 
 		FADING_IN, 
 		LOADING_WORLD_ASSETS, 
-		LOADING_TERRAIN, 
+		LOADING_TERRAIN,
+		BEGIN_LOADING_ENTITIES,
 		LOADING_ENTITIES,
 		READY,
 		FADING_OUT, 
@@ -210,44 +212,30 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 				
 				// query the terrain object for updates so we can display
 				// progress to user and we know when it has finished
-				
+								
 				// transition when finished
-				this.currentState = LoadingScreenState.LOADING_ENTITIES;
+				this.currentState = LoadingScreenState.BEGIN_LOADING_ENTITIES;
 				
 			break;
+			
+			case BEGIN_LOADING_ENTITIES:
 				
+				// render the view
+				this.view.render(delta);
+				
+				// this starts entities loading on a separate thread
+				GameManager.getInstance().loadInitialPhase(this);
+				this.currentState = LoadingScreenState.LOADING_ENTITIES;
+			break;
+			
 			case LOADING_ENTITIES:
 			
 				// render the view
 				this.view.render(delta);
-								
-//				EntityPersistence entityPersistence = PersistenceManager.getInstance().getEntityPersistence();
-//				EntityManager entityManager = EntityManager.getInstance();
-//								
-//				int numEntities = entityPersistence.beginLoading();
-//				Entity[] entities = new Entity[numEntities];
-//				
-//				Log.info(Config.ENTITY_ERR, "Loading " + numEntities + " entities");
-//				
-//				for (int i = 0; i < numEntities; i += 1) {					
-//					Entity e = entityPersistence.loadEntity();					
-//					entities[i] = e;
-//				}
-				
-				// This script loads all the entities, it is the same as the above but allows the script
-				// environment to have a copy of each entity reference.
-				this.scriptManager.execute("entities", "load");				
-				
-				// we are now ready to transition
-				// TODO this should be done on a separate thread and a callback should switch the state 
-				
-				// set an input processor to listen for any key presses
-				this.anyKeyPressedProcessor.addObserver(this);
-				GameManager.getInstance().addInputProcessor(anyKeyPressedProcessor);
-				
-				Log.debug(Config.INFO, "ready...");
-				
-				this.currentState = LoadingScreenState.READY;
+											
+				// wait for for the callback when entities have finished loading
+				// the callback advances the state and sets an any key input processor
+				// see finishedLoading method below
 				
 			break;
 			
@@ -324,6 +312,12 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 		sb.append(world);
 		sb.append("/");	
 		this.currentWorldFilePath = sb.toString();
+				
+		// get the terrain filepath
+		sb.setLength(0);
+		sb.append(this.currentWorldFilePath);
+		sb.append("heightMap.png");
+		this.terrainHeightMapPath = sb.toString();
 		
 		// get the script filepath
 		sb.setLength(0);
@@ -331,12 +325,6 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 		sb.append(Config.WORLD_SCRIPT_NAME);
 		sb.append(Config.SCRIPT_EXTENSION);
 		this.scriptPath = sb.toString();
-		
-		// get the terrain filepath
-		sb.setLength(0);
-		sb.append(this.currentWorldFilePath);
-		sb.append("heightMap.png");
-		this.terrainHeightMapPath = sb.toString();
 		
 		// reset and initialise the sctipting environment
 		this.scriptManager.close();
@@ -381,6 +369,22 @@ public class LoadingScreen extends AbstractScreen implements Observer {
 			throw new Error("Observer update called on Loading Screen when it shouldn't have been!" +
 					" The screen must be in its ready state before it can transition.");
 		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.stargem.persistence.EntitiesLoadedListener#finishedLoading()
+	 */
+	@Override
+	public void finishedLoading() {
+		
+		// set an input processor to listen for any key presses
+		this.anyKeyPressedProcessor.addObserver(this);
+		GameManager.getInstance().addInputProcessor(anyKeyPressedProcessor);
+		
+		Log.debug(Config.INFO, "ready...");
+		
+		this.currentState = LoadingScreenState.READY;
 		
 	}
 	

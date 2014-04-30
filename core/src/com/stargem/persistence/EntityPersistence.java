@@ -50,9 +50,7 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 			
 	// for keeping track of entities while loading
 	private IntMap<Integer> playerIDs;
-	private final IntArray entities = new IntArray();
-	private int entityPointer;
-	private int numEntities;
+	private final Array<Integer> entities = new Array<Integer>();
 
 	// the list of entities to be deleted before the next save
 	private final IntArray deathrow = new IntArray();
@@ -72,35 +70,79 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 	public void registerComponentType(Class<? extends Component> type) {
 		componentTypes.add(type);
 	}
-		
+	
 	/**
-	 * This method must be called before any entity loading can begin
-	 * Populate entity list and reset the loading pointer. 
-	 * Return the number of entities in the database
-	 * 
-	 * @return the number of entities to be loaded
+	 * Sets the lowest unused entity ID in the entity manager
+	 * so that entities can be created on the fly without clashes.
 	 */
-	synchronized public int beginLoading() {
-		this.entityPointer = 0;
+	private void setLowestUnusedEntityID() {
+		
+		StringBuilder sql = StringHelper.getBuilder();
+		sql.append("SELECT MAX(entityId) as highestID FROM Entity;");
+
+		try {
+			Statement statement = this.connection.createStatement();
+			ResultSet result = statement.executeQuery(sql.toString());
+			
+			int highestID = result.getInt(1);
+			highestID += 1;
+			
+			this.em.setLowestUnusedEntityID(highestID);
+			
+			result.close();
+			statement.close();
+		}
+		catch (SQLException e) {
+			Log.error(Config.SQL_ERR, e.getMessage());
+		}
+	}
+	
+	/**
+	 * If phase is set to -1 then no phase is used and all entities
+	 * with their load flag set will be loaded.
+	 * 
+	 * @param phase the phase to load
+	 */
+	public void load(int phase) {
+		this.setLowestUnusedEntityID();
 		this.playerIDs = PersistenceManager.getInstance().getPlayerIDs();
-		return populateEntityList();
+		this.populateEntityList(phase);
+						
+		for(int entityID : entities) {
+			this.loadEntity(entityID);
+			this.setLoaded(entityID);
+		}
+		entities.clear();
+	}
+	
+	/**
+	 * Load all entities into the world which have their load flag
+	 * set to 1
+	 */
+	synchronized public void load() {
+		this.load(-1);
 	}
 
 	/**
 	 * Populate entity list and reset the pointer. Return the number of entities in the database
 	 * @return the number of entities to be loaded
 	 */
-	synchronized private int populateEntityList() {
-		numEntities = 0;
+	synchronized private void populateEntityList(int phase) {
 		StringBuilder sql = StringHelper.getBuilder();
-		sql.append("SELECT entityId, (SELECT COUNT(entityId) FROM Entity) as numRows FROM Entity;");
+		
+		if(phase == -1) {
+			sql.append("SELECT entityId FROM Entity WHERE load=1;");
+		}
+		else {
+			sql.append("SELECT entityId FROM Entity WHERE phase=");
+			sql.append(phase);
+			sql.append(";");
+		}
 
 		try {
 			Statement statement = this.connection.createStatement();
 			ResultSet result = statement.executeQuery(sql.toString());
-						
-			numEntities = result.getInt(2);
-			
+									
 			while(result.next()) {
 				entities.add(result.getInt(1));				
 			}
@@ -111,18 +153,6 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 		catch (SQLException e) {
 			Log.error(Config.SQL_ERR, e.getMessage());
 		}
-		
-		return numEntities;
-	}
-
-	/**
-	 * Returns the current entity id and increments the pointer
-	 * @return the current entity id
-	 */
-	private int nextId() {
-		int entityId = this.entities.get(entityPointer);
-		entityPointer += 1;
-		return entityId;
 	}
 	
 	/**
@@ -133,21 +163,16 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 	 * @param entity a blank entity with no components or ID
 	 * @return a populated entity object or null if the entity was a player placeholder and the player hasn't joined the game
 	 */
-	synchronized public Entity loadEntity() {
-
-		if (numEntities == 0) {
-			throw new Error("Cannot load entity before populateEntityList has been called.");
-		}
+	synchronized public Entity loadEntity(int entityID) {
 
 		Entity entity = null;
-		int entityID = nextId();
 		
-		Log.info(Config.SQL_ERR, "Loading entity: " + entityID);
-
 		// check to see if this entity id is a player id		
 		// if this is a player then we want to keep it persistent across worlds
 		if(playerIDs.containsValue(entityID, false)) {
-									
+			
+			Log.info(Config.SQL_ERR, "Loading player entity: " + entityID);
+			
 			// get the key associated with the entity id, this is the player number
 			int playerNum = playerIDs.findKey(entityID, false, -1);
 			
@@ -157,12 +182,12 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 				// this is a player entity so check if there is already an entity object
 				// stored in the players manager.
 				if(PlayersManager.getInstance().playerEntityExists(playerNum)) {
-										
+					
 					// we need to get the entity which is already stored as the player
 					entity = PlayersManager.getInstance().getPlayerEntity(playerNum);
 					
-					// set its new id to the player entity id
-					em.setEntityId(entity, entityID);
+					// set the entity's new id
+					this.em.setEntityId(entity, entityID);
 					
 					// replace its physics component
 					this.em.removeComponent(entity, Physics.class);
@@ -171,8 +196,7 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 				else {							
 					// otherwise, load the entity as normal and add it to the player manager
 					
-					entity = this.em.createEntity();
-					em.setEntityId(entity, entityID);
+					entity = this.em.createEntity(entityID);
 					
 					// iterate over component types and load them
 					for (Class<? extends Component> type : componentTypes) {
@@ -187,9 +211,11 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 			
 		}
 		else {
+			
+			Log.info(Config.SQL_ERR, "Loading entity: " + entityID);
+			
 			// this is not a player entity so load it as normal
-			entity = this.em.createEntity();
-			em.setEntityId(entity, entityID);
+			entity = this.em.createEntity(entityID);			
 			
 			// iterate over component types and load them
 			for (Class<? extends Component> type : componentTypes) {
@@ -201,6 +227,29 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 	}
 
 	/**
+	 * Set the loaded flag to true for the given entity ID
+	 * 
+	 * @param entityID
+	 */
+	private void setLoaded(int entityID) {
+		
+		StringBuilder sql = StringHelper.getBuilder();
+		sql.append("UPDATE Entity SET load=1 WHERE entityId=");
+		sql.append(entityID);
+		sql.append(";");
+				
+		try {
+			Statement statement;
+			statement = this.connection.createStatement();
+			statement.executeUpdate(sql.toString());
+			statement.close();
+		}
+		catch (SQLException e) {
+			Log.error(Config.SQL_ERR, e.getMessage());
+		}		
+	}
+	
+	/**
 	 * Load a component of the given type and attach it to the entity given.
 	 * If no component is found for this entity in the database none it attached.
 	 * 
@@ -208,7 +257,7 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 	 * @param shape the class shape of the component to load.
 	 */
 	synchronized private void loadComponent(Entity entity, Class<? extends Component> type) {
-		
+				
 		// leave early if there is no component of shape for this entity
 		StringBuilder sql = StringHelper.getBuilder();
 		sql.append("SELECT COUNT(entityId) FROM ");
@@ -236,7 +285,7 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 			return;
 		}
 		else {
-			Log.info(Config.SQL_ERR, "Loading component " + type.getSimpleName() + " for entity " + entity.getId());
+			Log.debug(Config.SQL_ERR, "Loading component " + type.getSimpleName() + " for entity " + entity.getId());
 		}
 
 		// select the data from the correct table
@@ -315,8 +364,11 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 	}
 
 	/**
-	 * @param type
-	 * @param object
+	 * This helper method converts SQLite datatypes
+	 * to the appropriate Java datatype
+	 * 
+	 * @param type the type coming in from the database
+	 * @param object the value coming in from the database
 	 * @return
 	 */
 	private Object getArgument(Class<?> type, Object argument) {
@@ -366,7 +418,7 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 	 * 
 	 * @param entityId
 	 */
-	synchronized private void deleteEntity(int entityId) {
+	synchronized public void deleteEntity(int entityId) {
 		
 		Log.info(Config.SQL_ERR, "Deleting entity " + entityId);
 		
@@ -426,15 +478,15 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 	 * 
 	 * @param entity the entity to store.
 	 */
-	synchronized private void storeEntity(Entity entity) {
+	synchronized public void storeEntity(Entity entity) {
 
 		Log.info(Config.SQL_ERR, "Storing entity " + entity.getId());
 				
 		StringBuilder sql = StringHelper.getBuilder();
 		PooledLinkedList<? extends Component> components;
-
+		
 		// if we have a zero id then this entity has not been stored before
-		if (entity.getId() == 0) {
+		if (isNewEntity(entity.getId())) {
 			// store the entity in the entity table and get it's new id
 			sql.append("INSERT INTO Entity DEFAULT VALUES;");
 
@@ -471,6 +523,41 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 		}
 	}
 
+	/**
+	 * Determine whether an entity is already in the database.
+	 * 
+	 * @param entityID
+	 * @return
+	 */
+	private boolean isNewEntity(int entityID) {
+		
+		boolean isNew = true;
+				
+		StringBuilder sql = StringHelper.getBuilder();
+		sql.append("SELECT COUNT(entityId)  as entityExists FROM Entity WHERE entityId=");
+		sql.append(entityID);
+		sql.append(";");
+		
+		try {
+			Statement statement = this.connection.createStatement();
+			ResultSet result = statement.executeQuery(sql.toString());
+									
+			int exists = result.getInt(1);
+			
+			if(exists == 1) {
+				isNew = false;
+			}
+			
+			result.close();
+			statement.close();
+		}
+		catch (SQLException e) {
+			Log.error(Config.SQL_ERR, e.getMessage());
+		}
+		
+		return isNew;
+	}
+	
 	/**
 	 * Insert a component into the database
 	 * 

@@ -10,10 +10,10 @@ import java.sql.Statement;
 
 import com.badlogic.gdx.utils.IntMap;
 import com.stargem.Config;
+import com.stargem.models.WorldDetails;
 import com.stargem.utils.AssetList;
 import com.stargem.utils.Log;
 import com.stargem.utils.StringHelper;
-import com.stargem.world.WorldDetails;
 
 /**
  * SimulationPersistence.java

@@ -3,6 +3,7 @@ package com.stargem.entity;
 import java.util.Iterator;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.PooledLinkedList;
@@ -18,17 +19,19 @@ import com.stargem.utils.Log;
  */
 
 public class EntityManager {
-	
+
 	private static final Array<Entity> entityPool = new Array<Entity>();
-	
+
+	private int lowestUnassignedEntityID = 1;
+	private final IntArray recycledID = new IntArray();
 	private final Array<Entity> allEntities;
 	private final ObjectMap<Class<?>, ObjectMap<Entity, ? extends Component>> componentStores;
 	private final ObjectMap<Entity, PooledLinkedList<? extends Component>> entityComponents;
 	private final IntMap<Entity> entityId;
-	
+
 	// null iterator is returned if a map of components does not exist. This saves having to 
 	// deal with returning nulls, which is messy
-	public final Iterator<Entity> nullIterator = new Iterator<Entity>() {
+	public final Iterator<Entity> nullEntityIterator = new Iterator<Entity>() {
 
 		@Override
 		public boolean hasNext() {
@@ -43,18 +46,18 @@ public class EntityManager {
 		@Override
 		public void remove() {
 		}
-		
+
 	};
 
 	// registered observers
-	private final Array<EntityRecycleListener> recycleObservers = new Array<EntityRecycleListener>();
-	
+	private final Array<EntityRecycleListener> recycleListeners = new Array<EntityRecycleListener>();
+
 	private static final EntityManager instance = new EntityManager();
-	
+
 	public static EntityManager getInstance() {
 		return instance;
 	}
-	
+
 	private EntityManager() {
 		allEntities = new Array<Entity>();
 		componentStores = new ObjectMap<Class<?>, ObjectMap<Entity, ? extends Component>>();
@@ -67,23 +70,21 @@ public class EntityManager {
 	 */
 	@SuppressWarnings("unchecked")
 	synchronized public <T extends Component> T getComponent(Entity entity, Class<T> componentType) {
-				
-		ObjectMap<Entity, ? extends Component> store = componentStores.get( componentType );
 
-		if (store == null)
-		 {
+		ObjectMap<Entity, ? extends Component> store = componentStores.get(componentType);
+
+		if (store == null) {
 			return null;
 			//throw new IllegalArgumentException( "GET FAIL: there are no entities with a Component of class: "+componentType );
 		}
 
 		T result = (T) store.get(entity);
-		if (result == null)
-		 {			
+		if (result == null) {
 			Log.debug(Config.ENTITY_ERR, "No component of type " + componentType.getName() + " returning null");
 			return null;
 			//throw new IllegalArgumentException( "GET FAIL: "+entity+" does not possess Component of class\n   missing: "+componentType );
 		}
-		
+
 		return result;
 	}
 
@@ -111,7 +112,6 @@ public class EntityManager {
 				@Override
 				public void remove() {
 				}
-				
 			};
 		}
 
@@ -122,11 +122,11 @@ public class EntityManager {
 	 * return a set of all entities which are mapped to a component
 	 */
 	synchronized public <T extends Component> Iterator<Entity> getAllEntitiesPossessingComponent(Class<T> componentType) {
-		
+
 		ObjectMap<Entity, ? extends Component> store = componentStores.get(componentType);
 
 		if (store == null) {
-			return this.nullIterator;
+			return this.nullEntityIterator;
 		}
 
 		return store.keys();
@@ -140,15 +140,15 @@ public class EntityManager {
 	 */
 	synchronized public PooledLinkedList<? extends Component> getComponents(Entity entity) {
 		PooledLinkedList<? extends Component> components = this.entityComponents.get(entity);
-		
+
 		if (components == null) {
 			components = new PooledLinkedList<Component>(Integer.MAX_VALUE);
 			this.entityComponents.put(entity, components);
 		}
-		
+
 		return components;
 	}
-	
+
 	/**
 	 * map a component to an entity
 	 */
@@ -162,15 +162,15 @@ public class EntityManager {
 		}
 
 		((ObjectMap<Entity, T>) store).put(entity, component);
-		
+
 		// this data structure is used for recycling entities
 		PooledLinkedList<? extends Component> components = this.entityComponents.get(entity);
-		
+
 		if (components == null) {
 			components = new PooledLinkedList<Component>(Integer.MAX_VALUE);
 			this.entityComponents.put(entity, components);
 		}
-		
+
 		((PooledLinkedList<T>) components).add(component);
 	}
 
@@ -182,48 +182,81 @@ public class EntityManager {
 	 * @param type
 	 */
 	synchronized public void removeComponent(Entity e, Class<? extends Component> type) {
-		
+
 		// get the component so we can recycle it in a moment if it is null we are done
 		Component c = this.getComponent(e, type);
-		if(c == null)
-		{
+		if (c == null) {
 			return;
 		}
-		
+
 		// get the component store so we can unmap the component
-		ObjectMap<Entity, ? extends Component> store = componentStores.get(type);		
+		ObjectMap<Entity, ? extends Component> store = componentStores.get(type);
 		store.remove(e);
-		
+
 		// iterate over the list of component for this entity and remove any with the given class type
 		PooledLinkedList<? extends Component> components = this.entityComponents.get(e);
 		Component component = null;
-		for(components.iter(); (component = components.next()) != null;) {
-			if(component.getClass().equals(type)) {
+		for (components.iter(); (component = components.next()) != null;) {
+			if (component.getClass().equals(type)) {
 				components.remove();
 			}
-		}		
-			
+		}
+
 		// recycle the component
 		ComponentManager.getInstance().free(c);
 	}
-	
+
 	/**
-	 * create a new entity adding it to the list
+	 * Generate an entity with an automatically generated ID.
 	 * 
 	 * @throws Exception
 	 */
 	synchronized public Entity createEntity() {
+		Entity entity = this.createEntity(lowestUnassignedEntityID);
+		lowestUnassignedEntityID += 1;
+		return entity;
+	}
+	
+	/**
+	 * Generate an entity with the given ID.
+	 * 
+	 * @param entityID
+	 * @return
+	 */
+	synchronized public Entity createEntity(int entityID) {
 		Entity entity;
-		if(entityPool.size == 0) {
+		if (entityPool.size == 0) {
 			entity = new Entity();
 		}
 		else {
 			entity = entityPool.pop();
-			entity.id = 0;
 		}
-		
+		entity.id = entityID;
 		allEntities.add(entity);
+		entityId.put(entityID, entity);
 		return entity;
+	}
+
+	/**
+	 * Get an ID from the recycled ID array. If there are none in the array
+	 * then generate a new one, if we have reached Integer.MAX_VALUE then
+	 * an error is thrown.
+	 */
+	public int generateNewEntityID() {
+		synchronized (this) // prevent it generating two entities with same ID at once
+		{
+			if (recycledID.size > 0) {
+				return recycledID.pop();
+			}
+			else {
+				if (lowestUnassignedEntityID < Integer.MAX_VALUE) {
+					return lowestUnassignedEntityID++;
+				}
+				else {
+					throw new Error("ERROR: no available Entity IDs; too many entities!");
+				}
+			}
+		}
 	}
 
 	/**
@@ -232,7 +265,8 @@ public class EntityManager {
 	private void killEntity(Entity entity) {
 		synchronized (this) // make this thread safe
 		{
-			if(entityId.containsValue(entity, false)) {
+			recycledID.add(entity.id);
+			if (entityId.containsValue(entity, false)) {
 				entityId.remove(entityId.findKey(entity, false, 0));
 			}
 			allEntities.removeValue(entity, false);
@@ -240,7 +274,7 @@ public class EntityManager {
 			entity.id = 0;
 		}
 	}
-	
+
 	/**
 	 * Free the entity and all its components putting them all back into their
 	 * respective pools.
@@ -251,29 +285,30 @@ public class EntityManager {
 		int id = entity.id;
 		synchronized (this) {
 			PooledLinkedList<? extends Component> components = this.entityComponents.get(entity);
-			if(components != null) {
-				
+			if (components != null) {
+
 				ComponentManager componentManager = ComponentManager.getInstance();
-				
+
 				// free the entity id
 				this.killEntity(entity);
-				
+
 				// free each component				
 				Component c = null;
-				for(components.iter(); (c = components.next()) != null;) {
+				for (components.iter(); (c = components.next()) != null;) {
 					componentManager.free(c);
-					
+
 					// remove the component from the component store
 					ObjectMap<Entity, ? extends Component> store = componentStores.get(c.getClass());
-					store.remove(entity);				
+					store.remove(entity);
 				}
-				
+
 				// remove the entity and component from the component store
-				this.entityComponents.remove(entity);				
-			}			
+				this.entityComponents.remove(entity);
+			}
 		}
-		// update observers
-		for(EntityRecycleListener o : this.recycleObservers) {
+
+		// update listeners
+		for (EntityRecycleListener o : this.recycleListeners) {
 			o.recycle(id);
 		}
 	}
@@ -285,11 +320,11 @@ public class EntityManager {
 	 * @param id the id of the entity to recycle.
 	 */
 	public void recycle(int id) {
-		if(entityId.containsKey(id)) {
+		if (entityId.containsKey(id)) {
 			recycle(entityId.get(id));
 		}
 	}
-	
+
 	/**
 	 * Set the id of the given entity to the given id value and place it
 	 * in the entityId map at that key.
@@ -301,7 +336,14 @@ public class EntityManager {
 		entityId.put(id, e);
 		e.id = id;
 	}
-	
+
+	/**
+	 * @return the entity with the given id
+	 */
+	public Entity getEntityByID(int id) {
+		return entityId.get(id);
+	}
+
 	/**
 	 * Get all the entities as an Iterable.
 	 * 
@@ -310,27 +352,37 @@ public class EntityManager {
 	synchronized public Iterable<Entity> getAllEntities() {
 		return this.allEntities;
 	}
-	
+
 	/**
-	 * Register a new entity recycle observer 
+	 * Register a new entity recycle observer
+	 * 
 	 * @param o
 	 */
 	public void registerEntityRecycleListener(EntityRecycleListener o) {
-		this.recycleObservers.add(o);
-	}
-	
-	/**
-	 * Unregister the entity recycle observer 
-	 * @param o
-	 */
-	public void unregisterEntityRecycleObserver(EntityRecycleListener o) {
-		this.recycleObservers.removeValue(o, false);
+		this.recycleListeners.add(o);
 	}
 
 	/**
-	 * @return the entity with the given id
+	 * Unregister the entity recycle observer
+	 * 
+	 * @param o
 	 */
-	public Entity getEntityByID(int id) {
-		return entityId.get(id);
+	public void unregisterEntityRecycleListener(EntityRecycleListener o) {
+		this.recycleListeners.removeValue(o, false);
+	}
+
+	/**
+	 * Set the lowest unused Entity ID. 
+	 * 
+	 * Warning, this will have dire effects if set incorrectly. 
+	 * This should only be set by a database controller to allow 
+	 * IDs to be generated by this manager which do not overwrite 
+	 * IDs in the database table storing entities.
+	 * 
+	 * @param highestID
+	 */
+	public void setLowestUnusedEntityID(int id) {
+		Log.debug(Config.ENTITY_ERR, "Next Entity ID set to " + id);
+		this.lowestUnassignedEntityID = id;
 	}
 }

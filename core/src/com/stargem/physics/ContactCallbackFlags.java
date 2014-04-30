@@ -27,8 +27,8 @@ public class ContactCallbackFlags {
 	public static final int POWER_CORE 		= 8192;
 	public static final int SMALL_GEM 		= 16384;
 	public static final int LARGE_GEM 		= 32768;
-	public static final int SPECIAL_POWER 	= 65536;
-	public static final int AI_SENSOR 		= 131072;
+	public static final int AI_SENSOR 		= 65536;
+	public static final int SPECIAL_POWER 	= 131072;
 	public static final int TERRAIN 		= 262144;
 	
 	/**

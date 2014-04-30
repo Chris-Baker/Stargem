@@ -14,9 +14,12 @@ import com.stargem.entity.EntityRecycleListener;
  * @version	1.0
  */
 public class ThreatList implements EntityRecycleListener {
-
+	
+	//private final IntIntMap threats;
+	//private final IntIntMap removed;
 	private final IdentityMap<Integer, Integer> threats;
 	private final IdentityMap<Integer, Integer> removed;
+	
 	
 	/**
 	 * The threat list keeps track of the perceived danger other entities
@@ -121,7 +124,7 @@ public class ThreatList implements EntityRecycleListener {
 		int biggestThreat = Integer.MIN_VALUE;
 		int amount = Integer.MIN_VALUE;
 		
-		for(int e : this.threats.keys()) {
+		for(int e : threats.keys()) {
 			amount = threats.get(e);			
 			if(amount > biggestThreat) {
 				id = e;

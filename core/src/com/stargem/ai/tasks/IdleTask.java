@@ -51,7 +51,7 @@ public class IdleTask extends AbstractTask {
 				this.onWakeUp();
 			}
 			else {
-				this.onCombat();
+				this.onCombatStarted();
 			}
 		}		
 		else {
@@ -94,7 +94,7 @@ public class IdleTask extends AbstractTask {
 	/**
 	 * Call the injected behaviour's onCombat method
 	 */
-	public void onCombat() {
+	public void onCombatStarted() {
 		behaviour.onCombatStarted();
 	}
 	

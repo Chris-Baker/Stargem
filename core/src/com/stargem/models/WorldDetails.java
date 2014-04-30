@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.stargem.world;
+package com.stargem.models;
 
 /**
  * WorldDetails.java
