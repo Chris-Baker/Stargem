@@ -29,6 +29,8 @@ public class PhaseLoader implements Runnable {
 	 */
 	@Override
 	public void run() {
+		
+		PersistenceManager.getInstance().loadGates();
 		PersistenceManager.getInstance().getEntityPersistence().load(phase);
 		
 		if(listener != null) {

@@ -40,4 +40,8 @@ public class Weapon extends AbstractComponent {
 	
 	// penalty remaining before the weapon is usable again
 	public float remainingPenalty;
+	
+	// rate of fire is the pause time between each shot
+	public float rateOfFire;
+	public float timeUntilNextShot;
 }

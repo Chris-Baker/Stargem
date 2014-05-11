@@ -4,10 +4,13 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.stargem.persistence.PersistenceManager;
+import com.stargem.screens.BlankScreen;
 import com.stargem.screens.LoadingScreen;
+import com.stargem.screens.MenuScreen;
 import com.stargem.screens.PlayScreen;
+import com.stargem.screens.SplashScreen;
 import com.stargem.utils.Log;
+import com.stargem.utils.PlatformResolver;
 
 /**
  * Stargem.java
@@ -25,11 +28,17 @@ public class Stargem implements ApplicationListener {
 	private Screen currentScreen;
 	
 	// game screens
+	private Screen splashScreen;
+	private Screen mainMenuScreen;
 	private Screen loadingScreen;
 	private Screen playScreen;
-		
+	private Screen blankScreen;
+	
+	// the platform resolver contains platform specific implementations
+	private final PlatformResolver platformResolver;
+	
 	// resume currentScreen
-	// splash currentScreen
+	// splashScreen currentScreen
 	// main menu currentScreen
 	// create profileManager currentScreen
 	// select profileManager currentScreen
@@ -39,6 +48,13 @@ public class Stargem implements ApplicationListener {
 	// briefing currentScreen
 	// play currentScreen
 	// shop currentScreen	
+
+	/**
+	 * @param platformResolver
+	 */
+	public Stargem(PlatformResolver platformResolver) {
+		this.platformResolver = platformResolver;
+	}
 
 	@Override
 	public void create() {
@@ -51,14 +67,17 @@ public class Stargem implements ApplicationListener {
 		//PhysicsManager.getInstance().setDebug(true);
 		
 		// set the game instance in the Game Manager
-		this.gameManager.init(this);
+		this.gameManager.init(this, platformResolver);
 		
 		// Create the screens
+		this.splashScreen = new SplashScreen(this);
+		this.mainMenuScreen = new MenuScreen(this);
 		this.loadingScreen = new LoadingScreen(this);
 		this.playScreen = new PlayScreen(this);
+		this.blankScreen = new BlankScreen(this);
 		
 		// resume currentScreen
-		// splash currentScreen
+		// splashScreen currentScreen
 		// main menu currentScreen
 		// create profileManager currentScreen
 		// select profileManager currentScreen
@@ -77,29 +96,30 @@ public class Stargem implements ApplicationListener {
 		
 		//NetworkManager.getInstance().startServer(13000, 13001);
 		
-		// create profile or load it
-		try {
-			PersistenceManager persistenceManager = PersistenceManager.getInstance();
-			String profileName = "Chris Baker";
-			String databaseName = persistenceManager.getNewDatabaseName(profileName);
-			if (persistenceManager.exists(databaseName)) {
-				Log.info("Profile", "Loading existing profile " + databaseName);				
-				this.gameManager.loadProfile(databaseName);
-			}
-			else {
-				Log.info("Profile", "Creating new profile");
-				this.gameManager.newProfile(profileName);
-			}						
-		}
-		catch (Exception e) {
-			Log.error(Config.IO_ERR, e.getMessage() + " whilst trying to load profile");
-		}
+//		try {
+//			PersistenceManager persistenceManager = PersistenceManager.getInstance();
+//			String profileName = "Johnny";
+//			String databaseName = persistenceManager.getNewDatabaseName(profileName);
+//			if (persistenceManager.exists(databaseName)) {
+//				Log.info("Profile", "Loading existing profile " + databaseName);				
+//				this.gameManager.loadProfile(databaseName);
+//			}
+//			else {
+//				Log.info("Profile", "Creating new profile");
+//				this.gameManager.newProfile(profileName);
+//			}						
+//		}
+//		catch (Exception e) {
+//			Log.error(Config.IO_ERR, e.getMessage() + " whilst trying to load profile");
+//		}
 		
 		// start the game
-		this.gameManager.loadGame();
+		//this.gameManager.loadGame();
 		//this.gameManager.createWorld();
+		
+		this.setScreen(this.splashScreen);
 	}
-	
+
 	/**
 	 * Sets the current currentScreen. {@link Screen#hide()} is called on any old currentScreen, and {@link Screen#show()} is called on the new
 	 * currentScreen, if any.
@@ -161,34 +181,24 @@ public class Stargem implements ApplicationListener {
 		}
 	}
 
-	/**
-	 * 
-	 */
-	public void setMainMenuScreen() {
+	public void setSplashScreen() {
+		this.setScreen(this.splashScreen);
 	}
 	
-	/**
-	 * 
-	 */
+	public void setMainMenuScreen() {
+		this.setScreen(this.mainMenuScreen);
+	}
+	
 	public void setProfileMenuScreen() {
 	}
 	
-	/**
-	 * 
-	 */
 	public void setOptionsMenuScreen() {
 	}
 	
-	/**
-	 * Sets the loading screen as the current screen
-	 */
 	public void setLoadingScreen() {
 		this.setScreen(this.loadingScreen);
 	}
 	
-	/**
-	 * Sets the play screen as the current screen
-	 */
 	public void setPlayScreen() {
 		this.setScreen(this.playScreen);
 	}
@@ -197,10 +207,19 @@ public class Stargem implements ApplicationListener {
 	public void dispose() {
 		
 		// dispose all screens
+		this.splashScreen.dispose();
+		this.mainMenuScreen.dispose();
 		this.loadingScreen.dispose();
 		this.playScreen.dispose();
-		
+				
 		// dispose all managers
 		//this.gameManager.dispose();
+	}
+
+	/**
+	 * 
+	 */
+	public void setBlankScreen() {
+		this.setScreen(this.blankScreen);
 	}
 }

@@ -1,0 +1,2 @@
+C:\GameDev\Tools\FBX-Conv\conv.exe -f -o g3dj "C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\assets build\Models\Gate\final\GateActive.FBX"
+C:\GameDev\Tools\FBX-Conv\conv.exe -f -o g3dj "C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\assets build\Models\Gate\final\Gate.FBX"

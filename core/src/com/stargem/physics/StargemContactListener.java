@@ -25,7 +25,7 @@ public class StargemContactListener extends ContactListener {
 		// get the two physics bodies
 		btRigidBody bodyA = physicsManager.getRigidBody(userValue0);
 		btRigidBody bodyB = physicsManager.getRigidBody(userValue1);
-				
+		
 		// send the bodies to the collision resolver script to be handled
 		ScriptManager.getInstance().execute("collisions", "resolver", bodyA, bodyB);
 	}

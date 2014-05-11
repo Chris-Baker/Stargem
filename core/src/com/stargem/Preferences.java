@@ -22,9 +22,16 @@ public class Preferences {
 	public static int KEY_LEFT 						= Keys.A;
 	public static int KEY_RIGHT 					= Keys.D;
 	public static int KEY_JUMP 						= Keys.SPACE;
+	public static int KEY_SPECIAL					= Keys.F;
 		
 	// Mouse Input
 	public static int MOUSE_SENSITIVITY 			= 10;
-		
+	
+	// Music and Sound
+	public static boolean PLAY_MUSIC				= true;
+	public static boolean PLAY_SOUNDs				= true;
+	public static float   MUSIC_VOLUME				= 0.5f;
+	public static float   SOUND_VOLUME				= 0.5f;
+	
 	/* @formatter:on */	
 }

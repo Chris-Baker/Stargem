@@ -1,0 +1,16 @@
+{
+    "platform": "windows",
+    "jdk": "C:/Documents and Settings/Chris B/My Documents/GitHub/Stargem/openjdk-1.7.0-u40-unofficial-windows-i586-image.zip",
+    "executable": "Stargem",
+    "appjar": "desktop-1.0.jar",
+    "mainclass": "com/stargem/DesktopLauncher",
+    "vmargs": [
+       "-Xmx1G"
+    ],
+    "resources": [
+        "pom.xml",
+        "src/main/resources"
+    ],
+    "minimizejre": false,
+    "outdir": "newFinal"
+}

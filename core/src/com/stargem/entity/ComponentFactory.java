@@ -3,6 +3,7 @@
  */
 package com.stargem.entity;
 
+import com.badlogic.gdx.math.Matrix4;
 import com.stargem.controllers.ControllerManager;
 import com.stargem.entity.components.Controller;
 import com.stargem.entity.components.Health;
@@ -49,6 +50,34 @@ public class ComponentFactory {
 		Trigger c = ComponentManager.getInstance().newComponentOfType(Trigger.class);
 		c.name = name;
 		return c;
+	}
+	
+	/**
+	 * A simplified version of the physics component method which accepts a Matrix4 transform
+	 * and sets default values for velocity and gravity.
+	 * 
+	 * @param entity
+	 * @param type
+	 * @param collisionGroup
+	 * @param collidesWith
+	 * @param transform
+	 * @param shape
+	 * @param width
+	 * @param height
+	 * @param depth
+	 * @param mass
+	 * @param restitution
+	 * @param contactGroup
+	 * @param contactWith
+	 * @return
+	 */
+	public static Physics physicsSimple(Entity entity, int type, int collisionGroup, int collidesWith,
+			Matrix4 transform,
+			int shape, float width, float height, float depth,
+			float mass, float restitution,
+			int contactGroup, int contactWith) {
+		float[] values = transform.val;
+		return ComponentFactory.physics(entity, 0, type, collisionGroup, collidesWith, values[0], values[1],values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[0], values[11], values[12], values[13], values[14], values[15], shape, width, height, depth, 0, 0, 0, 0, 0, 0, 0, 0, 0, mass, restitution, 4, contactGroup, contactWith);
 	}
 	
 	/**
@@ -349,7 +378,7 @@ public class ComponentFactory {
 	 * @param overHeatingPenalty
 	 * @return
 	 */
-	public static Weapon weapon(Entity entity, int weapons, int currentWeapon, boolean isShooting, boolean isReady, int maxHeat, float currentHeat, int heatRate, int coolRate, int overHeatingPenalty, float remainingPenalty) {
+	public static Weapon weapon(Entity entity, int weapons, int currentWeapon, boolean isShooting, boolean isReady, int maxHeat, float currentHeat, int heatRate, int coolRate, int overHeatingPenalty, float remainingPenalty, float rateOfFire, float timeUntilNextShot) {
 		Weapon c = ComponentManager.getInstance().newComponentOfType(Weapon.class);
 		c.weapons = weapons;
 		c.currentWeapon = currentWeapon;
@@ -361,6 +390,8 @@ public class ComponentFactory {
 		c.coolRate = coolRate;
 		c.overHeatingPenalty = overHeatingPenalty;
 		c.remainingPenalty = remainingPenalty;
+		c.rateOfFire = rateOfFire;
+		c.timeUntilNextShot = timeUntilNextShot;
 		
 		// this sets weapon from the script file registered with the manager
 		WeaponManager.getInstance().switchToWeapon(currentWeapon, c);

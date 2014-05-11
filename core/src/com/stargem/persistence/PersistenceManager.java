@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.stargem.Config;
+import com.stargem.GameManager;
 import com.stargem.utils.Log;
 
 /**
@@ -74,7 +75,7 @@ public class PersistenceManager {
 	 * @return the new database connection
 	 */
 	public Connection connect(String databasePath) {
-		ActionResolver ar = new DesktopActionResolver();
+		ActionResolver ar = GameManager.getInstance().getPlatformResolver().getActionResolver();
 		this.connection = ar.getConnection(databasePath);	
 		
 		// update listeners with the new connection
@@ -178,7 +179,7 @@ public class PersistenceManager {
 	 * @return true if the database exists, false otherwise.
 	 */
 	public boolean exists(String databaseName) {
-		boolean result = Gdx.files.classpath(Config.PROFILE_DATABASE_PATH + databaseName + Config.DATABASE_EXTENSION).file().exists();
+		boolean result = Gdx.files.internal(Config.PROFILE_DATABASE_PATH + databaseName + Config.DATABASE_EXTENSION).file().exists();
 		return result;
 	}
 	
@@ -220,6 +221,23 @@ public class PersistenceManager {
 	 */
 	public IntMap<Integer> getPlayerIDs() {
 		return this.simulationPersistence.getPlayerIDs();
+	}
+
+	/**
+	 * Load one entrance and one exit gate from the db into the gate manager
+	 */
+	public void loadGates() {
+		this.simulationPersistence.loadGates();
+	}
+	
+	/**
+	 * Save a gate to the db
+	 * 
+	 * @param entityID the id of the gate
+	 * @param type the type of gate 0 entrance or 1 exit
+	 */
+	public void saveGate(int entityID, int type) {
+		this.simulationPersistence.saveGate(entityID, type);
 	}
 	
 }

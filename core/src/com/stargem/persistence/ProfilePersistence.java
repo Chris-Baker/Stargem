@@ -184,6 +184,6 @@ public class ProfilePersistence implements ConnectionListener {
 	 * @return
 	 */
 	public String getProfileName(String databaseName) {
-		return databaseName.replace(" ", "_");
+		return databaseName.replace("_", " ");
 	}
 }

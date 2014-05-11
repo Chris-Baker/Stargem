@@ -80,7 +80,7 @@ public class EntityManager {
 
 		T result = (T) store.get(entity);
 		if (result == null) {
-			Log.debug(Config.ENTITY_ERR, "No component of type " + componentType.getName() + " returning null");
+			//Log.debug(Config.ENTITY_ERR, "No component of type " + componentType.getName() + " returning null");
 			return null;
 			//throw new IllegalArgumentException( "GET FAIL: "+entity+" does not possess Component of class\n   missing: "+componentType );
 		}
@@ -349,7 +349,7 @@ public class EntityManager {
 	 * 
 	 * @return all the entities as an Iterable.
 	 */
-	synchronized public Iterable<Entity> getAllEntities() {
+	synchronized public Array<Entity> getAllEntities() {
 		return this.allEntities;
 	}
 

@@ -3,13 +3,11 @@
  */
 package com.stargem.ai.tasks;
 
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.stargem.ai.AIBrain;
 import com.stargem.behaviour.BehaviourStrategy;
 import com.stargem.entity.Entity;
-import com.stargem.entity.EntityManager;
-import com.stargem.entity.components.Physics;
 import com.stargem.physics.KinematicCharacter;
 import com.stargem.physics.PhysicsManager;
 import com.stargem.utils.VectorUtils;
@@ -23,18 +21,37 @@ import com.stargem.utils.VectorUtils;
  */
 public class MoveToTask extends AbstractTask {
 
-	private final Vector3 location;
-		
+	private final Vector3 location = new Vector3();
+	private final Vector3 characterPosition = new Vector3();
+	private final Vector3 characterForward = new Vector3();
+	
+	private static final Array<MoveToTask> pool = new Array<MoveToTask>();
+	
+	public static MoveToTask newInstance(BehaviourStrategy behaviour, AIBrain brain, Entity entity, AbstractTask parent, Vector3 location) {
+		if(pool.size == 0) {
+			return new MoveToTask(behaviour, brain, entity, parent, location);
+		}
+		else {
+			MoveToTask task = pool.pop();
+			task.behaviour = behaviour;
+			task.brain = brain;
+			task.entity = entity;
+			task.parent = parent;
+			task.location.set(location);
+			return task;
+		}
+	}
+	
 	/**
 	 * @param brain
 	 * @param entity
 	 * @param parent
 	 */
-	public MoveToTask(BehaviourStrategy behaviour, AIBrain brain, Entity entity, AbstractTask parent, Vector3 location) {
+	private MoveToTask(BehaviourStrategy behaviour, AIBrain brain, Entity entity, AbstractTask parent, Vector3 location) {
 		super(behaviour, brain, entity, parent);
 		super.mask = AbstractTask.MASK_MOVEMENT;
 		super.isBlocking = true;
-		this.location = location;
+		this.location.set(location);
 	}
 
 	/* (non-Javadoc)
@@ -42,21 +59,20 @@ public class MoveToTask extends AbstractTask {
 	 */
 	@Override
 	public boolean update(float delta) {
-		
+				
 		// get the position and forward direction of the character
-		Physics characterPhysics = EntityManager.getInstance().getComponent(entity, Physics.class);
-		KinematicCharacter characterBody = PhysicsManager.getInstance().getCharacter(characterPhysics.bodyIndex);
-		Matrix4 characterTransform = new Matrix4();
-		Vector3 characterPosition = new Vector3();
-		Vector3 characterForward = new Vector3();
-		characterBody.getMotionState().getWorldTransform(characterTransform);
-		characterTransform.getTranslation(characterPosition);
-		characterForward.set(characterTransform.val[8], characterTransform.val[9], characterTransform.val[10]);
+		KinematicCharacter characterBody = PhysicsManager.getInstance().getCharacter(entity.getId());
 		
+		if(characterBody == null) {
+			return true;
+		}
+		
+		characterBody.getTranslation(characterPosition);
+		characterBody.getForward(characterForward);
 		
 		// are we facing the location if not push a turn to face
 		if(VectorUtils.isFacing(characterPosition, characterForward, location, 0.01f)) {
-			super.brain.addTask(new TurnToFaceTask(behaviour, brain, entity, this, location));
+			super.brain.addTask(TurnToFaceTask.newInstance(behaviour, brain, entity, this, location));
 		}
 		
 		// move forward
@@ -68,6 +84,21 @@ public class MoveToTask extends AbstractTask {
 
 	private void onMoveForward() {
 		behaviour.onMoveForward();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.stargem.ai.tasks.AbstractTask#free()
+	 */
+	@Override
+	public void free() {
+		super.behaviour = null;
+		super.brain = null;
+		super.entity = null;
+		super.parent = null;
+		this.characterForward.set(0, 0, 0);
+		this.characterPosition.set(0, 0, 0);
+		this.location.set(0, 0, 0);		
+		pool.add(this);
 	}
 
 }

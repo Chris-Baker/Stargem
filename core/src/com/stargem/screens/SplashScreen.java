@@ -9,10 +9,15 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeOut;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Scaling;
 import com.stargem.Stargem;
 
 /**
@@ -24,9 +29,12 @@ import com.stargem.Stargem;
  * @version	1.0
  */
 public class SplashScreen extends AbstractScreen {
-
-	private Image splashImage;
+	
+	private Sound wavSound;
+	private Texture logoTexture;
+	private Image logoImage;
 	private final Stage stage = new Stage();
+	
 	
 	/**
 	 * @param game
@@ -37,38 +45,40 @@ public class SplashScreen extends AbstractScreen {
 	}
 
 	private void initialise() {
-		// start playing the menu music
-		//game.getMusicManager().play(TyrianMusic.MENU);
-
+		
+		// sound effect
+		// Weaponry_EMP_Blast_05.wav
+		wavSound = Gdx.audio.newSound(Gdx.files.internal("data/screens/splash/Weaponry_EMP_Blast_05.ogg"));
+		
 		// retrieve the splash image's region from the atlas
-		//AtlasRegion splashRegion = Assets.textures.findRegion("splash");
-		//Drawable splashDrawable = new TextureRegionDrawable(splashRegion);
-
-		// here we create the splash image actor; its size is set when the
-		// resize() method gets called
-		//splashImage = new Image(splashDrawable, Scaling.stretch);
-		//splashImage.setFillParent(true);
+		logoTexture = new Texture(Gdx.files.internal("data/screens/splash/Base2-grey.png"));			
+		logoImage = new Image(new TextureRegionDrawable(new TextureRegion(logoTexture)), Scaling.none);
+		logoImage.setFillParent(true);
 
 		// this is needed for the fade-in effect to work correctly; we're just 
 		// making the image completely transparent
-		//splashImage.getColor().a = 0f;
+		logoImage.getColor().a = 0f;
 
 		// and finally we add the actor to the stage
-		//stage.addActor(splashImage);
+		stage.addActor(logoImage);
 	}
 	
 	@Override
 	public void show() {
 
+		Gdx.input.setCursorCatched(true);
+		
+		wavSound.play();
+		
 		// configure the fade-in/out effect on the splash image
-		splashImage.addAction(sequence(fadeIn(1.75f), delay(2f), fadeOut(1.75f), new Action() {
+		logoImage.addAction(sequence(fadeIn(1.5f), delay(1.3f), fadeOut(1.0f), new Action() {
 			@Override
 			public boolean act(float delta) {
+				Gdx.input.setCursorCatched(false);
 				game.setMainMenuScreen();
 				return true;
 			}
 		}));
-
 	}
 
 	@Override
@@ -89,4 +99,11 @@ public class SplashScreen extends AbstractScreen {
 		this.stage.getViewport().update(width, height, true);
 	}
 
+	@Override
+	public void dispose() {
+		this.wavSound.dispose();
+		this.logoTexture.dispose();
+		this.stage.dispose();
+	}
+	
 }

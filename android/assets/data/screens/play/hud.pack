@@ -1,0 +1,54 @@
+
+hud.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+bar-bg
+  rotate: false
+  xy: 1, 93
+  size: 225, 25
+  orig: 225, 25
+  offset: 0, 0
+  index: -1
+cool
+  rotate: false
+  xy: 1, 70
+  size: 200, 21
+  orig: 200, 21
+  offset: 0, 0
+  index: -1
+healthy
+  rotate: false
+  xy: 1, 47
+  size: 200, 21
+  orig: 200, 21
+  offset: 0, 0
+  index: -1
+hot
+  rotate: false
+  xy: 1, 24
+  size: 200, 21
+  orig: 200, 21
+  offset: 0, 0
+  index: -1
+unhealthy
+  rotate: false
+  xy: 1, 1
+  size: 200, 21
+  orig: 200, 21
+  offset: 0, 0
+  index: -1
+flame-icon
+  rotate: false
+  xy: 228, 93
+  size: 23, 25
+  orig: 23, 25
+  offset: 0, 0
+  index: -1
+health-icon
+  rotate: false
+  xy: 203, 66
+  size: 23, 25
+  orig: 23, 25
+  offset: 0, 0
+  index: -1

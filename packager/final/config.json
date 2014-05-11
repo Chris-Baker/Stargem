@@ -1,0 +1,6 @@
+{
+   "jar": "desktop-1.0.jar",
+   "mainClass": "com.stargem.DesktopLauncher",
+   "vmArgs": [
+      "-Xmx1G"
+   ]}

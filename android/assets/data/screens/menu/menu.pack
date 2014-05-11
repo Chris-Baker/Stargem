@@ -1,0 +1,26 @@
+
+menu.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+logo
+  rotate: false
+  xy: 1, 1
+  size: 565, 242
+  orig: 565, 242
+  offset: 0, 0
+  index: -1
+button-over
+  rotate: false
+  xy: 568, 178
+  size: 433, 65
+  orig: 433, 65
+  offset: 0, 0
+  index: -1
+button
+  rotate: false
+  xy: 568, 111
+  size: 433, 65
+  orig: 433, 65
+  offset: 0, 0
+  index: -1

@@ -7,6 +7,7 @@ import com.stargem.Config;
 import com.stargem.controllers.ControllerManager;
 import com.stargem.entity.systems.AutoSaveSystem;
 import com.stargem.entity.systems.ControllerSystem;
+import com.stargem.entity.systems.HealthSystem;
 import com.stargem.entity.systems.LightMovingSystem;
 import com.stargem.entity.systems.ParentSystem;
 import com.stargem.entity.systems.PhysicsSystem;
@@ -33,6 +34,7 @@ public class Simulation implements Model {
 	private final LightMovingSystem lightMovingSystem;
 	private final ParentSystem parentSystem;
 	private final WeaponSystem weaponSystem;
+	private final HealthSystem healthSystem;
 	
 	public Simulation() {
 		
@@ -48,6 +50,7 @@ public class Simulation implements Model {
 		lightMovingSystem = new LightMovingSystem();
 		parentSystem = new ParentSystem();
 		weaponSystem = new WeaponSystem();
+		healthSystem = new HealthSystem();
 	}
 	
 	/* (non-Javadoc)
@@ -83,6 +86,9 @@ public class Simulation implements Model {
 		
 		// save the physics tick to the physics components
 		physicsSystem.process(delta);
+		
+		// update all health components
+		healthSystem.process(delta);
 		
 		// store the state of the world
 		// this is a timed event that periodically happens

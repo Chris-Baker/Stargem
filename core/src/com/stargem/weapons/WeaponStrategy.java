@@ -19,5 +19,6 @@ interface WeaponStrategy {
 	public int getHeatRate();
 	public int getCoolRate();
 	public int getOverHeatingPenalty();
+	public float getRateOfFire();
 	
 }

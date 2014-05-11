@@ -117,7 +117,7 @@ public class ControllerManager {
 	}
 	
 	/**
-	 * Remove the controller at the given index
+	 * Remove the controller at the given index after the next update
 	 * 
 	 * @param index
 	 */
@@ -131,9 +131,13 @@ public class ControllerManager {
 	 * @param delta
 	 */
 	public void update(float delta) {
+		// null check here because otherwise there is a crash when recycling controlled entities
+		// because they are removed mid update
 		for(ControllerStrategy c : this.controllers.values()) {
-			c.update(delta);
-		}
+			if(c != null) {
+				c.update(delta);
+			}
+		}		
 	}
 	
 }

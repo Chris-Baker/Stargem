@@ -485,22 +485,27 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 		StringBuilder sql = StringHelper.getBuilder();
 		PooledLinkedList<? extends Component> components;
 		
-		// if we have a zero id then this entity has not been stored before
+		// check to see if we have stored the entity before
 		if (isNewEntity(entity.getId())) {
-			// store the entity in the entity table and get it's new id
-			sql.append("INSERT INTO Entity DEFAULT VALUES;");
-
+			
+			// if not then we insert everything
+			sql.append("INSERT INTO Entity VALUES (");
+			sql.append(entity.getId());
+			sql.append(",1,1,1");
+			sql.append(");");			
+			
 			try {
 				Statement statement = this.connection.createStatement();
 				statement.executeUpdate(sql.toString());
 
+				// db no longer authoritative over IDs
 				// get the id of the entity
-				int id = statement.getGeneratedKeys().getInt(1);
-				em.setEntityId(entity, id);
+				//int id = statement.getGeneratedKeys().getInt(1);
+				//em.setEntityId(entity, id);
 				
 				statement.close();
 				
-				Log.info(Config.SQL_ERR, "Assigning a new id: " + id);		
+				//Log.info(Config.SQL_ERR, "Assigning a new id: " + id);		
 			}
 			catch (SQLException e) {
 				Log.error(Config.SQL_ERR, e.getMessage() + " while inserting new entity: " + sql.toString());
@@ -767,5 +772,12 @@ public class EntityPersistence implements EntityRecycleListener, ConnectionListe
 		// detach the database
 		SQLHelper.detach(connection, attachName);
 						
+	}
+
+	/**
+	 * 
+	 */
+	public void clearDeathRow() {
+		this.deathrow.clear();
 	}
 }

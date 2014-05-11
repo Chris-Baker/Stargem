@@ -59,12 +59,12 @@ public class PlayScreen extends AbstractScreen {
 	
 	@Override
 	public void show() {
-		//Gdx.input.setCursorCatched(true);
+		simulationView.show();
 	}
 	
 	@Override
 	public void hide() {
-		//Gdx.input.setCursorCatched(false);
+		simulationView.hide();
 	}
 	
 }

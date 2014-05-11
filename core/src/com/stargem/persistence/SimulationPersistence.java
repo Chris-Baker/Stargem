@@ -10,6 +10,7 @@ import java.sql.Statement;
 
 import com.badlogic.gdx.utils.IntMap;
 import com.stargem.Config;
+import com.stargem.GateManager;
 import com.stargem.models.WorldDetails;
 import com.stargem.utils.AssetList;
 import com.stargem.utils.Log;
@@ -85,10 +86,11 @@ public class SimulationPersistence implements ConnectionListener {
 		SQLHelper.attach(connection, databasePath, attachName);		
 		
 		// copy the World and Asset tables
-		String[] tables = new String[3];
+		String[] tables = new String[4];
 		tables[0] = Config.TABLE_WORLD;
 		tables[1] = Config.TABLE_ASSETS;
 		tables[2] = Config.TABLE_PLAYERS;
+		tables[3] = Config.TABLE_GATES;
 		
 		for(int i = 0, n = tables.length; i < n; i += 1) {		
 			String toTableName = "main." + tables[i];
@@ -195,6 +197,66 @@ public class SimulationPersistence implements ConnectionListener {
 		}
 		
 		return details;
+	}
+	
+	/**
+	 * Add a gate the the database
+	 * 
+	 * @param entityID the entity ID of the gate
+	 * @param type the type of gate, 0 for entrance, 1 for exit
+	 */
+	public void saveGate(int entityID, int type) {
+		
+		// if not then we insert everything
+		StringBuilder sql = StringHelper.getBuilder();
+		sql.append("INSERT INTO Gates VALUES (");
+		sql.append(entityID);
+		sql.append(",");
+		sql.append(type);
+		sql.append(");");			
+		
+		try {
+			Statement statement = this.connection.createStatement();
+			statement.executeUpdate(sql.toString());			
+			statement.close();		
+		}
+		catch (SQLException e) {
+			Log.error(Config.SQL_ERR, e.getMessage() + " while inserting new gate: " + sql.toString());
+		}		
+	}
+
+	/**
+	 * Loads one exit and one entrance gate from the db into the gate manager
+	 */
+	public void loadGates() {
+		
+		StringBuilder sql = StringHelper.getBuilder();
+		sql.append("SELECT entityId, type FROM ");
+		sql.append("Gates");
+		sql.append(";");
+
+		try {
+			Statement statement = this.connection.createStatement();
+			ResultSet result = statement.executeQuery(sql.toString());
+						
+			while(result.next()) {				
+				int entityId = result.getInt(1);
+				int type = result.getInt(2);
+				
+				if(type == 0) {
+					GateManager.getInstance().setEntranceGateID(entityId);
+				}
+				else {
+					GateManager.getInstance().setExitGateID(entityId);
+				}							
+			}
+			
+			result.close();
+			statement.close();
+		}
+		catch (SQLException e) {
+			Log.error(Config.SQL_ERR, e.getMessage());
+		}
 	}
 	
 }

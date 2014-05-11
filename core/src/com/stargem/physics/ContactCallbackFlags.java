@@ -30,6 +30,8 @@ public class ContactCallbackFlags {
 	public static final int AI_SENSOR 		= 65536;
 	public static final int SPECIAL_POWER 	= 131072;
 	public static final int TERRAIN 		= 262144;
+	public static final int AMBIENT_SOUND 	= 524288;
+	public static final int DAMAGE_ZONE 	= 1048576;
 	
 	/**
 	 * Performs a bitwise AND to see if the flag given has any

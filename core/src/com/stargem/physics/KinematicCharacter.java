@@ -7,10 +7,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.ClosestConvexResultCallback;
-import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
 import com.badlogic.gdx.physics.bullet.collision.LocalConvexResult;
-import com.badlogic.gdx.physics.bullet.collision.LocalRayResult;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphasePairArray;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
@@ -23,7 +21,6 @@ import com.badlogic.gdx.physics.bullet.collision.btPersistentManifoldArray;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.stargem.Config;
-import com.stargem.utils.Log;
 
 /**
  * KinematicCharacter.java
@@ -36,6 +33,9 @@ public class KinematicCharacter extends btRigidBody {
 
 	//private static final float SIMD_EPSILON = 1.19209290e-07f;
 
+	KinematicClosestNotMeConvexResultCallback verticalCB = new KinematicClosestNotMeConvexResultCallback(null, Vector3.Y, -1.0f);
+	KinematicClosestNotMeConvexResultCallback horizontalCB = new KinematicClosestNotMeConvexResultCallback(null, Vector3.Y, -1.0f);
+	
 	// contains the transform for the rigid body and the model instance
 	private final MotionState motionState;
 
@@ -143,7 +143,7 @@ public class KinematicCharacter extends btRigidBody {
 		// set the motion state on parent and here so that it is typed correctly
 		super.motionState = motionState;
 		this.motionState =  motionState;
-
+		
 		// set the current transform to match that of the transform passed in
 		super.setWorldTransform(motionState.transform);
 
@@ -409,9 +409,6 @@ public class KinematicCharacter extends btRigidBody {
 //		if(horizontalOffset.len2() == 0) {
 //			return;
 //		}
-				
-		KinematicClosestNotMeConvexResultCallback verticalCB;
-		KinematicClosestNotMeConvexResultCallback horizontalCB;		
 						
 		// set the start position and desired end position
 		start.set(this.motionState.transform);
@@ -419,7 +416,7 @@ public class KinematicCharacter extends btRigidBody {
 		end.trn(horizontalOffset);
 		
 		// sweep horizontal
-		horizontalCB = this.sweep(collisionWorld, start, end);
+		this.sweep(horizontalCB, collisionWorld, start, end);
 		
 		// if there was a collision then we sweep downward to the desired end location to find the step height
 		if(horizontalCB.hasHit()) {
@@ -427,7 +424,7 @@ public class KinematicCharacter extends btRigidBody {
 			// we start to cast from the step height and cast downward towards the ground
 			this.stepOffset.set(this.up).scl(this.stepHeight);
 			start.set(end).trn(stepOffset);
-			verticalCB = this.sweep(collisionWorld, start, end);
+			this.sweep(verticalCB, collisionWorld, start, end);
 			
 			// if there was a collision we may need to step up a little
 			if(verticalCB.hasHit()) {
@@ -469,7 +466,7 @@ public class KinematicCharacter extends btRigidBody {
 			start.set(end);
 			end.trn(stepOffset);
 			
-			verticalCB = this.sweep(collisionWorld, start, end);
+			this.sweep(verticalCB, collisionWorld, start, end);
 			
 			float hitFraction = verticalCB.getClosestHitFraction();
 			
@@ -497,11 +494,7 @@ public class KinematicCharacter extends btRigidBody {
 		}		
 		
 		// update the ghost object's transform		
-		this.ghost.setWorldTransform(this.motionState.transform);
-		
-		// don't rely on the GC to do this
-		horizontalCB.dispose();
-		verticalCB.dispose();		
+		this.ghost.setWorldTransform(this.motionState.transform);	
 	}
 		
 	/**
@@ -533,10 +526,10 @@ public class KinematicCharacter extends btRigidBody {
 		this.end.trn(this.verticalOffset);
 
 		// TODO is there a way to do this without allocating memory every frame?
-		KinematicClosestNotMeConvexResultCallback convexCB = this.sweep(collisionWorld, start, end);
-		float hitFraction = convexCB.getClosestHitFraction();
+		this.sweep(horizontalCB, collisionWorld, start, end);
+		float hitFraction = horizontalCB.getClosestHitFraction();
 
-		if (convexCB.hasHit()) {
+		if (horizontalCB.hasHit()) {
 						
 			this.motionState.transform.trn(this.verticalOffset.scl(hitFraction));
 			
@@ -551,9 +544,6 @@ public class KinematicCharacter extends btRigidBody {
 		
 		// update the ghost
 		this.ghost.setWorldTransform(this.motionState.transform);
-
-		// don't rely on the GC to do this
-		convexCB.dispose();
 	}
 
 	private boolean recoverFromPenetration(btCollisionWorld collisionWorld) {
@@ -598,8 +588,10 @@ public class KinematicCharacter extends btRigidBody {
 					}
 					else {
 						normalWorldOnB.set(pt.getNormalWorldOnB().getX(), pt.getNormalWorldOnB().getY(), pt.getNormalWorldOnB().getZ());
-						deltaPosition.add(normalWorldOnB.scl(directionSign * dist * 0.2f));	
+//						deltaPosition.add(normalWorldOnB.scl(directionSign * dist * 0.2f));	
 					}
+//					normalWorldOnB.set(pt.getNormalWorldOnB().getX(), pt.getNormalWorldOnB().getY(), pt.getNormalWorldOnB().getZ());
+//					deltaPosition.add(normalWorldOnB.scl(directionSign * dist * 0.2f));	
 					deltaPosition.add(normalWorldOnB.scl(directionSign * dist * 0.2f));
 					isPenetrating = true;
 				}
@@ -749,12 +741,21 @@ public class KinematicCharacter extends btRigidBody {
 	 * @param end
 	 * @return
 	 */
-	private KinematicClosestNotMeConvexResultCallback sweep(btCollisionWorld collisionWorld, Matrix4 start, Matrix4 end) {
-		KinematicClosestNotMeConvexResultCallback convexCB = new KinematicClosestNotMeConvexResultCallback(ghost, up, -1.0f);
+	private void sweep(KinematicClosestNotMeConvexResultCallback convexCB, btCollisionWorld collisionWorld, Matrix4 start, Matrix4 end) {
+		//KinematicClosestNotMeConvexResultCallback convexCB = new KinematicClosestNotMeConvexResultCallback(ghost, up, -1.0f);
+		
+//		convexCB.setCollisionObject(null);
+//		convexCB.setClosestHitFraction(1f);
+//		convexCB.getRayFromWorld().setValue(from.x, from.y, from.z);
+//		convexCB.getRayToWorld().setValue(to.x, to.y, to.z);
+		
+		convexCB.setClosestHitFraction(1f);
+		convexCB.setHitCollisionObject(null);
+		convexCB.setMe(this.ghost);
+		
 		convexCB.setCollisionFilterGroup(ghost.getBroadphaseHandle().getCollisionFilterGroup());
 		convexCB.setCollisionFilterMask(ghost.getBroadphaseHandle().getCollisionFilterMask());
-		collisionWorld.convexSweepTest(this.convexShape, this.start, this.end, convexCB, collisionWorld.getDispatchInfo().getAllowedCcdPenetration());
-		return convexCB;
+		collisionWorld.convexSweepTest(this.convexShape, start, end, convexCB, collisionWorld.getDispatchInfo().getAllowedCcdPenetration());
 	}
 	
 	/**
@@ -769,27 +770,8 @@ public class KinematicCharacter extends btRigidBody {
 
 	////////////////////////////////////////////////////////////////////////////
 
-	protected static class KinematicClosestNotMeRayResultCallback extends ClosestRayResultCallback {
-		protected btCollisionObject me;
-
-		public KinematicClosestNotMeRayResultCallback(btCollisionObject me) {
-			super(Vector3.Zero, Vector3.Z);
-			this.me = me;
-		}
-
-		@Override
-		public float addSingleResult(LocalRayResult rayResult, boolean normalInWorldSpace) {
-			if (rayResult.getCollisionObject().equals(me)) {
-				return 1.0f;
-			}
-
-			return super.addSingleResult(rayResult, normalInWorldSpace);
-		}
-	}
-
-	////////////////////////////////////////////////////////////////////////////
-
 	protected static class KinematicClosestNotMeConvexResultCallback extends ClosestConvexResultCallback {
+
 		protected btCollisionObject me;
 		protected btCollisionObject hitCollisionObject;
 		protected final Vector3 up;
@@ -797,9 +779,8 @@ public class KinematicCharacter extends btRigidBody {
 		private final Vector3 hitNormalWorld = new Vector3();
 		private final Matrix4 tmp = new Matrix4();
 
-		public KinematicClosestNotMeConvexResultCallback(btCollisionObject me, final Vector3 up, float minSlopeDot) {
+		public KinematicClosestNotMeConvexResultCallback(btCollisionObject me, final Vector3 up, float minSlopeDot) { 
 			super(Vector3.Zero, Vector3.Z);
-			this.me = me;
 			this.up = up;
 			this.minSlopeDot = minSlopeDot;
 		}
@@ -812,19 +793,16 @@ public class KinematicCharacter extends btRigidBody {
 			if (hitCollisionObject.equals(me)) {
 				return 1.0f;
 			}
-
-			if (normalInWorldSpace) {
+			
+			if(normalInWorldSpace) {
 				hitNormalWorld.set(convexResult.getHitNormalLocal().getX(), convexResult.getHitNormalLocal().getY(), convexResult.getHitNormalLocal().getZ());
 			}
-			else {
-				Log.error(Config.PHYSICS_ERR, "Normal not in world space, converting... this may not work as intended please check");
-				// TODO test this
-				//need to transform normal into worldspace
-				tmp.set(hitCollisionObject.getWorldTransform());
+			else {				
+				tmp.set(convexResult.getHitCollisionObject().getWorldTransform());
 				tmp.toNormalMatrix();
 				hitNormalWorld.mul(tmp);
 			}
-
+			
 			float dotUp = up.dot(hitNormalWorld);
 			if (dotUp < minSlopeDot) {
 				return 1.0f;
@@ -832,6 +810,34 @@ public class KinematicCharacter extends btRigidBody {
 
 			return super.addSingleResult(convexResult, normalInWorldSpace);
 		}
+		
+		public void setMe(btCollisionObject me) {
+			this.me = me;
+		}
+		
 	}
 
+	/**
+	 * Teleport this character to the body given
+	 * @param other
+	 */
+	public void teleportTo(btRigidBody other) {
+		
+		Matrix4 otherTransform = new Matrix4();
+		other.getMotionState().getWorldTransform(otherTransform);
+		
+		this.motionState.transform.set(otherTransform);
+		this.ghost.setWorldTransform(this.motionState.transform);
+		
+	}
+	
+	@Override
+	public void dispose() {
+		this.horizontalCB.dispose();
+		this.verticalCB.dispose();
+		this.broadphaseProxy.dispose();
+		this.manifoldArray.dispose();
+		this.ghost.dispose();
+	}
+	
 }

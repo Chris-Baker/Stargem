@@ -16,7 +16,7 @@ allprojects {
     version = '1.0'
     ext {
         appName = 'Stargem'
-        gdxVersion = '1.0.1-SNAPSHOT'
+        gdxVersion = '1.0.1'
         roboVMVersion = '0.0.11'
     }
 
@@ -84,6 +84,7 @@ project(":core") {
 	  compile files('libs/luajava-1.1.jar')
         compile files('libs/sqlite-jdbc-3.7.15-M1.jar')
         compile files('libs/kryonet-2.18-all.jar')
+	  compile files('libs/libgdx-utils.jar')
     }
 }
 

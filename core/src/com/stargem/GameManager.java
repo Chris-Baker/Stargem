@@ -44,7 +44,9 @@ import com.stargem.persistence.SimulationPersistence;
 import com.stargem.physics.PhysicsManager;
 import com.stargem.profile.ProfileManager;
 import com.stargem.utils.Log;
+import com.stargem.utils.PlatformResolver;
 import com.stargem.utils.StringHelper;
+import com.stargem.views.HUDView;
 
 
 /**
@@ -94,6 +96,10 @@ public class GameManager {
 	private PerspectiveCamera camera;	
 	private Viewport viewport;
 	private final Vector3 cameraPosition = new Vector3();
+
+	private PlatformResolver platformResolver;
+
+	private HUDView hud;
 	
 	/**
 	 * Return the singleton instance of the game manager.
@@ -156,12 +162,16 @@ public class GameManager {
 	 * This is called by the application listener on create
 	 * setting the application listener in the game manager
 	 * and setting the multiplexer as the input processor.
+	 * @param platformResolver 
 	 * 
 	 * @param stargem
 	 */
-	public void init(Stargem game) {
+	public void init(Stargem game, PlatformResolver platformResolver) {
 		// set the game instance
 		this.game = game;
+		
+		// set the platform resolver
+		this.platformResolver = platformResolver;
 		
 		// set the input processor
 		Gdx.input.setInputProcessor(multiplexer);
@@ -293,7 +303,7 @@ public class GameManager {
 						
 			// set the starting campaign and world
 			this.changeWorld(Config.DEFAULT_CAMPAIGN, Config.DEFAULT_WORLD);
-						
+			
 		}
 		
 		game.setLoadingScreen();
@@ -307,6 +317,8 @@ public class GameManager {
 	 * @param levelName
 	 */
 	public void changeWorld(String campaignName, String levelName) {
+		
+		game.setBlankScreen();
 		
 		// build the path to the world's database
 		StringBuilder s = StringHelper.getBuilder();
@@ -331,7 +343,7 @@ public class GameManager {
 		
 		// import entity and world tables from the world database into the active profile
 		this.persistenceManager.importWorld(worldDatabasePath);
-				
+		
 		// set the new player entity IDs from the world import
 		this.playersManager.setPlayerIDs(this.persistenceManager.getPlayerIDs());
 		
@@ -345,15 +357,22 @@ public class GameManager {
 	 * Remove all non player entities from the world. This is a part of the process of switching worlds
 	 */
 	private void unloadNonPlayerEntities() {		
+		
+		System.out.println(this.entityManager.getAllEntities().size);
+		
 		for(Entity e : this.entityManager.getAllEntities()) {			
 			// if the players list does not include this entity recycle it
 			if(!this.playersManager.playerExists(e)) {
+				
+				System.out.println("recycling entity " + e.getId());
 				this.entityManager.recycle(e);
-			}		
+				
+			}
 		}
 		
 		// we have to save entities here so that the deleted entity list is cleared from the db
-		this.saveGame(null);
+		//this.saveGame(null);
+		this.persistenceManager.getEntityPersistence().clearDeathRow();
 	}
 	
 	/**
@@ -438,5 +457,20 @@ public class GameManager {
 		Ray ray = this.camera.getPickRay(screenX, screenY);
 		camera.position.set(cameraPosition);
 		return ray;
+	}
+
+	/**
+	 * @return the platformResolver
+	 */
+	public PlatformResolver getPlatformResolver() {
+		return platformResolver;
+	}
+
+	public void setHUD(HUDView hud) {
+		this.hud = hud;
+	}
+	
+	public HUDView getHUD() {
+		return this.hud;
 	}
 }

@@ -7,9 +7,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.stargem.GameManager;
 import com.stargem.entity.systems.ThirdPersonCameraSystem;
@@ -30,7 +29,6 @@ public class SimulationView implements View {
 	private final ThirdPersonCameraSystem cameraSystem;
 	
 	private final ModelBatch modelBatch;
-	private final Stage stage;
 	private final Camera camera;
 	private final Viewport viewport;
 	
@@ -40,10 +38,11 @@ public class SimulationView implements View {
 	private final RepresentationManager representationManager;
 	private final PhysicsDebugDraw physicsDebugDraw;
 	
+	private HUDView hud;
+	
 	public SimulationView() {
 		super();
 		this.modelBatch = new ModelBatch();
-		this.stage = new Stage(new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
 		this.camPosition = new Vector3();
 		this.representationManager = RepresentationManager.getInstance();
 		this.physicsDebugDraw = PhysicsDebugDraw.getInstance();
@@ -57,6 +56,13 @@ public class SimulationView implements View {
 	 */
 	@Override
 	public void render(float delta) {
+		
+		// update all animations
+		for(AnimationController animation : this.representationManager.getAnimations()) {
+			if(animation.current != null) {
+				animation.update(delta);
+			}
+		}
 		
 		// update the camera
 		cameraSystem.process(delta);
@@ -86,7 +92,7 @@ public class SimulationView implements View {
 		modelBatch.end();
 				
 		// render the hud
-		stage.draw();
+		this.hud.render(delta);
 	}
 
 	/* (non-Javadoc)
@@ -94,6 +100,16 @@ public class SimulationView implements View {
 	 */
 	@Override
 	public void show() {
+		this.hud = GameManager.getInstance().getHUD();
+		this.hud.show();
+		
+		// play the world's music
+		
+	}
+	
+	@Override
+	public void hide() {
+		this.hud.hide();
 	}
 	
 	/* (non-Javadoc)
@@ -101,7 +117,7 @@ public class SimulationView implements View {
 	 */
 	@Override
 	public void dispose() {
-		this.stage.dispose();
+		this.hud.dispose();
 		this.modelBatch.dispose();
 	}
 
@@ -110,7 +126,7 @@ public class SimulationView implements View {
 	 */
 	@Override
 	public void resize(int width, int height) {
-		viewport.update(width, height, true);
-		stage.getViewport().update(width, height, true);
+		this.viewport.update(width, height, true);
+		this.hud.resize(width, height);
 	}
 }

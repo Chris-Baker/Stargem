@@ -3,6 +3,7 @@
  */
 package com.stargem.ai.tasks;
 
+import com.badlogic.gdx.utils.Array;
 import com.stargem.ai.AIBrain;
 import com.stargem.behaviour.BehaviourStrategy;
 import com.stargem.entity.Entity;
@@ -24,11 +25,28 @@ public class IdleTask extends AbstractTask {
 	// is this brain awake
 	private boolean isAwake;
 	
+	private static final Array<IdleTask> pool = new Array<IdleTask>();
+	
+	public static IdleTask newInstance(BehaviourStrategy behaviour, AIBrain brain, Entity entity, AbstractTask parent) {
+		if(pool.size == 0) {
+			return new IdleTask(behaviour, brain, entity, parent);
+		}
+		else {
+			IdleTask task = pool.pop();
+			task.behaviour = behaviour;
+			task.brain = brain;
+			task.entity = entity;
+			task.parent = parent;
+			task.isAwake = false;
+			return task;
+		}
+	}
+	
 	/**
 	 * @param entity
 	 * @param parent
 	 */
-	public IdleTask(BehaviourStrategy behaviour, AIBrain brain, Entity entity, AbstractTask parent) {
+	private IdleTask(BehaviourStrategy behaviour, AIBrain brain, Entity entity, AbstractTask parent) {
 		super(behaviour, brain, entity, parent);
 		super.isBlocking = true;
 		super.mask = AbstractTask.MASK_BEHAVIOUR;
@@ -96,6 +114,18 @@ public class IdleTask extends AbstractTask {
 	 */
 	public void onCombatStarted() {
 		behaviour.onCombatStarted();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.stargem.ai.tasks.AbstractTask#free()
+	 */
+	@Override
+	public void free() {
+		this.behaviour = null;
+		this.brain = null;
+		this.entity = null;
+		this.parent = null;
+		pool.add(this);
 	}
 	
 }

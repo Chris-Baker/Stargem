@@ -21,10 +21,10 @@ public abstract class AbstractTask implements Task {
 	public static final int MASK_BEHAVIOUR 	= (1 << 2); // 2
 	public static final int MASK_RESET 		= (1 << 3); // 4
 	
-	protected final AIBrain brain;
-	protected final Entity entity;
-	protected final AbstractTask parent;
-	protected final BehaviourStrategy behaviour;
+	protected AIBrain brain;
+	protected Entity entity;
+	protected AbstractTask parent;
+	protected BehaviourStrategy behaviour;
 	protected int mask;
 	protected boolean isBlocking;
 	protected boolean isStarted;
@@ -58,4 +58,6 @@ public abstract class AbstractTask implements Task {
 	public boolean isBlocking() {
 		return isBlocking;
 	}
+	
+	abstract public void free();
 }

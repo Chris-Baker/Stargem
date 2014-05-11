@@ -57,6 +57,7 @@ public class Config {
 	public static final String TABLE_ASSETS			= "Assets";
 	public static final String TABLE_WORLD			= "World";
 	public static final String TABLE_PLAYERS		= "Players";
+	public static final String TABLE_GATES 			= "Gates";
 	
 	// Physics time step
 	public static final int MAX_UPDATE_ITERATIONS 	= 5;
@@ -65,5 +66,18 @@ public class Config {
 	public static final int NUM_SUBSTEPS 			= 3;
 	
 	// auto save frequency in seconds
-	public static final float AUTO_SAVE_FREQUENCY 	= 5;
+	public static final float AUTO_SAVE_FREQUENCY 	= 15;
+	
+	// UI menu item names
+	public static final String UI_NEW_GAME			= "New Game";
+	public static final String UI_LOAD_GAME			= "Load Game";
+	public static final String UI_EXIT_GAME			= "Exit Game";
+	
+	public static final String UI_PLAY				= "Play";
+	public static final String UI_OPTIONS			= "Options";
+	public static final String UI_EXIT_PROFILE		= "Exit Profile";
+	public static final String UI_NEW_PROFILE_OK 	= "OK";
+	public static final String UI_NEW_PROFILE_CANCEL= "Cancel";
+	public static final String UI_PROFILE_LOAD 	 	= "Load Profile";
+	public static final String UI_PROFILE_CANCEL 	= "Cancel Profile";
 }

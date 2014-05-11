@@ -12,7 +12,7 @@
   </class>  
   <class id="2" language="java" name="com.stargem.persistence.GameSaver" project="Stargem-core" 
     file="/Stargem-core/src/com/stargem/persistence/GameSaver.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="961" y="44"/>    
+    <position height="-1" width="-1" x="925" y="46"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -55,16 +55,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="7" language="java" name="com.stargem.persistence.DesktopActionResolver" project="Stargem-core" 
-    file="/Stargem-core/src/com/stargem/persistence/DesktopActionResolver.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="605" y="413"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
-      visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <class id="8" language="java" name="com.stargem.persistence.SQLHelper" project="Stargem-core" 
+  <class id="7" language="java" name="com.stargem.persistence.SQLHelper" project="Stargem-core" 
     file="/Stargem-core/src/com/stargem/persistence/SQLHelper.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="640" y="925"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
@@ -73,16 +64,16 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="9" language="java" name="com.stargem.persistence.DatabaseFactory" project="Stargem-core" 
+  <class id="8" language="java" name="com.stargem.persistence.DatabaseFactory" project="Stargem-core" 
     file="/Stargem-core/src/com/stargem/persistence/DatabaseFactory.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="695" y="107"/>    
+    <position height="-1" width="-1" x="614" y="91"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <interface id="10" language="java" name="com.stargem.persistence.ActionResolver" project="Stargem-core" 
+  <interface id="9" language="java" name="com.stargem.persistence.ActionResolver" project="Stargem-core" 
     file="/Stargem-core/src/com/stargem/persistence/ActionResolver.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="605" y="281"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
@@ -91,75 +82,67 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </interface>  
+  <dependency id="10">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="5"/>  
+  </dependency>  
   <realization id="11">    
-    <end type="SOURCE" refId="7"/>    
-    <end type="TARGET" refId="10"/>  
-  </realization>  
-  <realization id="12">    
-    <end type="SOURCE" refId="1"/>    
+    <end type="SOURCE" refId="6"/>    
     <end type="TARGET" refId="3"/>  
   </realization>  
-  <dependency id="13">    
-    <bendpoint x="1014" y="925"/>    
-    <end type="SOURCE" refId="4"/>    
-    <end type="TARGET" refId="8"/>  
-  </dependency>  
-  <dependency id="14">    
-    <end type="SOURCE" refId="1"/>    
-    <end type="TARGET" refId="8"/>  
-  </dependency>  
-  <association id="15">    
+  <association id="12">    
     <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="16" name="profilePersistence"/>      
-      <multiplicity id="17" minimum="0" maximum="1"/>    
+      <attribute id="13" name="profilePersistence"/>      
+      <multiplicity id="14" minimum="0" maximum="1"/>    
     </end>    
     <end type="TARGET" refId="6" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <realization id="18">    
-    <end type="SOURCE" refId="4"/>    
+  <dependency id="15">    
+    <end type="SOURCE" refId="5"/>    
     <end type="TARGET" refId="3"/>  
-  </realization>  
-  <association id="19">    
+  </dependency>  
+  <association id="16">    
     <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="20" name="entityPersistence"/>      
-      <multiplicity id="21" minimum="0" maximum="1"/>    
+      <attribute id="17" name="entityPersistence"/>      
+      <multiplicity id="18" minimum="0" maximum="1"/>    
     </end>    
     <end type="TARGET" refId="4" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <dependency id="22">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="3"/>  
-  </dependency>  
-  <dependency id="23">    
+  <dependency id="19">    
     <end type="SOURCE" refId="2"/>    
     <end type="TARGET" refId="5"/>  
   </dependency>  
-  <association id="24">    
+  <realization id="20">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="3"/>  
+  </realization>  
+  <dependency id="21">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="7"/>  
+  </dependency>  
+  <realization id="22">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="3"/>  
+  </realization>  
+  <dependency id="23">    
+    <bendpoint x="1014" y="925"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="7"/>  
+  </dependency>  
+  <dependency id="24">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="9"/>  
+  </dependency>  
+  <association id="25">    
     <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="25" name="simulationPersistence"/>      
-      <multiplicity id="26" minimum="0" maximum="1"/>    
+      <attribute id="26" name="simulationPersistence"/>      
+      <multiplicity id="27" minimum="0" maximum="1"/>    
     </end>    
     <end type="TARGET" refId="1" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <dependency id="27">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="10"/>  
-  </dependency>  
-  <dependency id="28">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="7"/>  
-  </dependency>  
-  <realization id="29">    
-    <end type="SOURCE" refId="6"/>    
-    <end type="TARGET" refId="3"/>  
-  </realization>  
-  <dependency id="30">    
-    <end type="SOURCE" refId="9"/>    
-    <end type="TARGET" refId="5"/>  
-  </dependency>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     accessors="true" visibility="true">    
     <attributes public="true" package="true" protected="true" private="true" static="true"/>    

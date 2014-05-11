@@ -31,8 +31,8 @@ public class WeaponSystem extends AbstractSystem {
 	public void process(float delta, Entity entity) {
 		
 		Weapon weapon = em.getComponent(entity, Weapon.class);
-		
-		// reduce heat
+				
+		// reduce heat if weapon is not firing
 		if(!weapon.isShooting) {			
 			weapon.currentHeat -= weapon.coolRate * delta;
 			if(weapon.currentHeat < 0) {
@@ -45,22 +45,23 @@ public class WeaponSystem extends AbstractSystem {
 			weapon.currentHeat += weapon.heatRate * delta;
 			if(weapon.currentHeat >= weapon.maxHeat) {
 				weapon.currentHeat = weapon.maxHeat;
-				weapon.isReady = false;
 				weapon.remainingPenalty = weapon.overHeatingPenalty;
 			}
+						
+			// increase time until next shot by rate of fire
+			weapon.timeUntilNextShot = weapon.rateOfFire;
+			weapon.isReady = false;
 		}
 		
-		// if we are not ready then we need to reduce the penalty
+		// if we are not ready then we need to reduce the penalty and time until next shot
 		if(!weapon.isReady) {
-			weapon.remainingPenalty -= delta;
-			if(weapon.remainingPenalty < 0) {
+			weapon.timeUntilNextShot -= delta;
+			weapon.remainingPenalty -= delta;			
+			if(weapon.remainingPenalty <= 0 && weapon.timeUntilNextShot <= 0) {
 				weapon.remainingPenalty = 0;
+				weapon.timeUntilNextShot = 0;
 				weapon.isReady = true;
 			}
 		}
-		
-		
-		
-	}
-		
+	}		
 }

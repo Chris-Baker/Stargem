@@ -7,6 +7,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.stargem.Config;
 import com.stargem.GameManager;
@@ -28,8 +29,8 @@ import com.stargem.terrain.TerrainSphere;
 import com.stargem.utils.AssetList;
 import com.stargem.utils.Log;
 import com.stargem.utils.StringHelper;
+import com.stargem.views.HUDView;
 import com.stargem.views.LoadingScreenView;
-import com.stargem.views.View;
 
 /**
  * LoadingScreen.java
@@ -75,7 +76,10 @@ public class LoadingScreen extends AbstractScreen implements Observer, EntitiesL
 	// an input processor which listens for any key press or mouse click and updates observers
 	private final AnyKeyPressedProcessor anyKeyPressedProcessor;
 	
-	private View view;
+	private LoadingScreenView view;
+	
+	// in game hud view
+	HUDView hud;
 	
 	// manages the scripting, this is used to load entities so that scripts have references
 	ScriptManager scriptManager = ScriptManager.getInstance();
@@ -136,7 +140,11 @@ public class LoadingScreen extends AbstractScreen implements Observer, EntitiesL
 					
 					// add the world assets to the asset manager to be loaded next
 					this.addWorldAssets();
-										
+					
+					// create a HUD View so that the assets are added to the asset manager and loaded
+					hud = new HUDView(assets);
+					GameManager.getInstance().setHUD(hud);
+					
 					// transition to show the screen and progress bar
 					this.currentState = LoadingScreenState.FADING_IN;
 				}
@@ -163,7 +171,8 @@ public class LoadingScreen extends AbstractScreen implements Observer, EntitiesL
 				// update the asset manager
 				if (assets.update()) {
 					
-					// TODO set music track specified in the database in the audio manager
+					// set the music track to play when game starts
+					hud.setGameMusic(this.assets.get(this.worldDetails.getMusicTrack(), Music.class));
 					
 					// TODO set ambiance track in the audio manager
 					
@@ -256,6 +265,7 @@ public class LoadingScreen extends AbstractScreen implements Observer, EntitiesL
 				
 				// fade to black
 				
+				
 				// transition
 				this.currentState = LoadingScreenState.UNLOADING_VIEW;
 				
@@ -291,9 +301,6 @@ public class LoadingScreen extends AbstractScreen implements Observer, EntitiesL
 
 	@Override
 	public void show() {
-		
-		// Create a new loading screen view.
-		this.view = new LoadingScreenView(assets);
 				
 		// read the current world name
 		PlayerProfile profile = ProfileManager.getInstance().getActiveProfile();
@@ -312,7 +319,11 @@ public class LoadingScreen extends AbstractScreen implements Observer, EntitiesL
 		sb.append(world);
 		sb.append("/");	
 		this.currentWorldFilePath = sb.toString();
+		
+		// Create a new loading screen view.
+		this.view = new LoadingScreenView(assets, currentWorldFilePath);
 				
+		
 		// get the terrain filepath
 		sb.setLength(0);
 		sb.append(this.currentWorldFilePath);
@@ -381,8 +392,8 @@ public class LoadingScreen extends AbstractScreen implements Observer, EntitiesL
 		// set an input processor to listen for any key presses
 		this.anyKeyPressedProcessor.addObserver(this);
 		GameManager.getInstance().addInputProcessor(anyKeyPressedProcessor);
-		
-		Log.debug(Config.INFO, "ready...");
+				
+		this.view.loadingComplete();
 		
 		this.currentState = LoadingScreenState.READY;
 		

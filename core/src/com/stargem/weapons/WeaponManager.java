@@ -65,6 +65,7 @@ public class WeaponManager {
 			weapon.heatRate = weaponStrategy.getHeatRate();
 			weapon.coolRate = weaponStrategy.getCoolRate();
 			weapon.overHeatingPenalty = weaponStrategy.getOverHeatingPenalty();
+			weapon.rateOfFire = weaponStrategy.getRateOfFire();
 		}
 	}
 
@@ -124,10 +125,6 @@ public class WeaponManager {
 	private void shoot(RaycastWeaponStrategy weaponStrategy, Entity entity, Weapon weapon, Vector3 from, Vector3 to) {
 		
 		// Because we reuse the ClosestRayResultCallback, we need reset it's values
-		rayTestCB.setCollisionObject(null);
-		rayTestCB.setClosestHitFraction(1f);
-		rayTestCB.getRayFromWorld().setValue(from.x, from.y, from.z);
-		rayTestCB.getRayToWorld().setValue(to.x, to.y, to.z);
 		rayTestCB.setMe(PhysicsManager.getInstance().getRigidBody(entity.getId()));
 		
 		PhysicsManager.getInstance().rayTest(from, to, rayTestCB);

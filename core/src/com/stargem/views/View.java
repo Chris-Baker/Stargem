@@ -14,6 +14,7 @@ public interface View {
 
 	public void render(float delta);
 	public void show();
+	public void hide();
 	public void resize(int width, int height);
 	public void dispose();
 	

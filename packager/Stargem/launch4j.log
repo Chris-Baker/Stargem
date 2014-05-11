@@ -1,0 +1,45 @@
+
+
+Version:	3.4
+CmdLine:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\Stargem.exe --l4j-debug
+WOW64:		no
+Working dir:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\.
+Bundled JRE:	jre\
+Check launcher:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\jre\bin\javaw.exe (not found)
+Error msg:	This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.
+
+
+Version:	3.4
+CmdLine:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\Stargem.exe --l4j-debug
+WOW64:		no
+Working dir:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\.
+Bundled JRE:	jre\
+Check launcher:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\jre\bin\javaw.exe (OK)
+Launcher:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\jre\bin\javaw.exe
+Launcher args:	-jar "C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\desktop1.0.jar"
+Args length:	100/32768 chars
+Exit code:	259
+
+
+Version:	3.4
+CmdLine:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\Stargem.exe --l4j-debug
+WOW64:		no
+Working dir:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\.
+Bundled JRE:	jre\
+Check launcher:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\jre\bin\javaw.exe (OK)
+Launcher:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\jre\bin\javaw.exe
+Launcher args:	-jar "C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\desktop1.0.jar"
+Args length:	100/32768 chars
+Exit code:	259
+
+
+Version:	3.4
+CmdLine:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\Stargem.exe --l4j-debug
+WOW64:		no
+Working dir:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\.
+Bundled JRE:	jre\
+Check launcher:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\jre\bin\javaw.exe (OK)
+Launcher:	C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\jre\bin\javaw.exe
+Launcher args:	-jar "C:\Documents and Settings\Chris B\My Documents\GitHub\Stargem\packager\Stargem\desktop1.0.jar"
+Args length:	100/32768 chars
+Exit code:	259

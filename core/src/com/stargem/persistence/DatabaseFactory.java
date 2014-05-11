@@ -11,6 +11,7 @@ import java.sql.Statement;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.stargem.Config;
+import com.stargem.GameManager;
 import com.stargem.entity.components.Component;
 import com.stargem.utils.Log;
 import com.stargem.utils.StringHelper;
@@ -26,7 +27,7 @@ public class DatabaseFactory {
 	
 	public static void createProfileDatabase(String databasePath) {
 		
-		ActionResolver ar = new DesktopActionResolver();
+		ActionResolver ar = GameManager.getInstance().getPlatformResolver().getActionResolver();
 		Connection connection = ar.getConnection(databasePath);
 		
 		// profile table
@@ -36,7 +37,7 @@ public class DatabaseFactory {
 	
 	public static void createWorldDatabase(String databasePath, Array<Class<? extends Component>> componentTypes) {
 		
-		ActionResolver ar = new DesktopActionResolver();
+		ActionResolver ar = GameManager.getInstance().getPlatformResolver().getActionResolver();
 		Connection connection = ar.getConnection(databasePath);
 				
 		// assets table
@@ -50,13 +51,36 @@ public class DatabaseFactory {
 		
 		// entity table
 		createEntityTable(connection);
-				
+		
+		// gate table
+		createGateTable(connection);
+		
 		// try to create a table for each of the component types
 		for (Class<? extends Component> type : componentTypes) {
 			createTableFromComponentType(connection, type);
 		}
 	}
 		
+	/**
+	 * @param connection
+	 */
+	private static void createGateTable(Connection connection) {
+		
+		//CREATE TABLE "Gates" ("entityId" INTEGER, "type" INTEGER)
+		StringBuilder sql = StringHelper.getBuilder();
+		sql.append("CREATE TABLE \"Gates\" (\"entityId\" INTEGER, \"type\" INTEGER)");
+
+		// run the query
+		try {
+			Statement statement = connection.createStatement();
+			statement.executeUpdate(sql.toString());
+			statement.close();
+		}
+		catch (SQLException e) {
+			Log.error(Config.SQL_ERR, e.getMessage() + " while creating the gates table: " + sql.toString());
+		}
+	}
+
 	/**
 	 * Create a table to store assets. This is called by the editor
 	 * and later imported into the game from a world database.

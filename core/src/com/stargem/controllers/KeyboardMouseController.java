@@ -5,16 +5,18 @@ package com.stargem.controllers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
-import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback;
 import com.stargem.GameManager;
 import com.stargem.Preferences;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
 import com.stargem.entity.components.Controller;
 import com.stargem.entity.components.Weapon;
+import com.stargem.scripting.ScriptManager;
+import com.stargem.views.HUDView;
 import com.stargem.weapons.WeaponManager;
 
 /**
@@ -26,15 +28,15 @@ import com.stargem.weapons.WeaponManager;
  */
 public class KeyboardMouseController extends AbstractControllerStrategy implements InputProcessor {
 	
-	private final ClosestRayResultCallback rayTestCB = new ClosestRayResultCallback(Vector3.Zero, Vector3.Z);;
 	private final Vector3 rayFrom = new Vector3();
 	private final Vector3 rayTo = new Vector3();
-	private final Vector3 hit = new Vector3();
-	private final Vector3 tmp = new Vector3();
 	
-	private boolean shootingMode = false;
-	private boolean freelookMode = false;
+	private final boolean shootingMode = true;
+	private final boolean freelookMode = false;
 	private boolean isShooting = false;
+	private final HUDView hud;
+	
+	public float idleTime = 0;
 	
 	/**
 	 * @param entity 
@@ -43,6 +45,11 @@ public class KeyboardMouseController extends AbstractControllerStrategy implemen
 	public KeyboardMouseController(Entity entity, Controller component) {
 		super(entity, component);
 		GameManager.getInstance().addInputProcessor(this);
+		System.out.println(component.behaviour);
+		ScriptManager.getInstance().execute("behaviour", component.behaviour, entity);
+		this.hud = GameManager.getInstance().getHUD();
+		this.hud.setEntity(entity);
+		Gdx.input.setCursorCatched(true);
 	}
 
 	@Override
@@ -59,6 +66,13 @@ public class KeyboardMouseController extends AbstractControllerStrategy implemen
 				weapon.isShooting = false;
 			}
 		}
+		
+		idleTime += delta;
+		
+		if(idleTime > 30) {
+			
+		}
+		
 	}
 	
 	/* (non-Javadoc)
@@ -82,6 +96,8 @@ public class KeyboardMouseController extends AbstractControllerStrategy implemen
 		else if(keycode == Preferences.KEY_JUMP) {
 			component.isJumping = true;
 		}
+		
+		idleTime = 0;
 		
 		return false;
 	}
@@ -107,7 +123,9 @@ public class KeyboardMouseController extends AbstractControllerStrategy implemen
 		else if(keycode == Preferences.KEY_JUMP) {
 			component.isJumping = false;
 		}
-		
+		else if(keycode == Keys.ESCAPE) {
+			Gdx.app.exit();
+		}
 		return false;
 	}
 
@@ -125,17 +143,26 @@ public class KeyboardMouseController extends AbstractControllerStrategy implemen
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		
-		if(button == Buttons.RIGHT) {
-			this.shootingMode = true;
-		}
+//		if(button == Buttons.RIGHT) {
+//			this.shootingMode = true;
+//			
+//			// show the aiming cursor in the HUD view
+//			hud.setShootingMode(true);
+//			
+//		}
 		
-		if(button == Buttons.LEFT && !this.shootingMode) {
-			this.freelookMode = true;
-		}
+		//hud.setShootingMode(true);
+		//this.shootingMode = true;
+		
+//		if(button == Buttons.LEFT && !this.shootingMode) {
+//			this.freelookMode = true;
+//		}
 		
 		if(button == Buttons.LEFT && this.shootingMode) {
 			this.isShooting = true;
 		}
+		
+		idleTime = 0;
 		
 		return false;
 	}
@@ -146,13 +173,17 @@ public class KeyboardMouseController extends AbstractControllerStrategy implemen
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {		
 		
-		if(button == Buttons.RIGHT && this.shootingMode) {
-			this.shootingMode = false;
-		}
-		
-		if(button == Buttons.LEFT && this.freelookMode) {
-			this.freelookMode = false;
-		}
+//		if(button == Buttons.RIGHT && this.shootingMode) {
+//			this.shootingMode = false;
+//			
+//			// show the aiming cursor in the HUD view
+//			hud.setShootingMode(false);
+//			
+//		}
+//		
+//		if(button == Buttons.LEFT && this.freelookMode) {
+//			this.freelookMode = false;
+//		}
 		
 		if(button == Buttons.LEFT && this.shootingMode) {
 			this.isShooting = false;

@@ -315,7 +315,7 @@ public class PhysicsManager {
 		
 		// remove the body
 		this.dynamicsWorld.removeRigidBody(this.bodies.get(index));
-				
+		
 		// remove the stored references to the objects and dispose the bullet objects
 		this.bodies.remove(index).dispose();
 		this.bodyInfos.remove(index).dispose();
@@ -445,8 +445,13 @@ public class PhysicsManager {
 	 * @param rayTo
 	 * @param rayTestCB
 	 */
-	public void rayTest(Vector3 rayFrom, Vector3 rayTo, ClosestRayResultCallback rayTestCB) {
-		this.dynamicsWorld.rayTest(rayFrom, rayTo, rayTestCB);
+	public void rayTest(Vector3 from, Vector3 to, ClosestRayResultCallback rayTestCB) {
+		rayTestCB.setCollisionObject(null);
+		rayTestCB.setClosestHitFraction(1f);
+		rayTestCB.getRayFromWorld().setValue(from.x, from.y, from.z);
+		rayTestCB.getRayToWorld().setValue(to.x, to.y, to.z);
+				
+		this.dynamicsWorld.rayTest(from, to, rayTestCB);
 	}
 	
 }

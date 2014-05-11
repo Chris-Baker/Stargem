@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.stargem.Config;
 import com.stargem.entity.Entity;
 import com.stargem.entity.EntityManager;
@@ -36,6 +37,7 @@ public class RepresentationManager {
 
 	private AbstractIterableRepresentation sky;
 	private AbstractIterableRepresentation terrain;
+	private final ObjectMap<String, Model> models = new ObjectMap<String, Model>();
 	private final IntMap<ModelInstance> modelInstances = new IntMap<ModelInstance>();
 	private AssetManager assetManager;
 	private final IntMap<AnimationController> animationControllers = new IntMap<AnimationController>();
@@ -60,11 +62,17 @@ public class RepresentationManager {
 		if(this.assetManager == null) {
 			throw new Error("Asset manager needs to be set in the RepresentationManager before adding model modelInstances from components.");
 		}
-				
-		Model model = this.assetManager.get(component.modelPath, Model.class);
 		
-		// we need to add all the animations for this skinned model
-		this.addAnimations(model, component.modelPath);
+		Model model;
+		
+		if(this.models.containsKey(component.modelPath)) {
+			model = models.get(component.modelPath);
+		}
+		else {		
+			model = this.assetManager.get(component.modelPath, Model.class);		
+			this.addAnimations(model, component.modelPath);
+			this.models.put(component.modelPath, model);
+		}			
 		
 		ModelInstance instance = new ModelInstance(model);
 		this.modelInstances.put(entity.getId(), instance);
@@ -294,6 +302,14 @@ public class RepresentationManager {
 		return this.modelInstances.values();
 	}
 
+	/**
+	 * Get all the animation controllers as an iterable
+	 * @return the animation controllers as an iterable
+	 */
+	public Iterable<AnimationController> getAnimations() {
+		return animationControllers.values();
+	}
+	
 	/**
 	 * Remove the model instance from the list of model instances
 	 * 
